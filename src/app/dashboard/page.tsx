@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { supabase, Member, ProjectApplication } from '@/lib/supabase';
-import { Users, FolderOpen, Mail, TrendingUp } from 'lucide-react';
+import { Users, FolderOpen, Mail, TrendingUp, MessageSquare } from 'lucide-react';
 
 interface DashboardStats {
   totalMembers: number;
@@ -120,6 +120,50 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WhatsApp Community Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <MessageSquare className="h-5 w-5 text-green-600" />
+            <span>WhatsApp Community Overview</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-3">
+                <MessageSquare className="h-8 w-8 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">6</p>
+              <p className="text-sm text-gray-600">Active Groups</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mx-auto mb-3">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">2,491</p>
+              <p className="text-sm text-gray-600">Total WhatsApp Members</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mx-auto mb-3">
+                <Mail className="h-8 w-8 text-purple-600" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-sm text-gray-600">Messages Sent Today</p>
+            </div>
+          </div>
+          <div className="mt-6 flex justify-center">
+            <a 
+              href="/dashboard/whatsapp"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Manage WhatsApp Groups
+            </a>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
