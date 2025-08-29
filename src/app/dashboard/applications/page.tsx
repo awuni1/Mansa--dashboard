@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { supabase, ProjectApplication } from '@/lib/supabase';
+import { supabase, ProjectApplication, transformApplicationData } from '@/lib/supabase';
 import { Search, Eye, Check, X, Mail } from 'lucide-react';
 
 export default function ApplicationsPage() {
@@ -45,7 +45,12 @@ export default function ApplicationsPage() {
 
       if (error) throw error;
 
-      setApplications(data || []);
+      // Transform the data to match the expected interface
+      const transformedApplications = await Promise.all(
+        (data || []).map(app => transformApplicationData(app))
+      );
+
+      setApplications(transformedApplications);
     } catch (error) {
       console.error('Error loading applications:', error);
     } finally {
@@ -184,7 +189,6 @@ export default function ApplicationsPage() {
                 <TableRow>
                   <TableHead>Applicant</TableHead>
                   <TableHead>Project Title</TableHead>
-                  <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Applied</TableHead>
                   <TableHead>Actions</TableHead>
@@ -202,7 +206,6 @@ export default function ApplicationsPage() {
                     <TableCell className="font-medium max-w-xs truncate">
                       {application.project_title || 'N/A'}
                     </TableCell>
-                    <TableCell>{application.project_type || 'N/A'}</TableCell>
                     <TableCell>
                       <span className={getStatusBadge(application.status)}>
                         {application.status}
@@ -295,20 +298,20 @@ export default function ApplicationsPage() {
                     <p className="mt-1 text-sm text-gray-900">{selectedApplication.email}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.phone_number || 'N/A'}</p>
+                    <label className="block text-sm font-medium text-gray-700">Project ID</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_id || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Project Type</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_type || 'N/A'}</p>
+                    <label className="block text-sm font-medium text-gray-700">Skills</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.skills || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Timeline</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.timeline || 'N/A'}</p>
+                    <label className="block text-sm font-medium text-gray-700">Applied Date</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.applied_date || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Budget Range</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.budget_range || 'N/A'}</p>
+                    <label className="block text-sm font-medium text-gray-700">Motivation</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.motivation || 'N/A'}</p>
                   </div>
                 </div>
                 
@@ -324,8 +327,8 @@ export default function ApplicationsPage() {
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Skills Required</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.skills_required || 'N/A'}</p>
+                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.status || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Applied On</label>

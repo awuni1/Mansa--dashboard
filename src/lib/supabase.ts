@@ -14,31 +14,61 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 export interface Member {
   id: string;
-  full_name: string;
+  name: string; // Database field name
   email: string;
+  phone?: string; // Database field name
+  country?: string;
+  city?: string;
+  linkedin?: string;
+  experience?: string;
+  areaOfExpertise?: string;
+  school?: string;
+  level?: string;
+  occupation?: string;
+  jobtitle?: string;
+  industry?: string;
+  major?: string;
+  gender?: string;
+  membershiptype?: string;
+  skills?: string;
+  is_active?: boolean;
+  created_at: string;
+  updated_at?: string;
+  
+  // Computed properties for backwards compatibility
+  full_name?: string;
   phone_number?: string;
   profession?: string;
   location?: string;
-  interests?: string;
-  skills?: string;
-  project_experience?: string;
-  availability?: string;
-  created_at: string;
-  updated_at?: string;
 }
 
 export interface ProjectApplication {
   id: string;
-  full_name: string;
-  email: string;
-  phone_number?: string;
-  project_title: string;
-  project_description: string;
-  skills_required?: string;
-  timeline?: string;
-  budget_range?: string;
-  project_type?: string;
+  project_id: number;
+  applicant_name: string; // Database field name
+  applicant_email: string; // Database field name
+  skills: string;
+  motivation: string;
   status: 'pending' | 'approved' | 'rejected';
+  applied_date: string;
+  reviewed_date?: string;
+  reviewer_notes?: string;
+  member_id?: string;
+  created_at: string;
+  updated_at?: string;
+  
+  // Computed properties for backwards compatibility
+  full_name?: string;
+  email?: string;
+  project_title?: string;
+  project_description?: string;
+}
+
+export interface Project {
+  id: number;
+  title: string;
+  description?: string;
+  created_by?: string;
   created_at: string;
   updated_at?: string;
 }
@@ -51,3 +81,38 @@ export interface FormSubmission {
   name?: string;
   created_at: string;
 }
+
+// Helper functions to transform data for backwards compatibility
+export const transformMemberData = (member: Member): Member => ({
+  ...member,
+  full_name: member.name,
+  phone_number: member.phone,
+  profession: member.jobtitle || member.occupation,
+  location: member.city && member.country ? `${member.city}, ${member.country}` : (member.city || member.country),
+});
+
+export const transformApplicationData = async (application: ProjectApplication): Promise<ProjectApplication> => {
+  // Try to get project details
+  let projectTitle = `Project #${application.project_id}`;
+  try {
+    const { data: project } = await supabase
+      .from('projects')
+      .select('title, description')
+      .eq('id', application.project_id)
+      .single();
+    
+    if (project) {
+      projectTitle = project.title;
+    }
+  } catch (error) {
+    console.log('Could not fetch project details:', error);
+  }
+
+  return {
+    ...application,
+    full_name: application.applicant_name,
+    email: application.applicant_email,
+    project_title: projectTitle,
+    project_description: application.motivation,
+  };
+};

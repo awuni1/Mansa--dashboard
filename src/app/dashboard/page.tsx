@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { supabase, Member, ProjectApplication } from '@/lib/supabase';
-import { Users, FolderOpen, Mail, TrendingUp, MessageSquare } from 'lucide-react';
+import { supabase, Member, ProjectApplication, transformMemberData, transformApplicationData } from '@/lib/supabase';
+import { Users, FolderOpen, Mail, TrendingUp, MessageSquare, FileText } from 'lucide-react';
 
 interface DashboardStats {
   totalMembers: number;
@@ -34,8 +34,14 @@ export default function DashboardPage() {
         supabase.from('project_applications').select('*').order('created_at', { ascending: false }),
       ]);
 
-      const members = membersResult.data || [];
-      const applications = applicationsResult.data || [];
+      const rawMembers = membersResult.data || [];
+      const rawApplications = applicationsResult.data || [];
+
+      // Transform the data
+      const members = rawMembers.map(member => transformMemberData(member));
+      const applications = await Promise.all(
+        rawApplications.map(app => transformApplicationData(app))
+      );
 
       setStats({
         totalMembers: members.length,
@@ -122,6 +128,7 @@ export default function DashboardPage() {
       </div>
 
       {/* WhatsApp Community Stats */}
+      {/*
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -164,12 +171,79 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      */}
+
+      {/* Quick Access to Data Views */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Database Overview & Quick Access</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-6">
+            Access comprehensive views of all database information including member profiles, project applications, and form submissions.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a 
+              href="/dashboard/members"
+              className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">View All Members</h3>
+                  <p className="text-sm text-gray-500">Complete member profiles, contact info, skills</p>
+                </div>
+              </div>
+            </a>
+            
+            <a 
+              href="/dashboard/applications"
+              className="block p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
+                  <FolderOpen className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Project Applications</h3>
+                  <p className="text-sm text-gray-500">Review & manage all project submissions</p>
+                </div>
+              </div>
+            </a>
+            
+            <a 
+              href="/dashboard/forms"
+              className="block p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
+                  <FileText className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">All Form Submissions</h3>
+                  <p className="text-sm text-gray-500">Complete form data & sign-up information</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Members</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Members</CardTitle>
+              <a 
+                href="/dashboard/members"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                View All →
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -186,6 +260,11 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-500 truncate">
                         {member.email || 'N/A'}
                       </p>
+                      {member.profession && (
+                        <p className="text-xs text-gray-400 truncate">
+                          {member.profession}
+                        </p>
+                      )}
                     </div>
                     <div className="text-xs text-gray-400">
                       {new Date(member.created_at).toLocaleDateString()}
@@ -201,7 +280,15 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Applications</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Applications</CardTitle>
+              <a 
+                href="/dashboard/applications"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                View All →
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -218,6 +305,11 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-500 truncate">
                         {application.full_name || 'N/A'}
                       </p>
+                      {application.email && (
+                        <p className="text-xs text-gray-400 truncate">
+                          {application.email}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <span

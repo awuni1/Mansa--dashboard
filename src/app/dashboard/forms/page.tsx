@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { supabase, FormSubmission } from '@/lib/supabase';
+import { supabase, FormSubmission, transformMemberData, transformApplicationData } from '@/lib/supabase';
 import { Search, Eye, Mail, FileText } from 'lucide-react';
 
 export default function FormsPage() {
@@ -40,55 +40,52 @@ export default function FormsPage() {
 
   const loadFormSubmissions = async () => {
     try {
-      // Try to get from a generic form_submissions table first
-      let { data, error } = await supabase
-        .from('form_submissions')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Get real-time data from members and project_applications tables
+      const [membersResult, applicationsResult] = await Promise.all([
+        supabase.from('members').select('*').order('created_at', { ascending: false }),
+        supabase.from('project_applications').select('*').order('created_at', { ascending: false }),
+      ]);
 
-      // If that doesn't exist, combine data from members and project_applications
-      if (error || !data) {
-        const [membersResult, applicationsResult] = await Promise.all([
-          supabase.from('members').select('*').order('created_at', { ascending: false }),
-          supabase.from('project_applications').select('*').order('created_at', { ascending: false }),
-        ]);
+      const realTimeSubmissions: FormSubmission[] = [];
 
-        const mockSubmissions: FormSubmission[] = [];
-
-        // Convert members to form submissions
-        if (membersResult.data) {
-          membersResult.data.forEach(member => {
-            mockSubmissions.push({
-              id: `member_${member.id}`,
-              form_type: 'membership',
-              form_data: member,
-              email: member.email,
-              name: member.full_name,
-              created_at: member.created_at,
-            });
+      // Transform and convert members to form submissions
+      if (membersResult.data) {
+        const transformedMembers = membersResult.data.map(member => transformMemberData(member));
+        transformedMembers.forEach(member => {
+          realTimeSubmissions.push({
+            id: `member_${member.id}`,
+            form_type: 'membership',
+            form_data: member,
+            email: member.email,
+            name: member.full_name || member.name,
+            created_at: member.created_at,
           });
-        }
-
-        // Convert project applications to form submissions
-        if (applicationsResult.data) {
-          applicationsResult.data.forEach(application => {
-            mockSubmissions.push({
-              id: `application_${application.id}`,
-              form_type: 'project',
-              form_data: application,
-              email: application.email,
-              name: application.full_name,
-              created_at: application.created_at,
-            });
-          });
-        }
-
-        data = mockSubmissions.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        });
       }
 
-      setSubmissions(data || []);
+      // Transform and convert project applications to form submissions
+      if (applicationsResult.data) {
+        const transformedApplications = await Promise.all(
+          applicationsResult.data.map(app => transformApplicationData(app))
+        );
+        transformedApplications.forEach(application => {
+          realTimeSubmissions.push({
+            id: `application_${application.id}`,
+            form_type: 'project',
+            form_data: application,
+            email: application.email || application.applicant_email,
+            name: application.full_name || application.applicant_name,
+            created_at: application.created_at,
+          });
+        });
+      }
+
+      // Sort by creation date (most recent first)
+      const sortedSubmissions = realTimeSubmissions.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setSubmissions(sortedSubmissions);
     } catch (error) {
       console.error('Error loading form submissions:', error);
     } finally {

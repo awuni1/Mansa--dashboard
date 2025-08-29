@@ -154,8 +154,12 @@ export default function EmailsPage() {
       if (result.useMailto) {
         // Fallback to mailto if SMTP is not configured
         const emailPromises = recipientList.map(recipient => {
-          const personalizedSubject = encodeURIComponent(personalizeContent(subject, recipient));
-          const personalizedBody = encodeURIComponent(personalizeContent(body, recipient));
+          const recipientWithDefaults = {
+            email: recipient.email || '',
+            name: recipient.name || 'Member'
+          };
+          const personalizedSubject = encodeURIComponent(personalizeContent(subject, recipientWithDefaults));
+          const personalizedBody = encodeURIComponent(personalizeContent(body, recipientWithDefaults));
           
           return new Promise(resolve => {
             setTimeout(() => {

@@ -16,12 +16,12 @@ import {
   LogOut,
   Menu,
   X,
-  MessageSquare,
+  // MessageSquare, // Removed - WhatsApp functionality disabled
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
+  // { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Members', href: '/dashboard/members', icon: Users },
   { name: 'Project Applications', href: '/dashboard/applications', icon: FolderOpen },
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },

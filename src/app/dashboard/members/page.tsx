@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { supabase, Member } from '@/lib/supabase';
+import { supabase, Member, transformMemberData } from '@/lib/supabase';
 import { Search, Eye, Edit, Trash2, Mail } from 'lucide-react';
 
 export default function MembersPage() {
@@ -39,7 +39,10 @@ export default function MembersPage() {
 
       if (error) throw error;
 
-      setMembers(data || []);
+      // Transform the data to match the expected interface
+      const transformedMembers = (data || []).map(member => transformMemberData(member));
+      
+      setMembers(transformedMembers);
     } catch (error) {
       console.error('Error loading members:', error);
     } finally {
@@ -240,20 +243,20 @@ export default function MembersPage() {
                   <p className="mt-1 text-sm text-gray-900">{selectedMember.location || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Availability</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedMember.availability || 'N/A'}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Interests</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedMember.interests || 'N/A'}</p>
+                  <label className="block text-sm font-medium text-gray-700">Membership Type</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedMember.membershiptype || 'N/A'}</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Skills</label>
                   <p className="mt-1 text-sm text-gray-900">{selectedMember.skills || 'N/A'}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Project Experience</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedMember.project_experience || 'N/A'}</p>
+                  <label className="block text-sm font-medium text-gray-700">Area of Expertise</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedMember.areaOfExpertise || 'N/A'}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">Experience</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedMember.experience || 'N/A'}</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Member Since</label>
