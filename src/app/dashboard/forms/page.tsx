@@ -260,8 +260,9 @@ export default function FormsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-        <Card className="border border-green-200 hover:shadow-lg sm:hover:shadow-xl transition-all cursor-pointer" onClick={() => setTypeFilter('membership')}>
-          <CardContent className="p-3 sm:p-4 lg:p-6">
+        <div onClick={() => setTypeFilter('membership')} className="cursor-pointer">
+          <Card className="border border-green-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Membership Forms</p>
@@ -273,8 +274,10 @@ export default function FormsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
 
-        <Card className="border border-purple-200 hover:shadow-lg sm:hover:shadow-xl transition-all cursor-pointer" onClick={() => setTypeFilter('project')}>
+        <div onClick={() => setTypeFilter('project')} className="cursor-pointer">
+          <Card className="border border-purple-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -287,8 +290,10 @@ export default function FormsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
 
-        <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all cursor-pointer col-span-2 lg:col-span-1" onClick={() => setTypeFilter('contact')}>
+        <div onClick={() => setTypeFilter('contact')} className="cursor-pointer col-span-2 lg:col-span-1">
+          <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -301,6 +306,7 @@ export default function FormsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Search & Filters */}
@@ -340,6 +346,8 @@ export default function FormsPage() {
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                     className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all"
+                    aria-label="Filter by form type"
+                    title="Select form type"
                   >
                     <option value="all">All Types</option>
                     <option value="contact">Contact</option>
@@ -383,7 +391,6 @@ export default function FormsPage() {
                     <TableRow 
                       key={submission.id} 
                       className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 border-b border-gray-100"
-                      style={{ animationDelay: `${index * 30}ms` }}
                     >
                       <TableCell className="py-4">
                         <div className="flex items-center gap-3">
@@ -488,6 +495,8 @@ export default function FormsPage() {
                 <button
                   onClick={() => setShowModal(false)}
                   className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300"
+                  aria-label="Close modal"
+                  title="Close"
                 >
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -502,19 +511,21 @@ export default function FormsPage() {
                   if (key === 'id' || key === 'created_at' || key === 'updated_at') return null;
 
                   const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = value;
+                  let displayValue: string = String(value || 'N/A');
 
                   if (typeof value === 'string' && value.length > 100) {
                     displayValue = value.substring(0, 100) + '...';
+                  } else if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value, null, 2);
                   }
 
                   return (
                     <div key={key} className="bg-gradient-to-br from-gray-50 to-indigo-50 p-5 rounded-xl border-2 border-indigo-100 hover:shadow-lg transition-all">
-                      <label className="block text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                      <label className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
                         {displayKey}
                       </label>
-                      <p className="text-base text-gray-900 whitespace-pre-wrap break-words">{displayValue || 'N/A'}</p>
+                      <p className="text-base text-gray-900 whitespace-pre-wrap break-words">{displayValue}</p>
                     </div>
                   );
                 }).filter(Boolean)}

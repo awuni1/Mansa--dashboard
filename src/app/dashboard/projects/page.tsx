@@ -67,6 +67,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label="Close modal"
+              title="Close"
             >
               <X className="h-5 w-5" />
             </button>
@@ -125,6 +127,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   value={formData.max_participants}
                   onChange={(e) => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  aria-label="Maximum participants"
+                  title="Enter maximum number of participants"
                 />
               </div>
 
@@ -136,6 +140,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  aria-label="Project status"
+                  title="Select project status"
                 >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
@@ -155,6 +161,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   value={formData.admission_start_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_start_date: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  aria-label="Admission start date"
+                  title="Select admission start date"
                 />
               </div>
 
@@ -167,6 +175,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   value={formData.admission_end_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_end_date: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  aria-label="Admission end date"
+                  title="Select admission end date"
                 />
               </div>
             </div>
@@ -991,7 +1001,7 @@ export default function ProjectsPage() {
         }}
         onSubmit={editingProject ? handleUpdateProject : handleCreateProject}
         project={editingProject}
-        loading={actionLoading === -1 || (editingProject && actionLoading === editingProject.id)}
+        loading={actionLoading === -1 || (!!editingProject && actionLoading === editingProject.id)}
       />
 
       {/* Applications Modal */}
@@ -1011,6 +1021,8 @@ export default function ProjectsPage() {
                     setApplications([]);
                   }}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  aria-label="Close applications modal"
+                  title="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>

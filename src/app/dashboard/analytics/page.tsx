@@ -42,12 +42,10 @@ export default function AnalyticsPage() {
     total_applications: applicationsData?.count || 0,
     pending_applications: applicationsData?.results?.filter((a: any) => a.status === 'pending').length || 0,
     total_emails_sent: 0,
-    total_email_campaigns: 0,
   } : null;
 
   // Build user analytics
   const userAnalytics: UserAnalytics | null = membersData ? {
-    total_users: membersData.count || 0,
     total_approved_users: membersData.count || 0,
     total_pending_users: 0,
     new_registrations_this_month: Math.floor((membersData.count || 0) * 0.1),
@@ -57,6 +55,7 @@ export default function AnalyticsPage() {
       email: m.email || `${m.name}@mansa.com`,
       first_name: m.first_name || m.name?.split(' ')[0] || 'User',
       last_name: m.last_name || m.name?.split(' ')[1] || '',
+      role: 'user' as const,
       approval_status: 'approved',
       date_joined: m.created_at,
     })) || [],

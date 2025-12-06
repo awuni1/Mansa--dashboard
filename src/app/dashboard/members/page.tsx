@@ -168,7 +168,7 @@ export default function MembersPage() {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-semibold text-yellow-800">{error}</p>
+              <p className="text-sm font-semibold text-yellow-800">{error instanceof Error ? error.message : String(error)}</p>
             </div>
           </div>
         </div>
@@ -211,6 +211,8 @@ export default function MembersPage() {
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                     className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all"
+                    aria-label="Filter member type"
+                    title="Filter by member type"
                   >
                     <option value="all">All Types</option>
                     <option value="premium">Premium</option>
@@ -257,7 +259,6 @@ export default function MembersPage() {
                       <TableRow 
                         key={member.id} 
                         className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200 border-b border-gray-100"
-                        style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <TableCell className="py-4">
                           <div className="flex items-center gap-3">
@@ -339,8 +340,7 @@ export default function MembersPage() {
                 {filteredMembers.map((member, index) => (
                   <div 
                     key={member.id} 
-                    className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200 animate-slideInFromRight"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200"
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-12 h-12 min-w-[48px] rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
@@ -490,6 +490,8 @@ export default function MembersPage() {
                 <button
                   onClick={() => setShowModal(false)}
                   className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300"
+                  aria-label="Close modal"
+                  title="Close"
                 >
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -501,7 +503,7 @@ export default function MembersPage() {
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Full Name
                   </label>
@@ -509,7 +511,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-green-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-green-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Email
                   </label>
@@ -517,7 +519,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border-2 border-purple-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     Phone Number
                   </label>
@@ -525,7 +527,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border-2 border-orange-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-orange-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
                     Profession
                   </label>
@@ -533,7 +535,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border-2 border-red-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-red-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-red-900 mb-2 flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     Location
                   </label>
@@ -541,7 +543,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border-2 border-indigo-100 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Membership Type
                   </label>
@@ -551,7 +553,7 @@ export default function MembersPage() {
 
               <div className="space-y-4">
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Briefcase className="h-5 w-5 text-blue-600" />
                     Skills
                   </label>
@@ -559,7 +561,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-purple-600" />
                     Area of Expertise
                   </label>
@@ -567,7 +569,7 @@ export default function MembersPage() {
                 </div>
                 
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Briefcase className="h-5 w-5 text-green-600" />
                     Experience
                   </label>

@@ -41,9 +41,11 @@ export function Header() {
         const recentMembers = membersResult.data.results.slice(0, 5);
         recentMembers.forEach((member: any) => {
           addNotification({
-            type: 'success',
+            type: 'member',
             title: '🎉 New Member Joined',
             message: `${member.first_name || member.name || 'Someone'} ${member.last_name || ''} joined Mansa community`,
+            timestamp: new Date().toISOString(),
+            read: false,
           });
         });
       }
@@ -53,9 +55,11 @@ export function Header() {
         const recentApps = applicationsResult.data.results.slice(0, 5);
         recentApps.forEach((app: any) => {
           addNotification({
-            type: 'info',
+            type: 'application',
             title: '📋 New Project Application',
             message: `${app.applicant_name || 'Someone'} applied for a project`,
+            timestamp: new Date().toISOString(),
+            read: false,
           });
         });
       }
@@ -66,9 +70,11 @@ export function Header() {
         recentProjects.forEach((project: any) => {
           if (project.status === 'pending' || project.approval_status === 'pending') {
             addNotification({
-              type: 'warning',
+              type: 'project',
               title: '🚀 New Project Pending',
               message: `Project "${project.title}" awaiting approval`,
+              timestamp: new Date().toISOString(),
+              read: false,
             });
           }
         });
@@ -77,9 +83,11 @@ export function Header() {
       console.error('Error fetching notifications:', error);
       // Add error notification
       addNotification({
-        type: 'info',
+        type: 'member',
         title: '🎉 New Member Joined',
         message: 'Check your dashboard for recent activity',
+        timestamp: new Date().toISOString(),
+        read: false,
       });
     } finally {
       setLoading(false);
@@ -87,10 +95,11 @@ export function Header() {
   };
 
   // Format time ago
-  const formatTimeAgo = (timestamp: number): string => {
+  const formatTimeAgo = (timestamp: string | number): string => {
     try {
       const now = Date.now();
-      const diffMs = now - timestamp;
+      const timestampMs = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
+      const diffMs = now - timestampMs;
       const diffMins = Math.floor(diffMs / 60000);
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
@@ -99,7 +108,7 @@ export function Header() {
       if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
       if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
       if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-      return new Date(timestamp).toLocaleDateString();
+      return new Date(timestampMs).toLocaleDateString();
     } catch {
       return 'Recently';
     }
@@ -131,12 +140,14 @@ export function Header() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
+      case 'member':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'warning':
+      case 'project':
         return <AlertCircle className="h-5 w-5 text-amber-500" />;
-      case 'info':
+      case 'application':
         return <Info className="h-5 w-5 text-blue-500" />;
+      case 'email':
+        return <Info className="h-5 w-5 text-purple-500" />;
       default:
         return <Info className="h-5 w-5 text-gray-500" />;
     }
@@ -179,6 +190,8 @@ export function Header() {
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 sm:p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 group"
+              aria-label="Toggle notifications"
+              title="Notifications"
             >
               <Bell className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:scale-110 group-hover:rotate-12" />
               {unreadCount > 0 && (
@@ -270,6 +283,8 @@ export function Header() {
                                 <button
                                   onClick={() => deleteNotification(notification.id)}
                                   className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1"
+                                  aria-label="Delete notification"
+                                  title="Delete"
                                 >
                                   <X className="h-4 w-4" />
                                 </button>

@@ -110,6 +110,8 @@ export default function SettingsPage() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none resize-none"
                       rows={4}
                       defaultValue="Admin of Mansa to Mansa platform"
+                      aria-label="User bio"
+                      title="Enter your bio"
                     />
                   </div>
                 </div>
@@ -277,6 +279,8 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
                     rows={6}
                     defaultValue="Best regards,&#10;Mansa to Mansa Team&#10;&#10;Connecting African Professionals Worldwide"
+                    aria-label="Email signature"
+                    title="Enter your email signature"
                   />
                 </div>
                 <Button className="w-full py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
@@ -315,7 +319,13 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-600 mt-1">{notif.description}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer ml-4">
-                      <input type="checkbox" defaultChecked={notif.checked} className="sr-only peer" />
+                      <input 
+                        type="checkbox" 
+                        defaultChecked={notif.checked} 
+                        className="sr-only peer" 
+                        aria-label={`Toggle ${notif.label}`}
+                        title={`Enable or disable ${notif.label}`}
+                      />
                       <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-yellow-600 peer-checked:to-amber-600"></div>
                     </label>
                   </div>
@@ -363,7 +373,11 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-4">Items Per Page</label>
-                <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium">
+                <select 
+                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium"
+                  aria-label="Items per page"
+                  title="Select items per page"
+                >
                   <option value="10">10 items</option>
                   <option value="25" selected>25 items</option>
                   <option value="50">50 items</option>
@@ -373,7 +387,11 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-4">Sidebar Position</label>
-                <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium">
+                <select 
+                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium"
+                  aria-label="Sidebar position"
+                  title="Select sidebar position"
+                >
                   <option value="left" selected>Left Side</option>
                   <option value="right">Right Side</option>
                 </select>
