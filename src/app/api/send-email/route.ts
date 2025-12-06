@@ -7,14 +7,16 @@ const SMTP_CONFIG = {
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_USER || 'mansatomansa@gmail.com',
+    user: process.env.SMTP_USER || process.env.DEFAULT_FROM_EMAIL || '',
     pass: process.env.SMTP_PASSWORD || '', // Use app password for Gmail
   },
 };
 
+const DEFAULT_FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || process.env.SMTP_USER || 'noreply@mansa.com';
+
 export async function POST(request: NextRequest) {
   try {
-    const { recipients, subject, body, fromEmail = 'mansatomansa@gmail.com' } = await request.json();
+    const { recipients, subject, body, fromEmail = DEFAULT_FROM_EMAIL } = await request.json();
 
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json(

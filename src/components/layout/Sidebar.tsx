@@ -16,12 +16,15 @@ import {
   LogOut,
   Menu,
   X,
+  Briefcase,
+  ChevronRight,
   // MessageSquare, // Removed - WhatsApp functionality disabled
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   // { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
+  { name: 'Projects', href: '/dashboard/projects', icon: Briefcase },
   { name: 'Members', href: '/dashboard/members', icon: Users },
   { name: 'Project Applications', href: '/dashboard/applications', icon: FolderOpen },
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },
@@ -45,7 +48,7 @@ export function Sidebar() {
       <div className="lg:hidden fixed top-3 left-3 z-50">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 bg-white hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 shadow-lg border border-gray-200"
+          className="inline-flex items-center justify-center p-2.5 rounded-xl text-gray-700 bg-white hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg border border-gray-200 transition-all duration-200"
         >
           {mobileMenuOpen ? (
             <X className="block h-5 w-5" />
@@ -58,57 +61,81 @@ export function Sidebar() {
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)} />
+          <div 
+            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setMobileMenuOpen(false)} 
+          />
         </div>
       )}
 
       {/* Sidebar */}
       <div className={clsx(
-        "flex flex-col bg-gray-900 transition-transform duration-300 ease-in-out lg:translate-x-0",
-        "fixed lg:static inset-y-0 left-0 z-50 w-64 lg:w-64",
+        "flex flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 transition-all duration-300 ease-in-out lg:translate-x-0",
+        "fixed lg:static inset-y-0 left-0 z-50 w-72 lg:w-72 shadow-2xl",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
-      <div className="flex items-center justify-center h-16 px-4 bg-gray-800">
-        <h1 className="text-xl font-bold text-white">Mansa Admin</h1>
-      </div>
-      
-      <nav className="flex-1 px-2 py-4 space-y-1">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href;
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className={clsx(
-                'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
-                isActive
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-              )}
-            >
-              <item.icon
+        {/* Logo Section */}
+        <div className="flex items-center justify-center h-20 px-6 bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px]"></div>
+          <div className="relative">
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              Mansa <span className="font-light">Admin</span>
+            </h1>
+            <div className="h-0.5 w-12 bg-cyan-400 mt-1 rounded-full mx-auto"></div>
+          </div>
+        </div>
+        
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href;
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
                 className={clsx(
-                  'mr-3 h-5 w-5 flex-shrink-0',
-                  isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                  'group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 relative',
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                 )}
-              />
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-      
-      <div className="px-2 py-4 border-t border-gray-700">
-        <button
-          onClick={handleSignOut}
-          className="group flex items-center w-full px-2 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
-        >
-          <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-white" />
-          Sign Out
-        </button>
-      </div>
+              >
+                <div className="flex items-center">
+                  <item.icon
+                    className={clsx(
+                      'mr-3 h-5 w-5 flex-shrink-0 transition-transform duration-200',
+                      isActive ? 'text-white scale-110' : 'text-gray-400 group-hover:text-white group-hover:scale-110'
+                    )}
+                  />
+                  <span className={clsx(
+                    'transition-all duration-200',
+                    isActive ? 'font-semibold' : 'font-medium'
+                  )}>
+                    {item.name}
+                  </span>
+                </div>
+                {isActive && (
+                  <ChevronRight className="h-4 w-4 text-white/80" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+        
+        {/* Sign Out Section */}
+        <div className="px-3 py-4 border-t border-gray-800">
+          <button
+            onClick={handleSignOut}
+            className="group flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-300 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 border border-transparent hover:border-red-500/20"
+          >
+            <div className="flex items-center">
+              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-red-400 transition-all duration-200 group-hover:translate-x-1" />
+              <span>Sign Out</span>
+            </div>
+          </button>
+        </div>
       </div>
     </>
   );

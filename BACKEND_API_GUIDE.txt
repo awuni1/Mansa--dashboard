@@ -1,0 +1,3 @@
+# Mansa Backend API Structure
+
+Backend Location: /c/Users/USER/OneDrive/Desktop/mansa-backend

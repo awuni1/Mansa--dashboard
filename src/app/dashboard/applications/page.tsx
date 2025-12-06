@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { supabase, ProjectApplication, transformApplicationData } from '@/lib/supabase';
+import { api, ProjectApplication } from '@/lib/api';
 import { Search, Eye, Check, X, Mail } from 'lucide-react';
 
 export default function ApplicationsPage() {
@@ -16,41 +16,40 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<ProjectApplication | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     loadApplications();
-  }, []);
+  }, [currentPage, searchTerm]);
 
   useEffect(() => {
-    let filtered = applications.filter(app =>
-      (app.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.project_title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.project_description || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = applications;
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter(app => app.status === statusFilter);
     }
 
     setFilteredApplications(filtered);
-  }, [applications, searchTerm, statusFilter]);
+  }, [applications, statusFilter]);
 
   const loadApplications = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('project_applications')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await api.getProjectApplications({
+        page: currentPage,
+        search: searchTerm || undefined,
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading applications:', error);
+        return;
+      }
 
-      // Transform the data to match the expected interface
-      const transformedApplications = await Promise.all(
-        (data || []).map(app => transformApplicationData(app))
-      );
-
-      setApplications(transformedApplications);
+      if (data) {
+        setApplications(data.results);
+        setTotalCount(data.count);
+      }
     } catch (error) {
       console.error('Error loading applications:', error);
     } finally {
@@ -58,38 +57,45 @@ export default function ApplicationsPage() {
     }
   };
 
-  const updateApplicationStatus = async (id: string, status: 'approved' | 'rejected') => {
+  const updateApplicationStatus = async (id: string | number, status: 'approved' | 'denied') => {
     try {
-      const { error } = await supabase
-        .from('project_applications')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id);
+      const numericId = typeof id === 'string' ? parseInt(id) : id;
 
-      if (error) throw error;
-
-      setApplications(applications.map(app => 
-        app.id === id ? { ...app, status } : app
-      ));
-
-      const application = applications.find(app => app.id === id);
-      if (application) {
-        sendStatusEmail(application, status);
+      let response;
+      if (status === 'approved') {
+        response = await api.approveApplication(numericId);
+      } else {
+        response = await api.denyApplication(numericId);
       }
+
+      if (response.error) {
+        alert(`Failed to ${status} application: ${response.error}`);
+        return;
+      }
+
+      // Reload applications to get updated data
+      loadApplications();
+
+      alert(`Application ${status} successfully!`);
     } catch (error) {
       console.error('Error updating application status:', error);
       alert('Failed to update application status');
     }
   };
 
-  const sendStatusEmail = async (application: ProjectApplication, status: 'approved' | 'rejected' | 'pending') => {
-    const statusMessage = status === 'approved' 
+  const sendStatusEmail = async (application: ProjectApplication, status: string) => {
+    const statusMessage = status === 'approved'
       ? 'We are pleased to inform you that your project application has been approved!'
-      : status === 'rejected'
+      : status === 'denied'
       ? 'Thank you for your project application. After careful review, we are unable to approve it at this time.'
       : 'Thank you for your project application. We are currently reviewing it and will get back to you soon.';
-    
+
     const subject = `Mansa to Mansa - Project Application ${status.charAt(0).toUpperCase() + status.slice(1)}`;
-    const body = `Dear ${application.full_name || 'Applicant'},\n\n${statusMessage}\n\nProject: ${application.project_title || 'N/A'}\n\nWe will be in touch with next steps.\n\nBest regards,\nMansa to Mansa Team`;
+    const applicantName = application.applicant_name || application.full_name || 'Applicant';
+    const applicantEmail = application.applicant_email || application.email || '';
+    const projectTitle = application.project_title || 'N/A';
+
+    const body = `Dear ${applicantName},\n\n${statusMessage}\n\nProject: ${projectTitle}\n\nWe will be in touch with next steps.\n\nBest regards,\nMansa to Mansa Team`;
 
     try {
       const response = await fetch('/api/send-email', {
@@ -98,10 +104,9 @@ export default function ApplicationsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          recipients: [{ email: application.email, name: application.full_name || 'Applicant' }],
+          recipients: [{ email: applicantEmail, name: applicantName }],
           subject: subject,
-          body: body,
-          fromEmail: 'mansatomansa@gmail.com'
+          body: body
         }),
       });
 
@@ -111,16 +116,16 @@ export default function ApplicationsPage() {
         // Fallback to mailto
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
-        window.open(`mailto:${application.email}?subject=${encodedSubject}&body=${encodedBody}&from=mansatomansa@gmail.com`);
+        window.open(`mailto:${applicantEmail}?subject=${encodedSubject}&body=${encodedBody}`);
       } else {
-        alert('Email sent successfully from mansatomansa@gmail.com');
+        alert('Email sent successfully');
       }
     } catch (error) {
       console.error('Error sending email:', error);
       // Fallback to mailto
       const encodedSubject = encodeURIComponent(subject);
       const encodedBody = encodeURIComponent(body);
-      window.open(`mailto:${application.email}?subject=${encodedSubject}&body=${encodedBody}&from=mansatomansa@gmail.com`);
+      window.open(`mailto:${applicantEmail}?subject=${encodedSubject}&body=${encodedBody}`);
     }
   };
 
@@ -131,8 +136,11 @@ export default function ApplicationsPage() {
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
       case 'approved':
         return `${baseClasses} bg-green-100 text-green-800`;
+      case 'denied':
       case 'rejected':
         return `${baseClasses} bg-red-100 text-red-800`;
+      case 'waitlist':
+        return `${baseClasses} bg-blue-100 text-blue-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
@@ -146,6 +154,8 @@ export default function ApplicationsPage() {
     );
   }
 
+  const totalPages = Math.ceil(totalCount / 20); // Assuming 20 items per page
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -158,7 +168,7 @@ export default function ApplicationsPage() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Applications ({filteredApplications.length})</CardTitle>
+            <CardTitle>Applications ({totalCount})</CardTitle>
             <div className="flex items-center space-x-4">
               <select
                 value={statusFilter}
@@ -168,7 +178,8 @@ export default function ApplicationsPage() {
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                <option value="denied">Denied</option>
+                <option value="waitlist">Waitlist</option>
               </select>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -184,79 +195,112 @@ export default function ApplicationsPage() {
         </CardHeader>
         <CardContent>
           {filteredApplications.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Applicant</TableHead>
-                  <TableHead>Project Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Applied</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredApplications.map((application) => (
-                  <TableRow key={application.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{application.full_name || 'N/A'}</div>
-                        <div className="text-sm text-gray-500">{application.email || 'N/A'}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium max-w-xs truncate">
-                      {application.project_title || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <span className={getStatusBadge(application.status)}>
-                        {application.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(application.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedApplication(application);
-                            setShowModal(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {application.status === 'pending' && (
-                          <>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => updateApplicationStatus(application.id, 'approved')}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => updateApplicationStatus(application.id, 'rejected')}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => sendStatusEmail(application, application.status)}
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Applicant</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Applied</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredApplications.map((application) => {
+                    const applicantName = application.applicant_name || application.full_name || 'N/A';
+                    const applicantEmail = application.applicant_email || application.email || 'N/A';
+                    const appliedDate = application.applied_at || application.applied_date || application.created_at;
+
+                    return (
+                      <TableRow key={application.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{applicantName}</div>
+                            <div className="text-sm text-gray-500">{applicantEmail}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium max-w-xs truncate">
+                          {application.project_title || `Project #${application.project_id || application.project || 'N/A'}`}
+                        </TableCell>
+                        <TableCell>
+                          <span className={getStatusBadge(application.status)}>
+                            {application.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(appliedDate).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedApplication(application);
+                                setShowModal(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {application.status === 'pending' && (
+                              <>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => updateApplicationStatus(application.id, 'approved')}
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => updateApplicationStatus(application.id, 'denied')}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => sendStatusEmail(application, application.status)}
+                            >
+                              <Mail className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-gray-500">No applications found</p>
@@ -286,20 +330,20 @@ export default function ApplicationsPage() {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Applicant Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.full_name}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.applicant_name || selectedApplication.full_name || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.email}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.applicant_email || selectedApplication.email || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Project ID</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_id || 'N/A'}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_id || selectedApplication.project || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Skills</label>
@@ -307,35 +351,55 @@ export default function ApplicationsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Applied Date</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.applied_date || 'N/A'}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {new Date(selectedApplication.applied_at || selectedApplication.applied_date || selectedApplication.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Motivation</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedApplication.motivation || 'N/A'}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Project Title</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_title}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedApplication.project_title || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Project Description</label>
                     <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                      {selectedApplication.project_description}
+                      {selectedApplication.project_description || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedApplication.status || 'N/A'}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Applied On</label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {new Date(selectedApplication.created_at).toLocaleString()}
-                    </p>
-                  </div>
+                  {selectedApplication.reviewed_at && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Reviewed On</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {new Date(selectedApplication.reviewed_at).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                  {(selectedApplication.review_notes || selectedApplication.reviewer_notes) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Review Notes</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedApplication.review_notes || selectedApplication.reviewer_notes}
+                      </p>
+                    </div>
+                  )}
+                  {selectedApplication.application_data && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Additional Data</label>
+                      <pre className="mt-1 text-xs text-gray-900 bg-gray-50 p-2 rounded overflow-auto max-h-40">
+                        {JSON.stringify(selectedApplication.application_data, null, 2)}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -348,11 +412,11 @@ export default function ApplicationsPage() {
                     <Button
                       variant="danger"
                       onClick={() => {
-                        updateApplicationStatus(selectedApplication.id, 'rejected');
+                        updateApplicationStatus(selectedApplication.id, 'denied');
                         setShowModal(false);
                       }}
                     >
-                      Reject
+                      Deny
                     </Button>
                     <Button
                       onClick={() => {

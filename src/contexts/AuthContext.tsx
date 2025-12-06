@@ -1,14 +1,14 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { api, User } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signIn: async () => ({ error: 'Not implemented' }),
   signOut: async () => {},
+  isAdmin: false,
 });
 
 export const useAuth = () => {
@@ -31,43 +32,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+    const checkAuth = async () => {
+      const token = api.getToken();
+      if (token) {
+        const { data, error } = await api.getMe();
+        if (data && !error) {
+          setUser(data);
+        } else {
+          // Token is invalid, clear it
+          api.setToken(null);
+        }
+      }
       setLoading(false);
     };
 
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user || null);
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    setLoading(true);
+    const { data, error } = await api.login(email, password);
 
     if (error) {
-      return { error: error.message };
+      setLoading(false);
+      return { error };
     }
 
+    if (data) {
+      // Get user info after successful login
+      const { data: userData, error: userError } = await api.getMe();
+      if (userData && !userError) {
+        // Check if user is admin
+        if (userData.role !== 'admin' && userData.role !== 'super_admin') {
+          await api.logout();
+          setLoading(false);
+          return { error: 'Access denied. Admin privileges required.' };
+        }
+        setUser(userData);
+      } else {
+        await api.logout();
+        setLoading(false);
+        return { error: userError || 'Failed to get user information' };
+      }
+    }
+
+    setLoading(false);
     return {};
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await api.logout();
+    setUser(null);
   };
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
