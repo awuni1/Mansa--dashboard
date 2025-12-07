@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -10,6 +10,49 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  // Load avatar from localStorage on mount
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem('userAvatar');
+    if (savedAvatar) {
+      setAvatarUrl(savedAvatar);
+    }
+  }, []);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPG, PNG, or GIF)');
+      return;
+    }
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const avatarData = reader.result as string;
+      setAvatarUrl(avatarData);
+      // Save to localStorage so it persists across pages
+      localStorage.setItem('userAvatar', avatarData);
+      // Trigger custom event to update header immediately
+      window.dispatchEvent(new CustomEvent('avatarChanged', { detail: avatarData }));
+      alert('Avatar updated! Your new avatar will appear in the header.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    document.getElementById('avatar-upload')?.click();
+  };
 
   const handleSave = () => {
     setSaveStatus('saving');
@@ -75,11 +118,28 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="flex items-center gap-6 mb-6">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl leading-none">
-                    AU
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl leading-none overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      'AU'
+                    )}
                   </div>
                   <div>
-                    <Button variant="outline" className="mb-2">
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                      aria-label="Upload avatar image"
+                      title="Upload avatar image"
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="mb-2"
+                      onClick={triggerFileInput}
+                    >
                       <User className="h-4 w-4 mr-2" />
                       Change Avatar
                     </Button>

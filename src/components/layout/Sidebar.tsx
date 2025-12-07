@@ -26,7 +26,7 @@ const navigation = [
   // { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Projects', href: '/dashboard/projects', icon: Briefcase },
   { name: 'Members', href: '/dashboard/members', icon: Users },
-  { name: 'Project Applications', href: '/dashboard/applications', icon: FolderOpen },
+  // { name: 'Project Applications', href: '/dashboard/applications', icon: FolderOpen },
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },
   { name: 'Email Center', href: '/dashboard/emails', icon: Mail },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },

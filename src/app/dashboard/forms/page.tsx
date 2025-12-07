@@ -86,15 +86,21 @@ export default function FormsPage() {
 
   // Filter submissions based on search and type
   const filteredSubmissions = useMemo(() => {
-    let filtered = submissions.filter(submission => {
-      const searchLower = debouncedValue.toLowerCase();
-      return (
-        submission.name?.toLowerCase().includes(searchLower) ||
-        submission.email?.toLowerCase().includes(searchLower) ||
-        JSON.stringify(submission.form_data).toLowerCase().includes(searchLower)
-      );
-    });
+    let filtered = submissions;
 
+    // Apply search filter
+    if (debouncedValue.trim()) {
+      const searchLower = debouncedValue.toLowerCase();
+      filtered = filtered.filter(submission => {
+        return (
+          (submission.name?.toLowerCase() || '').includes(searchLower) ||
+          (submission.email?.toLowerCase() || '').includes(searchLower) ||
+          JSON.stringify(submission.form_data).toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    // Apply type filter
     if (typeFilter !== 'all') {
       filtered = filtered.filter(submission => submission.form_type === typeFilter);
     }

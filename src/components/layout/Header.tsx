@@ -3,12 +3,14 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/stores/useAppStore';
 import { useOfflineDetection } from '@/hooks/useOfflineDetection';
-import { Bell, User, Search, ChevronDown, CheckCircle, AlertCircle, Info, X, Users as UsersIcon, FolderOpen, WifiOff } from 'lucide-react';
+import { Bell, User, Search, ChevronDown, CheckCircle, AlertCircle, Info, X, Users as UsersIcon, FolderOpen, WifiOff, Settings, LogOut, UserCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const { isOnline } = useOfflineDetection();
   const { 
     notifications, 
@@ -20,9 +22,40 @@ export function Header() {
   } = useAppStore();
   
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
   const notificationRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Load avatar from localStorage
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem('userAvatar');
+    if (savedAvatar) {
+      setAvatarUrl(savedAvatar);
+    }
+
+    // Listen for avatar change event from settings page
+    const handleAvatarChange = (e: CustomEvent) => {
+      setAvatarUrl(e.detail);
+    };
+
+    // Listen for storage changes (when avatar is updated in settings)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userAvatar') {
+        setAvatarUrl(e.newValue);
+      }
+    };
+
+    window.addEventListener('avatarChanged', handleAvatarChange as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('avatarChanged', handleAvatarChange as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Fetch recent activities from backend
   const fetchNotifications = async () => {
@@ -327,22 +360,108 @@ export function Header() {
           
           {/* User Profile Dropdown */}
           <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-gray-200">
-            <div className="relative group cursor-pointer">
-              <div className="flex items-center space-x-3 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-all duration-200">
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center space-x-3 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <div className="relative">
-                  <div className="flex items-center justify-center h-9 w-9 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-200">
-                    <User className="h-5 w-5 text-white" />
+                  <div className="flex items-center justify-center h-9 w-9 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-5 w-5 text-white" />
+                    )}
                   </div>
                   <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
                 </div>
                 <div className="text-sm hidden sm:block">
                   <div className="font-semibold text-gray-900 flex items-center">
                     {user?.email?.split('@')[0] || 'Admin'}
-                    <ChevronDown className="h-3.5 w-3.5 ml-1 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <ChevronDown className={`h-3.5 w-3.5 ml-1 text-gray-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
                   </div>
                   <div className="text-xs text-gray-500 font-medium">Administrator</div>
                 </div>
-              </div>
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden z-50 animate-slideDown">
+                  {/* User Info Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-3 border-b border-blue-700">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center h-12 w-12 bg-white/20 rounded-xl overflow-hidden">
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-6 w-6 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white truncate">
+                          {user?.email?.split('@')[0] || 'Admin'}
+                        </p>
+                        <p className="text-xs text-blue-100 truncate">{user?.email || 'admin@mansa.com'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        router.push('/dashboard/settings');
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <UserCircle className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">My Profile</p>
+                        <p className="text-xs text-gray-500">View and edit profile</p>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        router.push('/dashboard/settings');
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Settings className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Settings</p>
+                        <p className="text-xs text-gray-500">Preferences & privacy</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        signOut();
+                        router.push('/login');
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-red-50 transition-colors text-left"
+                    >
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <LogOut className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-red-600">Log Out</p>
+                        <p className="text-xs text-gray-500">Sign out of your account</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
