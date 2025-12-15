@@ -128,7 +128,7 @@ export default function EventsManagementPage() {
     setActiveTab('create')
   }
 
-  const handleDelete = async (eventId: string) => {
+  const handleDelete = async (eventId: string | number) => {
     if (!confirm('Are you sure you want to delete this event?')) return
 
     try {
@@ -145,7 +145,7 @@ export default function EventsManagementPage() {
     }
   }
 
-  const moveEvent = async (eventId: string, newStatus: 'upcoming' | 'past') => {
+  const moveEvent = async (eventId: string | number, newStatus: 'upcoming' | 'past') => {
     try {
       const response = newStatus === 'past' 
         ? await api.moveEventToPast(eventId)
@@ -162,7 +162,7 @@ export default function EventsManagementPage() {
     }
   }
 
-  const togglePublish = async (eventId: string) => {
+  const togglePublish = async (eventId: string | number) => {
     try {
       const response = await api.toggleEventPublish(eventId)
 
