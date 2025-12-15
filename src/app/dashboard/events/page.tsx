@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -214,7 +214,7 @@ export default function EventsManagementPage() {
       {/* Tab Navigation */}
       <div className="flex gap-4 mb-6">
         <Button
-          variant={activeTab === 'list' ? 'default' : 'outline'}
+          variant={activeTab === 'list' ? 'primary' : 'outline'}
           onClick={() => {
             setActiveTab('list')
             resetForm()
@@ -223,7 +223,7 @@ export default function EventsManagementPage() {
           Events List
         </Button>
         <Button
-          variant={activeTab === 'create' ? 'default' : 'outline'}
+          variant={activeTab === 'create' ? 'primary' : 'outline'}
           onClick={() => setActiveTab('create')}
         >
           {editingEvent ? 'Edit Event' : 'Create New Event'}
@@ -362,7 +362,7 @@ export default function EventsManagementPage() {
                           )}
                           <Button
                             size="sm"
-                            variant="destructive"
+                            variant="danger"
                             onClick={() => handleDelete(event.id)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
