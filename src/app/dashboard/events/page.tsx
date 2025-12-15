@@ -10,29 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Clock, MapPin, Image as ImageIcon, Upload, Trash2, Eye, Edit, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
-
-interface Event {
-  id: string
-  title: string
-  description: string
-  category: string
-  date: string
-  start_time: string
-  end_time: string
-  location: string
-  is_virtual: boolean
-  virtual_link?: string
-  status: 'upcoming' | 'past'
-  max_attendees?: number
-  attendee_count: number
-  flyer?: string
-  images: Array<{
-    id: string
-    image: string
-    caption: string
-  }>
-  published: boolean
-}
+import api, { Event } from '@/lib/api'
 
 export default function EventsManagementPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -65,11 +43,11 @@ export default function EventsManagementPage() {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/events')
-      if (response.ok) {
-        const data = await response.json()
-        setEvents(data)
+      const response = await api.getEvents()
+      if (response.data) {
+        setEvents(response.data)
+      } else if (response.error) {
+        console.error('Error fetching events:', response.error)
       }
     } catch (error) {
       console.error('Error fetching events:', error)
@@ -95,21 +73,21 @@ export default function EventsManagementPage() {
     })
 
     try {
-      const url = editingEvent ? `/api/events/${editingEvent.id}/` : '/api/events/'
-      const method = editingEvent ? 'PUT' : 'POST'
-      
-      const response = await fetch(url, {
-        method,
-        body: eventData,
-      })
+      const response = editingEvent 
+        ? await api.updateEvent(editingEvent.id, eventData)
+        : await api.createEvent(eventData)
 
-      if (response.ok) {
+      if (response.data) {
         await fetchEvents()
         resetForm()
         setActiveTab('list')
+      } else if (response.error) {
+        console.error('Error saving event:', response.error)
+        alert(`Failed to ${editingEvent ? 'update' : 'create'} event: ${response.error}`)
       }
     } catch (error) {
       console.error('Error saving event:', error)
+      alert('An unexpected error occurred. Please try again.')
     }
   }
 
@@ -154,12 +132,13 @@ export default function EventsManagementPage() {
     if (!confirm('Are you sure you want to delete this event?')) return
 
     try {
-      const response = await fetch(`/api/events/${eventId}/`, {
-        method: 'DELETE',
-      })
+      const response = await api.deleteEvent(eventId)
 
-      if (response.ok) {
+      if (response.data) {
         await fetchEvents()
+      } else if (response.error) {
+        console.error('Error deleting event:', response.error)
+        alert(`Failed to delete event: ${response.error}`)
       }
     } catch (error) {
       console.error('Error deleting event:', error)
@@ -168,13 +147,15 @@ export default function EventsManagementPage() {
 
   const moveEvent = async (eventId: string, newStatus: 'upcoming' | 'past') => {
     try {
-      const endpoint = newStatus === 'past' ? 'move_to_past' : 'move_to_upcoming'
-      const response = await fetch(`/api/events/${eventId}/${endpoint}/`, {
-        method: 'POST',
-      })
+      const response = newStatus === 'past' 
+        ? await api.moveEventToPast(eventId)
+        : await api.moveEventToUpcoming(eventId)
 
-      if (response.ok) {
+      if (response.data) {
         await fetchEvents()
+      } else if (response.error) {
+        console.error('Error moving event:', response.error)
+        alert(`Failed to move event: ${response.error}`)
       }
     } catch (error) {
       console.error('Error moving event:', error)
@@ -183,12 +164,13 @@ export default function EventsManagementPage() {
 
   const togglePublish = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/events/${eventId}/toggle_publish/`, {
-        method: 'POST',
-      })
+      const response = await api.toggleEventPublish(eventId)
 
-      if (response.ok) {
+      if (response.data) {
         await fetchEvents()
+      } else if (response.error) {
+        console.error('Error toggling publish:', response.error)
+        alert(`Failed to toggle publish: ${response.error}`)
       }
     } catch (error) {
       console.error('Error toggling publish:', error)

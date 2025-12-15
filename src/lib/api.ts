@@ -298,6 +298,98 @@ class ApiClient {
     });
   }
 
+  // Event management methods
+  async getEvents(params?: { page?: number; search?: string; status?: string; published?: boolean }): Promise<ApiResponse<Event[]>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.published !== undefined) searchParams.set('published', params.published.toString());
+
+    const query = searchParams.toString();
+    return this.request<Event[]>(`/events/${query ? `?${query}` : ''}`);
+  }
+
+  async createEvent(eventData: FormData): Promise<ApiResponse<Event>> {
+    const url = `${this.baseUrl}/events/`;
+    const headers: Record<string, string> = {};
+    
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: eventData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: data.detail || data.message || 'Request failed' };
+      }
+
+      return { data };
+    } catch (error) {
+      console.error('API request failed:', error);
+      return { error: error instanceof Error ? error.message : 'Network error' };
+    }
+  }
+
+  async updateEvent(eventId: string | number, eventData: FormData): Promise<ApiResponse<Event>> {
+    const url = `${this.baseUrl}/events/${eventId}/`;
+    const headers: Record<string, string> = {};
+    
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: eventData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: data.detail || data.message || 'Request failed' };
+      }
+
+      return { data };
+    } catch (error) {
+      console.error('API request failed:', error);
+      return { error: error instanceof Error ? error.message : 'Network error' };
+    }
+  }
+
+  async deleteEvent(eventId: string | number): Promise<ApiResponse<{ detail: string }>> {
+    return this.request<{ detail: string }>(`/events/${eventId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async moveEventToPast(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/move_to_past/`, {
+      method: 'POST',
+    });
+  }
+
+  async moveEventToUpcoming(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/move_to_upcoming/`, {
+      method: 'POST',
+    });
+  }
+
+  async toggleEventPublish(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/toggle_publish/`, {
+      method: 'POST',
+    });
+  }
+
   async deleteApplication(applicationId: number): Promise<ApiResponse<{ detail: string }>> {
     return this.request<{ detail: string }>(`/applications/${applicationId}/`, {
       method: 'DELETE',
@@ -615,6 +707,32 @@ export interface MemberLocationData {
       membershipType?: string;
     }>;
   }>;
+}
+
+export interface Event {
+  id: string | number;
+  title: string;
+  description: string;
+  category: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location: string;
+  is_virtual: boolean;
+  virtual_link?: string;
+  status: 'upcoming' | 'past';
+  max_attendees?: number;
+  attendee_count: number;
+  flyer?: string;
+  images: Array<{
+    id: string;
+    image: string;
+    caption: string;
+  }>;
+  published: boolean;
+  created_by?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Create and export API client instance
