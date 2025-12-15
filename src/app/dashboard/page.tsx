@@ -4,6 +4,33 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { api, Member, ProjectApplication, Project, AnalyticsOverview, CohortApplication } from '@/lib/api';
 import { Users, FolderOpen, Mail, TrendingUp, MessageSquare, FileText, UserCheck, Clock, GraduationCap, FlaskConical, Globe } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for WorldMap to avoid SSR issues
+const WorldMap = dynamic(() => import('@/components/dashboard/WorldMap'), {
+  ssr: false,
+  loading: () => (
+    <Card className="h-[700px] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading world map...</p>
+      </div>
+    </Card>
+  ),
+});
+
+// Dynamic import for GlobalStatistics
+const GlobalStatistics = dynamic(() => import('@/components/dashboard/GlobalStatistics'), {
+  ssr: false,
+  loading: () => (
+    <Card className="h-[400px] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading statistics...</p>
+      </div>
+    </Card>
+  ),
+});
 
 interface DashboardStats {
   totalMembers: number;
@@ -35,6 +62,7 @@ export default function DashboardPage() {
   const [recentMembers, setRecentMembers] = useState<Member[]>([]);
   const [recentApplications, setRecentApplications] = useState<ProjectApplication[]>([]);
   const [recentProjects, setRecentProjects] = useState<Project[]>([]);
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,7 +78,8 @@ export default function DashboardPage() {
         projectsResult,
         researchResult,
         educationResult,
-        overviewResult
+        overviewResult,
+        locationsResult
       ] = await Promise.all([
         api.getPlatformMembers(),
         api.getCommunityMembers(),
@@ -59,6 +88,7 @@ export default function DashboardPage() {
         api.getResearchCohort(),
         api.getEducationCohort(),
         api.getAnalyticsOverview(),
+        api.getMemberLocations(), // Get ALL members for map/statistics
       ]);
 
       // Get total counts from paginated responses
@@ -95,6 +125,29 @@ export default function DashboardPage() {
       setRecentMembers(members.slice(0, 5));
       setRecentApplications(applications.slice(0, 5));
       setRecentProjects(projects.slice(0, 5));
+      
+      // Use locations endpoint data for world map and statistics (includes ALL members)
+      const allMembersData: Member[] = [];
+      if (locationsResult.data?.locations) {
+        locationsResult.data.locations.forEach((location: any) => {
+          location.members.forEach((member: any) => {
+            allMembersData.push({
+              id: member.id,
+              name: member.name,
+              email: member.email,
+              country: location.country,
+              city: member.city || '',
+              membershiptype: member.membershipType || '',
+              gender: member.gender || '',
+              occupation: member.occupation || '',
+              industry: member.industry || '',
+              created_at: member.created_at || new Date().toISOString(),
+            } as Member);
+          });
+        });
+      }
+      
+      setAllMembers(allMembersData);
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -483,6 +536,34 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Global Statistics - Pie Charts and Analytics */}
+      <GlobalStatistics 
+        members={allMembers.map(m => ({
+          id: m.id,
+          name: m.name,
+          country: m.country,
+          city: m.city,
+          membershipType: m.membershiptype,
+          gender: m.gender,
+          occupation: m.occupation,
+          industry: m.industry
+        }))} 
+        className="w-full"
+      />
+
+      {/* World Map - Global Member Distribution */}
+      <WorldMap 
+        members={allMembers.map(m => ({
+          id: m.id,
+          name: m.name,
+          email: m.email,
+          country: m.country,
+          city: m.city,
+          membershipType: m.membershiptype
+        }))} 
+        className="w-full" 
+      />
 
       {/* Quick Actions */}
       <Card className="border-none shadow-md sm:shadow-lg bg-gradient-to-br from-slate-50 to-gray-100">

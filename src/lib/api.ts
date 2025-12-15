@@ -212,6 +212,10 @@ class ApiClient {
     return this.request<PaginatedResponse<Member>>(`/platform/community-members/${query ? `?${query}` : ''}`);
   }
 
+  async getMemberLocations(): Promise<ApiResponse<MemberLocationData>> {
+    return this.request<MemberLocationData>('/platform/members/locations/');
+  }
+
   async getResearchCohort(params?: { page?: number; search?: string }): Promise<ApiResponse<PaginatedResponse<CohortApplication>>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', params.page.toString());
@@ -595,6 +599,22 @@ export interface RecentActivity {
   created_at: string;
   entity_id?: number;
   entity_type?: string;
+}
+
+export interface MemberLocationData {
+  total_members: number;
+  total_countries: number;
+  locations: Array<{
+    country: string;
+    count: number;
+    members: Array<{
+      id: string;
+      name: string;
+      email: string;
+      city?: string;
+      membershipType?: string;
+    }>;
+  }>;
 }
 
 // Create and export API client instance
