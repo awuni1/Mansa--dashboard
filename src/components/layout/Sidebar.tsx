@@ -18,6 +18,7 @@ import {
   X,
   Briefcase,
   ChevronRight,
+  Calendar,
   // MessageSquare, // Removed - WhatsApp functionality disabled
 } from 'lucide-react';
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   // { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Projects', href: '/dashboard/projects', icon: Briefcase },
+  { name: 'Events', href: '/dashboard/events', icon: Calendar },
   { name: 'Members', href: '/dashboard/members', icon: Users },
   // { name: 'Project Applications', href: '/dashboard/applications', icon: FolderOpen },
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },
