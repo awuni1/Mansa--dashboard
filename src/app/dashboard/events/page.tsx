@@ -45,12 +45,18 @@ export default function EventsManagementPage() {
       setLoading(true)
       const response = await api.getEvents()
       if (response.data) {
-        setEvents(response.data)
+        // Ensure we have an array - handle both direct array and paginated response
+        const eventsData = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data as any).results || []
+        setEvents(eventsData)
       } else if (response.error) {
         console.error('Error fetching events:', response.error)
+        setEvents([]) // Set empty array on error
       }
     } catch (error) {
       console.error('Error fetching events:', error)
+      setEvents([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -184,10 +190,10 @@ export default function EventsManagementPage() {
     }
   }
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = Array.isArray(events) ? events.filter(event => {
     if (filterStatus === 'all') return true
     return event.status === filterStatus
-  })
+  }) : []
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
