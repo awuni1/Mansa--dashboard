@@ -81,9 +81,16 @@ export default function EventsManagementPage() {
         await fetchEvents()
         resetForm()
         setActiveTab('list')
+        alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
       } else if (response.error) {
         console.error('Error saving event:', response.error)
-        alert(`Failed to ${editingEvent ? 'update' : 'create'} event: ${response.error}`)
+        // Check if it's an authentication error
+        if (response.error.includes('Session expired') || response.error.includes('Authentication')) {
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/login'
+        } else {
+          alert(`Failed to ${editingEvent ? 'update' : 'create'} event: ${response.error}`)
+        }
       }
     } catch (error) {
       console.error('Error saving event:', error)

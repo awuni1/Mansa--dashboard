@@ -57,7 +57,7 @@ class ApiClient {
       });
 
       if (response.status === 401) {
-        // Token expired, try to refresh
+        // Token expired or invalid, try to refresh
         const refreshed = await this.refreshToken();
         if (refreshed) {
           // Retry original request with new token
@@ -66,24 +66,34 @@ class ApiClient {
             ...options,
             headers,
           });
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            return { error: errorData.detail || errorData.message || 'Request failed' };
+          }
+          
           const data = await retryResponse.json();
           return { data };
         } else {
-          // Refresh failed, redirect to login
+          // Refresh failed, clear tokens and redirect to login
           this.setToken(null);
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            localStorage.removeItem('refresh_token');
+            // Don't redirect immediately if we're already on login page
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
           }
-          return { error: 'Authentication failed' };
+          return { error: 'Session expired. Please log in again.' };
         }
       }
 
-      const data = await response.json();
-
       if (!response.ok) {
-        return { error: data.detail || data.message || 'Request failed' };
+        const errorData = await response.json().catch(() => ({}));
+        return { error: errorData.detail || errorData.message || 'Request failed' };
       }
 
+      const data = await response.json();
       return { data };
     } catch (error) {
       console.error('API request failed:', error);
@@ -490,6 +500,151 @@ class ApiClient {
   // Recent activities for notifications
   async getRecentActivities(limit: number = 10): Promise<ApiResponse<RecentActivity[]>> {
     return this.request<RecentActivity[]>(`/admin/recent-activities/?limit=${limit}`);
+  }
+
+  // Event management methods
+  async getEvents(): Promise<ApiResponse<Event[]>> {
+    return this.request<Event[]>('/events/');
+  }
+
+  async createEvent(eventData: FormData): Promise<ApiResponse<Event>> {
+    // For FormData, we need to handle the request differently
+    const url = `${this.baseUrl}/events/`;
+    const headers: Record<string, string> = {};
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: eventData,
+      });
+
+      if (response.status === 401) {
+        // Token expired, try refresh
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          headers['Authorization'] = `Bearer ${this.token}`;
+          const retryResponse = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: eventData,
+          });
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            return { error: errorData.detail || errorData.message || 'Request failed' };
+          }
+          
+          const data = await retryResponse.json();
+          return { data };
+        } else {
+          this.setToken(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('refresh_token');
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
+          }
+          return { error: 'Session expired. Please log in again.' };
+        }
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { error: errorData.detail || errorData.message || 'Request failed' };
+      }
+
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      console.error('API request failed:', error);
+      return { error: error instanceof Error ? error.message : 'Network error' };
+    }
+  }
+
+  async updateEvent(eventId: string | number, eventData: FormData): Promise<ApiResponse<Event>> {
+    const url = `${this.baseUrl}/events/${eventId}/`;
+    const headers: Record<string, string> = {};
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        body: eventData,
+      });
+
+      if (response.status === 401) {
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          headers['Authorization'] = `Bearer ${this.token}`;
+          const retryResponse = await fetch(url, {
+            method: 'PATCH',
+            headers,
+            body: eventData,
+          });
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            return { error: errorData.detail || errorData.message || 'Request failed' };
+          }
+          
+          const data = await retryResponse.json();
+          return { data };
+        } else {
+          this.setToken(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('refresh_token');
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
+          }
+          return { error: 'Session expired. Please log in again.' };
+        }
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { error: errorData.detail || errorData.message || 'Request failed' };
+      }
+
+      const data = await response.json();
+      return { data };
+    } catch (error) {
+      console.error('API request failed:', error);
+      return { error: error instanceof Error ? error.message : 'Network error' };
+    }
+  }
+
+  async deleteEvent(eventId: string | number): Promise<ApiResponse<{ detail: string }>> {
+    return this.request<{ detail: string }>(`/events/${eventId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async moveEventToPast(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/move-to-past/`, {
+      method: 'POST',
+    });
+  }
+
+  async moveEventToUpcoming(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/move-to-upcoming/`, {
+      method: 'POST',
+    });
+  }
+
+  async toggleEventPublish(eventId: string | number): Promise<ApiResponse<Event>> {
+    return this.request<Event>(`/events/${eventId}/toggle-publish/`, {
+      method: 'POST',
+    });
   }
 }
 
