@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'mansatomansa.com'],
+    domains: ['localhost', 'mansatomansa.com', 'adnteftmqytcnieqmlma.supabase.co'],
   },
   // During build, show warnings but don't fail
   eslint: {

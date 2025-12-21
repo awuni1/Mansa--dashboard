@@ -72,6 +72,12 @@ class ApiClient {
             return { error: errorData.detail || errorData.message || 'Request failed' };
           }
           
+          // Handle empty response (e.g., 204 No Content for DELETE requests)
+          const contentType = retryResponse.headers.get('content-type');
+          if (retryResponse.status === 204 || !contentType || !contentType.includes('application/json')) {
+            return { data: {} as T };
+          }
+
           const data = await retryResponse.json();
           return { data };
         } else {
@@ -91,6 +97,12 @@ class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return { error: errorData.detail || errorData.message || 'Request failed' };
+      }
+
+      // Handle empty response (e.g., 204 No Content for DELETE requests)
+      const contentType = response.headers.get('content-type');
+      if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
+        return { data: {} as T };
       }
 
       const data = await response.json();
@@ -335,10 +347,46 @@ class ApiClient {
         body: eventData,
       });
 
-      const data = await response.json();
+      if (response.status === 401) {
+        // Token expired or invalid, try to refresh
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${this.token}`;
+          const retryResponse = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: eventData,
+          });
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            return { error: errorData.detail || errorData.message || 'Request failed' };
+          }
+          
+          const data = await retryResponse.json();
+          return { data };
+        } else {
+          // Refresh failed, clear tokens and redirect to login
+          this.setToken(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('refresh_token');
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
+          }
+          return { error: 'Session expired. Please log in again.' };
+        }
+      }
+
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        return { error: data.detail || data.message || 'Request failed' };
+        // Log full error details for debugging
+        console.error('Backend validation error:', data);
+        // Try to extract detailed error messages
+        const errorMessage = data.detail || data.message || JSON.stringify(data) || 'Request failed';
+        return { error: errorMessage };
       }
 
       return { data };
@@ -363,10 +411,46 @@ class ApiClient {
         body: eventData,
       });
 
-      const data = await response.json();
+      if (response.status === 401) {
+        // Token expired or invalid, try to refresh
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${this.token}`;
+          const retryResponse = await fetch(url, {
+            method: 'PUT',
+            headers,
+            body: eventData,
+          });
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            return { error: errorData.detail || errorData.message || 'Request failed' };
+          }
+          
+          const data = await retryResponse.json();
+          return { data };
+        } else {
+          // Refresh failed, clear tokens and redirect to login
+          this.setToken(null);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('refresh_token');
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?error=session_expired';
+            }
+          }
+          return { error: 'Session expired. Please log in again.' };
+        }
+      }
+
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        return { error: data.detail || data.message || 'Request failed' };
+        // Log full error details for debugging
+        console.error('Backend validation error:', data);
+        // Try to extract detailed error messages
+        const errorMessage = data.detail || data.message || JSON.stringify(data) || 'Request failed';
+        return { error: errorMessage };
       }
 
       return { data };

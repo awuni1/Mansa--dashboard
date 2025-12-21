@@ -67,7 +67,18 @@ export default function EventsManagementPage() {
     
     const eventData = new FormData()
     Object.entries(formData).forEach(([key, value]) => {
-      eventData.append(key, String(value))
+      // Handle max_attendees - convert empty string to empty value, or keep the number
+      if (key === 'max_attendees') {
+        if (value && String(value).trim() !== '') {
+          eventData.append(key, String(value))
+        }
+        // Don't append if empty - let backend handle as null
+      } else if (key === 'is_virtual' || key === 'published') {
+        // Handle booleans - convert to proper boolean values
+        eventData.append(key, value ? 'true' : 'false')
+      } else {
+        eventData.append(key, String(value))
+      }
     })
     
     if (flyerFile) {
@@ -90,6 +101,7 @@ export default function EventsManagementPage() {
         alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
       } else if (response.error) {
         console.error('Error saving event:', response.error)
+        console.error('Full response:', response)
         // Check if it's an authentication error
         if (response.error.includes('Session expired') || response.error.includes('Authentication')) {
           alert('Your session has expired. Please log in again.')
