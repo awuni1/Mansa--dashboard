@@ -443,28 +443,30 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
+    if (!confirm('⚠️ Are you sure you want to delete this project? This will permanently remove it from both the dashboard and the main website. This action cannot be undone.')) return;
 
     setActionLoading(projectId);
     try {
+      // Delete from Supabase (which is what the main website uses)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/projects/${projectId}/`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.ok) {
+      if (response.ok || response.status === 204) {
         loadProjects();
-        alert('Project deleted successfully!');
+        alert('✅ Project deleted successfully! Changes will appear on the main website immediately.');
       } else {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to delete project:', error);
-        alert(`Failed to delete project: ${error.detail || 'Unknown error'}`);
+        alert(`❌ Failed to delete project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting project:', error);
-      alert('Error deleting project');
+      alert('❌ Error deleting project. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -645,6 +647,10 @@ export default function ProjectsPage() {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Project Management</h1>
             </div>
             <p className="text-blue-100 text-sm sm:text-base lg:text-lg">Manage and oversee all your projects</p>
+            <p className="text-blue-50 text-xs sm:text-sm mt-1 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" />
+              Changes made here will appear immediately on the main website
+            </p>
           </div>
           <Button
             onClick={() => {
@@ -792,6 +798,9 @@ export default function ProjectsPage() {
                     <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Location
                     </th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                      Manage
+                    </th>
                     <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
@@ -849,9 +858,29 @@ export default function ProjectsPage() {
                               setModalOpen(true);
                             }}
                             disabled={actionLoading === project.id}
-                            title="Edit Project"
+                            className="flex items-center space-x-1 hover:bg-blue-50 hover:border-blue-500 dark:hover:bg-blue-900"
+                            title="Edit project details"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-3.5 w-3.5" />
+                            <span className="text-xs font-medium">Edit</span>
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handleDeleteProject(project.id)}
+                            disabled={actionLoading === project.id}
+                            className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white"
+                            title="Delete project permanently"
+                          >
+                            {actionLoading === project.id ? (
+                              <Clock className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <>
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span className="text-xs font-medium">Delete</span>
+                              </>
+                            )}
                           </Button>
 
                           {/* Status transition buttons */}
@@ -949,21 +978,6 @@ export default function ProjectsPage() {
                               </Button>
                             </>
                           )}
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteProject(project.id)}
-                            disabled={actionLoading === project.id}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Delete Project"
-                          >
-                            {actionLoading === project.id ? (
-                              <Clock className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3 w-3" />
-                            )}
-                          </Button>
                         </div>
                       </td>
                     </tr>
