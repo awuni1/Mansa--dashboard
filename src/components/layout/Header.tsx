@@ -165,6 +165,9 @@ export function Header() {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside);
