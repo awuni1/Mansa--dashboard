@@ -123,22 +123,24 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
 
   // Determine marker size based on zoom level
   const getMarkerSize = (zoom: number) => {
-    if (zoom >= 4) return 8; // Very zoomed in - show larger dots
-    if (zoom >= 2.5) return 6; // Medium zoom
-    if (zoom >= 1.5) return 4; // Light zoom
+    if (zoom >= 6) return 10; // Very zoomed in - show larger dots for individual visibility
+    if (zoom >= 4) return 8; // City level - clear individual dots
+    if (zoom >= 2.5) return 6; // Regional zoom
+    if (zoom >= 1.5) return 4; // Country zoom
     return 3; // Default global view
   };
 
   // Determine if we should show city labels
-  const shouldShowCityLabels = position.zoom >= 3;
+  const shouldShowCityLabels = position.zoom >= 2.5; // Show labels at medium zoom
+  const shouldShowCountryLabels = position.zoom < 2; // Show country info at low zoom
 
   const markerSize = getMarkerSize(position.zoom);
 
-  // Zoom controls
+  // Zoom controls with better increments
   const handleZoomIn = () => {
     setPosition(prev => ({
       ...prev,
-      zoom: Math.min(prev.zoom * 1.5, 8)
+      zoom: Math.min(prev.zoom * 1.5, 10) // Increased max zoom to 10
     }));
   };
 
@@ -153,6 +155,14 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
     setPosition({ coordinates: [0, 20], zoom: 1 });
   };
 
+  // Zoom to specific location (city or country)
+  const handleZoomToLocation = (lng: number, lat: number, zoomLevel: number = 5) => {
+    setPosition({
+      coordinates: [lng, lat],
+      zoom: zoomLevel
+    });
+  };
+
   return (
     <Card className={`overflow-hidden ${className}`}>
       <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
@@ -164,7 +174,7 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
             <div>
               <CardTitle className="text-xl font-bold">Global Member Distribution</CardTitle>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Every dot represents an individual member • Zoom in to see cities
+                Each dot = 1 member • Zoom in to see individual cities and towns
               </p>
             </div>
           </div>
@@ -195,12 +205,15 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
           <div className="space-y-2 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-              <span>Individual member location</span>
+              <span>1 dot = 1 member</span>
             </div>
             <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <p className="font-semibold mb-1">Current Zoom: {position.zoom.toFixed(1)}x</p>
+              <p className="font-semibold mb-1">Zoom: {position.zoom.toFixed(1)}x</p>
               <p className="text-gray-600 dark:text-gray-400">
-                {position.zoom >= 3 ? '🏙️ City level detail' : position.zoom >= 1.5 ? '🌍 Country level view' : '🗺️ Global overview'}
+                {position.zoom >= 4 ? '🏘️ Street/City view' : 
+                 position.zoom >= 2.5 ? '🏙️ City view' :
+                 position.zoom >= 1.5 ? '🌍 Country view' : 
+                 '🗺️ Global view'}
               </p>
             </div>
           </div>
@@ -238,11 +251,14 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
 
         {/* Map Controls Info */}
         <div className="absolute bottom-4 right-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 text-xs text-gray-600 dark:text-gray-400">
-          <p className="font-semibold mb-1">Map Controls:</p>
-          <p>🖱️ Click & drag to pan</p>
-          <p>🔍 Scroll to zoom</p>
-          <p>📍 Click dots for member info</p>
-          <p>🎯 Use buttons to zoom</p>
+          <p className="font-semibold mb-1">🗺️ Map Controls:</p>
+          <p>🖱️ Drag to pan map</p>
+          <p>🔍 Scroll wheel to zoom</p>
+          <p>📍 Click dot for member details</p>
+          <p>➕➖ Use buttons for precise zoom</p>
+          <p className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 font-semibold text-blue-600">
+            Zoom in to see cities & towns!
+          </p>
         </div>
 
         <div className="relative" style={{ height: '650px' }}>
@@ -258,7 +274,7 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
               zoom={position.zoom}
               center={position.coordinates}
               onMoveEnd={(newPosition) => setPosition(newPosition)}
-              maxZoom={8}
+              maxZoom={10}
               minZoom={1}
             >
               {/* World Geography */}
@@ -301,6 +317,7 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
               {/* Individual Member Markers */}
               {processedMembers.map((member, index) => {
                 const isSelected = selectedMember === member.id;
+                const showLabel = shouldShowCityLabels && member.city;
 
                 return (
                   <Marker
@@ -310,37 +327,43 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
                     {/* Pulse animation for selected marker */}
                     {isSelected && (
                       <circle
-                        r={markerSize + 3}
+                        r={markerSize + 4}
                         fill="#3b82f6"
                         opacity={0.3}
                         className="animate-ping"
                       />
                     )}
                     
-                    {/* Main marker dot */}
+                    {/* Main marker dot - Represents 1 member */}
                     <circle
                       r={markerSize}
-                      fill="#3b82f6"
+                      fill={isSelected ? "#ef4444" : "#3b82f6"}
                       stroke="white"
-                      strokeWidth={1.5}
-                      className="cursor-pointer transition-all duration-200 hover:scale-150"
-                      onClick={() => setSelectedMember(isSelected ? null : member.id)}
+                      strokeWidth={position.zoom >= 4 ? 2 : 1.5}
+                      className="cursor-pointer transition-all duration-200 hover:scale-150 hover:fill-red-500"
+                      onClick={() => {
+                        setSelectedMember(isSelected ? null : member.id);
+                        // Zoom to member location when clicked
+                        if (!isSelected && position.zoom < 4) {
+                          handleZoomToLocation(member.lng, member.lat, 5);
+                        }
+                      }}
                       style={{
                         filter: isSelected 
-                          ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8))' 
-                          : 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                          ? 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.9))' 
+                          : 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
                       }}
                     />
 
-                    {/* City/Location labels at high zoom */}
-                    {shouldShowCityLabels && member.city && (
+                    {/* City/Location labels at medium-high zoom */}
+                    {showLabel && (
                       <text
                         textAnchor="middle"
-                        y={markerSize + 12}
-                        className="text-[10px] font-semibold pointer-events-none"
+                        y={markerSize + 14}
+                        className="text-[11px] font-bold pointer-events-none select-none"
                         fill="#1e40af"
                         style={{
-                          textShadow: '0 0 3px white, 0 0 3px white, 0 0 3px white',
+                          textShadow: '0 0 4px white, 0 0 4px white, 0 0 4px white, 0 0 4px white',
                         }}
                       >
                         {member.city}
@@ -351,30 +374,30 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
                     {isSelected && (
                       <g>
                         <foreignObject
-                          x={-120}
-                          y={markerSize + 15}
-                          width="240"
+                          x={-130}
+                          y={markerSize + 18}
+                          width="260"
                           height="auto"
                         >
-                          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 border-2 border-blue-500">
+                          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-4 border-2 border-red-500 animate-in fade-in duration-200">
                             <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
-                                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                <Users className="h-6 w-6 text-white" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                                <p className="font-bold text-base text-gray-900 dark:text-white truncate">
                                   {member.name}
                                 </p>
-                                <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1">
-                                  <MapPin className="h-3 w-3" />
+                                <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1">
+                                  <MapPin className="h-4 w-4" />
                                   {member.displayLocation}
                                 </p>
                                 {member.membershipType && (
-                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
                                     {member.membershipType}
                                   </p>
                                 )}
-                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">
+                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 truncate">
                                   {member.email}
                                 </p>
                               </div>

@@ -78,17 +78,15 @@ export default function DashboardPage() {
         projectsResult,
         researchResult,
         educationResult,
-        overviewResult,
-        locationsResult
+        overviewResult
       ] = await Promise.all([
-        api.getPlatformMembers(),
-        api.getCommunityMembers(),
-        api.getPlatformApplications(),
-        api.getPlatformProjects(),
-        api.getResearchCohort(),
-        api.getEducationCohort(),
-        api.getAnalyticsOverview(),
-        api.getMemberLocations(), // Get ALL members for map/statistics
+        api.getPlatformMembers({ page: 1 }),
+        api.getCommunityMembers({ page: 1 }),
+        api.getPlatformApplications({ page: 1 }),
+        api.getPlatformProjects({ page: 1 }),
+        api.getResearchCohort({ page: 1 }),
+        api.getEducationCohort({ page: 1 }),
+        api.getAnalyticsOverview()
       ]);
 
       // Get total counts from paginated responses
@@ -126,26 +124,43 @@ export default function DashboardPage() {
       setRecentApplications(applications.slice(0, 5));
       setRecentProjects(projects.slice(0, 5));
       
-      // Use locations endpoint data for world map and statistics (includes ALL members)
+      // Fetch ALL members for map and statistics
+      // Use a high page size to get all members in one request or fetch multiple pages
       const allMembersData: Member[] = [];
-      if (locationsResult.data?.locations) {
-        locationsResult.data.locations.forEach((location: any) => {
-          location.members.forEach((member: any) => {
-            allMembersData.push({
-              id: member.id,
-              name: member.name,
-              email: member.email,
-              country: location.country,
-              city: member.city || '',
-              membershiptype: member.membershipType || '',
-              gender: member.gender || '',
-              occupation: member.occupation || '',
-              industry: member.industry || '',
-              created_at: member.created_at || new Date().toISOString(),
-            } as Member);
-          });
-        });
+      let currentPage = 1;
+      let hasMorePages = true;
+      
+      console.log('📍 Starting to fetch all members for map...');
+      console.log('📊 Total members count from API:', totalMembers);
+      
+      while (hasMorePages && currentPage <= 50) { // Safety limit of 50 pages
+        const pageResponse = await api.getPlatformMembers({ page: currentPage });
+        
+        if (pageResponse.data?.results && pageResponse.data.results.length > 0) {
+          allMembersData.push(...pageResponse.data.results);
+          console.log(`✅ Page ${currentPage}: Fetched ${pageResponse.data.results.length} members (Total so far: ${allMembersData.length})`);
+          
+          // Check if there are more pages
+          const totalCount = pageResponse.data.count || 0;
+          const fetchedSoFar = allMembersData.length;
+          hasMorePages = fetchedSoFar < totalCount;
+          
+          if (hasMorePages) {
+            console.log(`🔄 More pages available. Fetched ${fetchedSoFar}/${totalCount}. Continuing...`);
+          } else {
+            console.log(`✅ All members fetched. Total: ${fetchedSoFar}/${totalCount}`);
+          }
+          
+          currentPage++;
+        } else {
+          hasMorePages = false;
+          console.log(`⚠️ No more data on page ${currentPage}`);
+        }
       }
+      
+      const membersWithLocation = allMembersData.filter(m => m.country).length;
+      console.log(`🗺️ Members with location data: ${membersWithLocation}/${allMembersData.length}`);
+      console.log(`📍 Final: Total fetched=${allMembersData.length}, API count=${totalMembers}, With location=${membersWithLocation}`);
       
       setAllMembers(allMembersData);
 

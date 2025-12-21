@@ -15,14 +15,15 @@ interface ProjectModalProps {
 }
 
 const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, project, loading }) => {
-  const [formData, setFormData] = useState<Partial<Project>>({
+  const [formData, setFormData] = useState<Partial<Project> & { project_type?: string }>({
     title: '',
     description: '',
     detailed_description: '',
     max_participants: 100,
     admission_start_date: '',
     admission_end_date: '',
-    status: 'draft'
+    status: 'draft',
+    project_type: 'future'
   });
 
   useEffect(() => {
@@ -34,7 +35,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
         max_participants: project.max_participants || 100,
         admission_start_date: project.admission_start_date ? project.admission_start_date.split('T')[0] : '',
         admission_end_date: project.admission_end_date ? project.admission_end_date.split('T')[0] : '',
-        status: project.status || 'draft'
+        status: project.status || 'draft',
+        project_type: (project as any).project_type || 'future'
       });
     } else {
       setFormData({
@@ -44,7 +46,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
         max_participants: 100,
         admission_start_date: '',
         admission_end_date: '',
-        status: 'draft'
+        status: 'draft',
+        project_type: 'future'
       });
     }
   }, [project]);
@@ -57,149 +60,230 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {project ? 'Edit Project' : 'Create New Project'}
-            </h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
+        {/* Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 rounded-t-2xl">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                {project ? (
+                  <>
+                    <Edit className="h-6 w-6" />
+                    Edit Project
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-6 w-6" />
+                    Create New Project
+                  </>
+                )}
+              </h2>
+              <p className="text-blue-100 text-sm mt-1">
+                {project ? 'Update project details and settings' : 'Add a new project to your portfolio'}
+              </p>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
               aria-label="Close modal"
               title="Close"
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </button>
           </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Basic Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="h-8 w-1 bg-blue-600 rounded-full"></div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title *
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Project Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Project title"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
+                placeholder="e.g., AI Healthcare Platform for Rural Africa"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description *
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Short Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 required
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Brief project description"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base resize-none"
+                placeholder="Brief overview that appears on project cards (2-3 sentences)"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Detailed Description
               </label>
               <textarea
-                rows={5}
+                rows={6}
                 value={formData.detailed_description}
                 onChange={(e) => setFormData(prev => ({ ...prev, detailed_description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Detailed project description"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base resize-none"
+                placeholder="Comprehensive project details, objectives, and expected outcomes..."
               />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Full project details shown on the project page</p>
+            </div>
+          </div>
+
+          {/* Project Settings Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="h-8 w-1 bg-purple-600 rounded-full"></div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Project Settings</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Project Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.project_type}
+                  onChange={(e) => setFormData(prev => ({ ...prev, project_type: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
+                  aria-label="Project type"
+                >
+                  <option value="future">🔮 Future (Coming Soon)</option>
+                  <option value="ongoing">🚀 Ongoing (Active Now)</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Determines which tab shows this project
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Project Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
+                  aria-label="Project status"
+                >
+                  <option value="draft">📝 Draft</option>
+                  <option value="concept">💡 Concept</option>
+                  <option value="planning">📋 Planning</option>
+                  <option value="active">✅ Active</option>
+                  <option value="closed">🏁 Closed</option>
+                  <option value="completed">🎉 Completed</option>
+                  <option value="archived">📦 Archived</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Max Participants
                 </label>
                 <input
                   type="number"
                   min="1"
                   value={formData.max_participants}
-                  onChange={(e) => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  onChange={(e) => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
+                  placeholder="100"
                   aria-label="Maximum participants"
-                  title="Enter maximum number of participants"
                 />
               </div>
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  aria-label="Project status"
-                  title="Select project status"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="closed">Closed</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
+          {/* Timeline Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="h-8 w-1 bg-green-600 rounded-full"></div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Application Timeline</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Admission Start Date
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Applications Open
                 </label>
                 <input
                   type="date"
                   value={formData.admission_start_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_start_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
                   aria-label="Admission start date"
-                  title="Select admission start date"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Admission End Date
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Applications Close
                 </label>
                 <input
                   type="date"
                   value={formData.admission_end_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_end_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
                   aria-label="Admission end date"
-                  title="Select admission end date"
                 />
               </div>
             </div>
+          </div>
 
-            <div className="flex justify-end space-x-3 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {loading ? 'Saving...' : (project ? 'Update' : 'Create')}
-              </Button>
-            </div>
-          </form>
-        </div>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+              className="px-6 py-2.5 text-base font-medium"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-2.5 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+            >
+              {loading ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  {project ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Update Project
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Project
+                    </>
+                  )}
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -351,38 +435,47 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleCreateProject = async (projectData: Partial<Project>) => {
+  const handleCreateProject = async (projectData: Partial<Project> & { project_type?: string }) => {
     setActionLoading(-1);
     try {
-      const { data, error } = await api.createProject({
-        ...projectData,
-        admission_start_date: projectData.admission_start_date ? `${projectData.admission_start_date}T00:00:00Z` : undefined,
-        admission_end_date: projectData.admission_end_date ? `${projectData.admission_end_date}T23:59:59Z` : undefined,
+      // Create via platform endpoint (Supabase) to ensure it appears on main website
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/projects/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          ...projectData,
+          admission_start_date: projectData.admission_start_date ? `${projectData.admission_start_date}T00:00:00Z` : undefined,
+          admission_end_date: projectData.admission_end_date ? `${projectData.admission_end_date}T23:59:59Z` : undefined,
+        })
       });
 
-      if (!error && data) {
+      if (response.ok) {
         setModalOpen(false);
         setEditingProject(null);
         loadProjects();
-        alert('Project created successfully!');
+        alert('✅ Project created successfully! It will appear on the main website immediately.');
       } else {
+        const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to create project:', error);
-        alert(`Failed to create project: ${error}`);
+        alert(`❌ Failed to create project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      alert('Error creating project');
+      alert('❌ Error creating project. Please try again.');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleUpdateProject = async (projectData: Partial<Project>) => {
+  const handleUpdateProject = async (projectData: Partial<Project> & { project_type?: string }) => {
     if (!editingProject) return;
 
     setActionLoading(editingProject.id);
     try {
-      // Update via platform endpoint (Supabase)
+      // Update in Supabase (which is what the main website uses)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/projects/${editingProject.id}/`, {
         method: 'PATCH',
         headers: {
@@ -396,15 +489,15 @@ export default function ProjectsPage() {
         setModalOpen(false);
         setEditingProject(null);
         loadProjects();
-        alert('Project updated successfully!');
+        alert('✅ Project updated successfully! Changes will appear on the main website immediately.');
       } else {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to update project:', error);
-        alert(`Failed to update project: ${error.detail || 'Unknown error'}`);
+        alert(`❌ Failed to update project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('Error updating project');
+      alert('❌ Error updating project. Please try again.');
     } finally {
       setActionLoading(null);
     }
