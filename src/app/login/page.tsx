@@ -157,6 +157,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      autoComplete="email"
                       className="block w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm transition-all duration-200 hover:border-gray-400 bg-white"
                       placeholder="admin@mansatomansa.com"
                     />
@@ -178,6 +179,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      autoComplete="current-password"
                       className="block w-full pl-12 pr-12 py-3.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm transition-all duration-200 hover:border-gray-400 bg-white"
                       placeholder="Enter your password"
                     />
