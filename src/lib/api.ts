@@ -611,7 +611,8 @@ export interface Member {
   city?: string;
   linkedin?: string;
   experience?: string;
-  areaOfExpertise?: string;
+  areaofexpertise?: string; // Note: lowercase in database
+  areaOfExpertise?: string; // Alias for backwards compatibility
   school?: string;
   level?: string;
   occupation?: string;
@@ -624,12 +625,18 @@ export interface Member {
   is_active?: boolean;
   created_at: string;
   updated_at?: string;
+  
+  // Fields from unified members table (formerly community_members)
+  joined_date?: string;
+  profile_picture?: string;
+  bio?: string;
+  location?: string;
+  motivation?: string;
 
   // Computed properties for backwards compatibility
   full_name?: string;
   phone_number?: string;
   profession?: string;
-  location?: string;
 }
 
 export interface Project {
