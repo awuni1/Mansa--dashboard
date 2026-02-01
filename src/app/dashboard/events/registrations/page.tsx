@@ -67,7 +67,8 @@ export default function EventRegistrationsPage() {
     try {
       setLoading(true)
       // Fetch all event registrations
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/registrations/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'
+      const response = await fetch(`${apiUrl}/registrations/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -92,7 +93,8 @@ export default function EventRegistrationsPage() {
   const fetchStats = async () => {
     try {
       // Calculate stats from registrations
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/registrations/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'
+      const response = await fetch(`${apiUrl}/registrations/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
