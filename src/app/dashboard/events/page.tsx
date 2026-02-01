@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, Clock, MapPin, Image as ImageIcon, Upload, Trash2, Eye, Edit, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
+import { Calendar, Clock, MapPin, Image as ImageIcon, Upload, Trash2, Eye, Edit, ArrowRight, ArrowLeft, CheckCircle, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
+import Link from 'next/link'
 import api, { Event } from '@/lib/api'
 
 export default function EventsManagementPage() {
@@ -209,13 +210,21 @@ export default function EventsManagementPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Events Management
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage upcoming and past community events
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Events Management
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage upcoming and past community events
+          </p>
+        </div>
+        <Link href="/dashboard/events/registrations">
+          <Button className="gap-2">
+            <Users className="w-4 h-4" />
+            View Registrations
+          </Button>
+        </Link>
       </div>
 
       {/* Tab Navigation */}
