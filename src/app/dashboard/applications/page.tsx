@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
 import { api, ProjectApplication } from '@/lib/api';
 import { Search, Eye, Check, X, Mail, FileText, Users, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<ProjectApplication[]>([]);
@@ -44,7 +45,9 @@ export default function ApplicationsPage() {
 
       if (error) {
         console.error('Error loading applications:', error);
-        alert(`Failed to load applications: ${error}`);
+        toast.error('Failed to load applications', {
+          description: error
+        });
         setApplications([]);
         setTotalCount(0);
         return;
@@ -61,7 +64,9 @@ export default function ApplicationsPage() {
       }
     } catch (error) {
       console.error('Error loading applications:', error);
-      alert(`An error occurred while loading applications: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error('An error occurred while loading applications', {
+        description: error instanceof Error ? error.message : 'Unknown error'
+      });
       setApplications([]);
       setTotalCount(0);
     } finally {
@@ -81,17 +86,21 @@ export default function ApplicationsPage() {
       }
 
       if (response.error) {
-        alert(`Failed to ${status} application: ${response.error}`);
+        toast.error(`Failed to ${status} application`, {
+          description: response.error
+        });
         return;
       }
 
       // Reload applications to get updated data
       loadApplications();
 
-      alert(`Application ${status} successfully!`);
+      toast.success(`Application ${status} successfully!`);
     } catch (error) {
       console.error('Error updating application status:', error);
-      alert('Failed to update application status');
+      toast.error('Failed to update application status', {
+        description: 'An unexpected error occurred.'
+      });
     }
   };
 
@@ -129,8 +138,13 @@ export default function ApplicationsPage() {
         const encodedSubject = encodeURIComponent(subject);
         const encodedBody = encodeURIComponent(body);
         window.open(`mailto:${applicantEmail}?subject=${encodedSubject}&body=${encodedBody}`);
+        toast.info('Opening email client', {
+          description: 'Please send the email from your email client.'
+        });
       } else {
-        alert('Email sent successfully');
+        toast.success('Email sent successfully', {
+          description: `Notification sent to ${applicantName}`
+        });
       }
     } catch (error) {
       console.error('Error sending email:', error);

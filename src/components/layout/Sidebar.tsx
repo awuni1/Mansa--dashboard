@@ -19,12 +19,14 @@ import {
   Briefcase,
   ChevronRight,
   Calendar,
+  GraduationCap,
   // MessageSquare, // Removed - WhatsApp functionality disabled
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   // { name: 'WhatsApp Manager', href: '/dashboard/whatsapp', icon: MessageSquare },
+  { name: 'Mentorship', href: '/dashboard/mentorship', icon: GraduationCap, badge: true },
   { name: 'Projects', href: '/dashboard/projects', icon: Briefcase },
   { name: 'Events', href: '/dashboard/events', icon: Calendar },
   { name: 'Members', href: '/dashboard/members', icon: Users },
@@ -117,6 +119,11 @@ export function Sidebar() {
                   )}>
                     {item.name}
                   </span>
+                  {item.badge && (
+                    <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full animate-pulse">
+                      NEW
+                    </span>
+                  )}
                 </div>
                 {isActive && (
                   <ChevronRight className="h-4 w-4 text-white/80" />

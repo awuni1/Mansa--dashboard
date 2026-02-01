@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { api, EmailTemplate, EmailCampaign, EmailLog, Member } from '@/lib/api';
 import { Mail, Users, Send, Loader, Plus, Eye, Trash2, FileText, TrendingUp, Zap, Clock, CheckCircle, XCircle, AlertCircle, Edit3, Sparkles, Target, BarChart3, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 type TabType = 'compose' | 'templates' | 'campaigns' | 'logs';
 
@@ -116,14 +117,14 @@ export default function EmailsPage() {
     try {
       // Using the backend API to send emails via campaigns
       if (!selectedTemplate) {
-        alert('Please select a template');
+        toast.error('Please select a template');
         setSending(false);
         return;
       }
 
       // Validate individual selection
       if (recipients === 'individual' && selectedMemberIds.length === 0) {
-        alert('Please select at least one member');
+        toast.error('Please select at least one member');
         setSending(false);
         return;
       }
@@ -141,7 +142,9 @@ export default function EmailsPage() {
       const { data: campaign, error: campaignError } = await api.createEmailCampaign(campaignData);
 
       if (campaignError || !campaign) {
-        alert(`Failed to create campaign: ${campaignError}`);
+        toast.error('Failed to create campaign', {
+          description: campaignError || 'Unknown error'
+        });
         setSending(false);
         return;
       }
@@ -150,19 +153,23 @@ export default function EmailsPage() {
       const { data: sentCampaign, error: sendError } = await api.sendEmailCampaign(campaign.id);
 
       if (sendError) {
-        alert(`Failed to send campaign: ${sendError}`);
+        toast.error('Failed to send campaign', {
+          description: sendError
+        });
       } else {
-        const recipientCount = recipients === 'individual' 
-          ? selectedMemberIds.length 
+        const recipientCount = recipients === 'individual'
+          ? selectedMemberIds.length
           : recipients === 'all_users'
           ? members.length
           : recipients === 'approved_users'
           ? members.filter(m => (m as any).approval_status === 'approved').length
           : members.filter(m => (m as any).approval_status === 'pending').length;
-        
-        alert(`Campaign sent successfully to ${recipientCount} recipient(s)!`);
+
+        toast.success('Campaign sent successfully!', {
+          description: `Sent to ${recipientCount} recipient(s)`
+        });
         loadCampaigns();
-        
+
         // Reset individual selection
         if (recipients === 'individual') {
           setSelectedMemberIds([]);
@@ -170,7 +177,9 @@ export default function EmailsPage() {
       }
     } catch (error) {
       console.error('Error sending emails:', error);
-      alert(`Error occurred while sending emails: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error('Error occurred while sending emails', {
+        description: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
       setSending(false);
     }
@@ -179,10 +188,12 @@ export default function EmailsPage() {
   const createTemplate = async () => {
     const { data, error } = await api.createEmailTemplate(templateForm);
     if (error) {
-      alert(`Failed to create template: ${error}`);
+      toast.error('Failed to create template', {
+        description: error
+      });
       return;
     }
-    alert('Template created successfully!');
+    toast.success('Template created successfully!');
     setShowTemplateModal(false);
     loadTemplates();
     resetTemplateForm();
@@ -192,10 +203,12 @@ export default function EmailsPage() {
     if (!editingTemplate) return;
     const { data, error } = await api.updateEmailTemplate(editingTemplate.id, templateForm);
     if (error) {
-      alert(`Failed to update template: ${error}`);
+      toast.error('Failed to update template', {
+        description: error
+      });
       return;
     }
-    alert('Template updated successfully!');
+    toast.success('Template updated successfully!');
     setShowTemplateModal(false);
     setEditingTemplate(null);
     loadTemplates();
@@ -203,37 +216,63 @@ export default function EmailsPage() {
   };
 
   const deleteTemplate = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
-    const { error } = await api.deleteEmailTemplate(id);
-    if (error) {
-      alert(`Failed to delete template: ${error}`);
-      return;
-    }
-    alert('Template deleted successfully!');
-    loadTemplates();
+    toast.warning('Are you sure you want to delete this template?', {
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          const { error } = await api.deleteEmailTemplate(id);
+          if (error) {
+            toast.error('Failed to delete template', {
+              description: error
+            });
+            return;
+          }
+          toast.success('Template deleted successfully!');
+          loadTemplates();
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   const createCampaign = async () => {
     const { data, error } = await api.createEmailCampaign(campaignForm);
     if (error) {
-      alert(`Failed to create campaign: ${error}`);
+      toast.error('Failed to create campaign', {
+        description: error
+      });
       return;
     }
-    alert('Campaign created successfully!');
+    toast.success('Campaign created successfully!');
     setShowCampaignModal(false);
     loadCampaigns();
     resetCampaignForm();
   };
 
   const sendCampaign = async (id: number) => {
-    if (!confirm('Are you sure you want to send this campaign?')) return;
-    const { error } = await api.sendEmailCampaign(id);
-    if (error) {
-      alert(`Failed to send campaign: ${error}`);
-      return;
-    }
-    alert('Campaign sent successfully!');
-    loadCampaigns();
+    toast.warning('Are you sure you want to send this campaign?', {
+      action: {
+        label: 'Send',
+        onClick: async () => {
+          const { error } = await api.sendEmailCampaign(id);
+          if (error) {
+            toast.error('Failed to send campaign', {
+              description: error
+            });
+            return;
+          }
+          toast.success('Campaign sent successfully!');
+          loadCampaigns();
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   const deleteCampaign = async (id: number) => {

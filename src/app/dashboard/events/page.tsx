@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import Link from 'next/link'
 import api, { Event } from '@/lib/api'
+import { toast } from 'sonner'
 
 export default function EventsManagementPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -99,21 +100,31 @@ export default function EventsManagementPage() {
         await fetchEvents()
         resetForm()
         setActiveTab('list')
-        alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
+        toast.success(`Event ${editingEvent ? 'updated' : 'created'} successfully!`, {
+          description: `The event "${formData.title}" has been ${editingEvent ? 'updated' : 'created'}.`
+        })
       } else if (response.error) {
         console.error('Error saving event:', response.error)
         console.error('Full response:', response)
         // Check if it's an authentication error
         if (response.error.includes('Session expired') || response.error.includes('Authentication')) {
-          alert('Your session has expired. Please log in again.')
-          window.location.href = '/login'
+          toast.error('Session expired', {
+            description: 'Your session has expired. Please log in again.'
+          })
+          setTimeout(() => {
+            window.location.href = '/login'
+          }, 2000)
         } else {
-          alert(`Failed to ${editingEvent ? 'update' : 'create'} event: ${response.error}`)
+          toast.error(`Failed to ${editingEvent ? 'update' : 'create'} event`, {
+            description: response.error
+          })
         }
       }
     } catch (error) {
       console.error('Error saving event:', error)
-      alert('An unexpected error occurred. Please try again.')
+      toast.error('An unexpected error occurred', {
+        description: 'Please try again or contact support if the issue persists.'
+      })
     }
   }
 
@@ -155,36 +166,58 @@ export default function EventsManagementPage() {
   }
 
   const handleDelete = async (eventId: string | number) => {
-    if (!confirm('Are you sure you want to delete this event?')) return
+    toast.warning('Are you sure you want to delete this event?', {
+      description: 'This action cannot be undone.',
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          try {
+            const response = await api.deleteEvent(eventId)
 
-    try {
-      const response = await api.deleteEvent(eventId)
-
-      if (response.data) {
-        await fetchEvents()
-      } else if (response.error) {
-        console.error('Error deleting event:', response.error)
-        alert(`Failed to delete event: ${response.error}`)
-      }
-    } catch (error) {
-      console.error('Error deleting event:', error)
-    }
+            if (response.data) {
+              await fetchEvents()
+              toast.success('Event deleted successfully')
+            } else if (response.error) {
+              console.error('Error deleting event:', response.error)
+              toast.error('Failed to delete event', {
+                description: response.error
+              })
+            }
+          } catch (error) {
+            console.error('Error deleting event:', error)
+            toast.error('Failed to delete event', {
+              description: 'An unexpected error occurred.'
+            })
+          }
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    })
   }
 
   const moveEvent = async (eventId: string | number, newStatus: 'upcoming' | 'past') => {
     try {
-      const response = newStatus === 'past' 
+      const response = newStatus === 'past'
         ? await api.moveEventToPast(eventId)
         : await api.moveEventToUpcoming(eventId)
 
       if (response.data) {
         await fetchEvents()
+        toast.success(`Event moved to ${newStatus}`)
       } else if (response.error) {
         console.error('Error moving event:', response.error)
-        alert(`Failed to move event: ${response.error}`)
+        toast.error('Failed to move event', {
+          description: response.error
+        })
       }
     } catch (error) {
       console.error('Error moving event:', error)
+      toast.error('Failed to move event', {
+        description: 'An unexpected error occurred.'
+      })
     }
   }
 
@@ -194,12 +227,25 @@ export default function EventsManagementPage() {
 
       if (response.data) {
         await fetchEvents()
+        toast.success(
+          response.data.published ? 'Event published' : 'Event unpublished',
+          {
+            description: response.data.published
+              ? 'The event is now visible to the public.'
+              : 'The event is now hidden from the public.'
+          }
+        )
       } else if (response.error) {
         console.error('Error toggling publish:', response.error)
-        alert(`Failed to toggle publish: ${response.error}`)
+        toast.error('Failed to toggle publish status', {
+          description: response.error
+        })
       }
     } catch (error) {
       console.error('Error toggling publish:', error)
+      toast.error('Failed to toggle publish status', {
+        description: 'An unexpected error occurred.'
+      })
     }
   }
 
