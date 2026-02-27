@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -26,13 +27,13 @@ export default function SettingsPage() {
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('File size must be less than 2MB');
+      console.error('File size must be less than 2MB');
       return;
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (JPG, PNG, or GIF)');
+      console.error('Please select an image file (JPG, PNG, or GIF)');
       return;
     }
 
@@ -45,7 +46,7 @@ export default function SettingsPage() {
       localStorage.setItem('userAvatar', avatarData);
       // Trigger custom event to update header immediately
       window.dispatchEvent(new CustomEvent('avatarChanged', { detail: avatarData }));
-      alert('Avatar updated! Your new avatar will appear in the header.');
+      console.log('Avatar updated! Your new avatar will appear in the header.');
     };
     reader.readAsDataURL(file);
   };
@@ -88,6 +89,7 @@ export default function SettingsPage() {
             { id: 'data', label: 'Data', icon: Database }
           ].map(tab => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 min-w-[120px] px-6 py-4 font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
@@ -120,7 +122,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-6 mb-6">
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl leading-none overflow-hidden">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      <Image src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" width={96} height={96} />
                     ) : (
                       'AU'
                     )}
@@ -149,29 +151,28 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
-                    <Input defaultValue="Admin User" className="text-base py-6" />
+                    <label htmlFor="profile-full-name" className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                    <Input id="profile-full-name" defaultValue="Admin User" className="text-base py-6" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Username</label>
-                    <Input defaultValue="admin" className="text-base py-6" />
+                    <label htmlFor="profile-username" className="block text-sm font-bold text-gray-700 mb-2">Username</label>
+                    <Input id="profile-username" defaultValue="admin" className="text-base py-6" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
-                    <Input type="email" defaultValue="admin@mansatomansa.com" className="text-base py-6" />
+                    <label htmlFor="profile-email" className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                    <Input id="profile-email" type="email" defaultValue="admin@mansatomansa.com" className="text-base py-6" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Phone</label>
-                    <Input type="tel" defaultValue="+1 234 567 8900" className="text-base py-6" />
+                    <label htmlFor="profile-phone" className="block text-sm font-bold text-gray-700 mb-2">Phone</label>
+                    <Input id="profile-phone" type="tel" defaultValue="+1 234 567 8900" className="text-base py-6" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Bio</label>
+                    <label htmlFor="profile-bio" className="block text-sm font-bold text-gray-700 mb-2">Bio</label>
                     <textarea
+                      id="profile-bio"
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none resize-none"
                       rows={4}
                       defaultValue="Admin of Mansa to Mansa platform"
-                      aria-label="User bio"
-                      title="Enter your bio"
                     />
                   </div>
                 </div>
@@ -229,9 +230,10 @@ export default function SettingsPage() {
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
+                      <label htmlFor="security-current-password" className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
                       <div className="relative">
-                        <Input 
+                        <Input
+                          id="security-current-password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter current password"
                           className="text-base py-6 pr-12"
@@ -246,16 +248,18 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
-                      <Input 
+                      <label htmlFor="security-new-password" className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
+                      <Input
+                        id="security-new-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter new password"
                         className="text-base py-6"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Confirm New Password</label>
-                      <Input 
+                      <label htmlFor="security-confirm-password" className="block text-sm font-bold text-gray-700 mb-2">Confirm New Password</label>
+                      <Input
+                        id="security-confirm-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Confirm new password"
                         className="text-base py-6"
@@ -270,7 +274,7 @@ export default function SettingsPage() {
                     Two-Factor Authentication
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Add an extra layer of security to your account. You'll need to enter a verification code in addition to your password when signing in.
+                    Add an extra layer of security to your account. You&apos;ll need to enter a verification code in addition to your password when signing in.
                   </p>
                   <div className="flex items-center justify-between">
                     <div>
@@ -309,12 +313,12 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Primary Email</label>
-                  <Input defaultValue="mansatomansa@gmail.com" className="text-base py-6" />
+                  <label htmlFor="email-primary" className="block text-sm font-bold text-gray-700 mb-2">Primary Email</label>
+                  <Input id="email-primary" defaultValue="mansatomansa@gmail.com" className="text-base py-6" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Reply-To Email</label>
-                  <Input defaultValue="noreply@mansatomansa.com" className="text-base py-6" />
+                  <label htmlFor="email-reply-to" className="block text-sm font-bold text-gray-700 mb-2">Reply-To Email</label>
+                  <Input id="email-reply-to" defaultValue="noreply@mansatomansa.com" className="text-base py-6" />
                 </div>
                 <Button className="w-full py-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
                   <Save className="h-5 w-5 mr-2" />
@@ -334,13 +338,12 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Signature</label>
+                  <label htmlFor="email-signature" className="block text-sm font-bold text-gray-700 mb-2">Signature</label>
                   <textarea
+                    id="email-signature"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
                     rows={6}
                     defaultValue="Best regards,&#10;Mansa to Mansa Team&#10;&#10;Connecting African Professionals Worldwide"
-                    aria-label="Email signature"
-                    title="Enter your email signature"
                   />
                 </div>
                 <Button className="w-full py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
@@ -412,16 +415,16 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="p-8 space-y-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-4">Theme</label>
+                <p className="block text-sm font-bold text-gray-700 mb-4">Theme</p>
                 <div className="grid grid-cols-2 gap-4">
-                  <button className="p-6 border-4 border-indigo-600 rounded-xl bg-white hover:shadow-xl transition-all">
+                  <button type="button" className="p-6 border-4 border-indigo-600 rounded-xl bg-white hover:shadow-xl transition-all">
                     <div className="flex items-center justify-center mb-3">
                       <div className="w-16 h-16 bg-gradient-to-br from-white to-gray-100 rounded-lg border-2 border-gray-300"></div>
                     </div>
                     <p className="font-bold text-indigo-600">Light Theme</p>
                     <p className="text-sm text-gray-500 mt-1">Current</p>
                   </button>
-                  <button className="p-6 border-2 border-gray-200 rounded-xl bg-gray-900 hover:shadow-xl transition-all opacity-50">
+                  <button type="button" className="p-6 border-2 border-gray-200 rounded-xl bg-gray-900 hover:shadow-xl transition-all opacity-50">
                     <div className="flex items-center justify-center mb-3">
                       <div className="w-16 h-16 bg-gradient-to-br from-gray-800 to-black rounded-lg"></div>
                     </div>
@@ -432,11 +435,10 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-4">Items Per Page</label>
-                <select 
+                <label htmlFor="appearance-items-per-page" className="block text-sm font-bold text-gray-700 mb-4">Items Per Page</label>
+                <select
+                  id="appearance-items-per-page"
                   className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium"
-                  aria-label="Items per page"
-                  title="Select items per page"
                 >
                   <option value="10">10 items</option>
                   <option value="25" selected>25 items</option>
@@ -446,11 +448,10 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-4">Sidebar Position</label>
-                <select 
+                <label htmlFor="appearance-sidebar-position" className="block text-sm font-bold text-gray-700 mb-4">Sidebar Position</label>
+                <select
+                  id="appearance-sidebar-position"
                   className="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none text-base font-medium"
-                  aria-label="Sidebar position"
-                  title="Select sidebar position"
                 >
                   <option value="left" selected>Left Side</option>
                   <option value="right">Right Side</option>

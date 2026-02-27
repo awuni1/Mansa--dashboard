@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/stores/useAppStore';
 import { useOfflineDetection } from '@/hooks/useOfflineDetection';
 import { Bell, User, Search, ChevronDown, CheckCircle, AlertCircle, Info, X, Users as UsersIcon, FolderOpen, WifiOff, Settings, LogOut, UserCircle } from 'lucide-react';
+import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
@@ -150,7 +151,7 @@ export function Header() {
   // Fetch notifications on mount only (no polling to prevent duplicates)
   useEffect(() => {
     fetchNotifications();
-    
+
     // Optional: Poll for new notifications every 5 minutes instead of 30 seconds
     // Uncomment if you want periodic updates
     // const interval = setInterval(() => {
@@ -158,6 +159,7 @@ export function Header() {
     // }, 300000);
 
     // return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -223,7 +225,8 @@ export function Header() {
         <div className="flex items-center space-x-1.5 sm:space-x-2 lg:space-x-3">
           {/* Notification Button */}
           <div className="relative" ref={notificationRef}>
-            <button 
+            <button
+              type="button"
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 sm:p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200 group"
               aria-label="Toggle notifications"
@@ -254,6 +257,7 @@ export function Header() {
                     </h3>
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => fetchNotifications()}
                         disabled={loading}
                         className="text-white/90 hover:text-white transition-all p-1 rounded hover:bg-white/10"
@@ -270,6 +274,7 @@ export function Header() {
                       </button>
                       {unreadCount > 0 && (
                         <button
+                          type="button"
                           onClick={markAllAsRead}
                           className="text-xs text-white/90 hover:text-white font-medium hover:underline transition-all"
                         >
@@ -317,6 +322,7 @@ export function Header() {
                                   </p>
                                 </div>
                                 <button
+                                  type="button"
                                   onClick={() => deleteNotification(notification.id)}
                                   className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1"
                                   aria-label="Delete notification"
@@ -327,6 +333,7 @@ export function Header() {
                               </div>
                               {!notification.read && (
                                 <button
+                                  type="button"
                                   onClick={() => markAsRead(notification.id)}
                                   className="text-xs text-blue-600 hover:text-blue-700 font-medium mt-2 hover:underline"
                                 >
@@ -344,7 +351,7 @@ export function Header() {
                         <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                       </div>
                       <p className="text-gray-900 font-semibold text-sm sm:text-base">No notifications</p>
-                      <p className="text-xs sm:text-sm text-gray-500 mt-1">You're all caught up!</p>
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">You&apos;re all caught up!</p>
                     </div>
                   )}
                 </div>
@@ -352,7 +359,7 @@ export function Header() {
                 {/* Footer */}
                 {notifications.length > 0 && (
                   <div className="bg-gray-50 px-4 py-3 border-t border-gray-100">
-                    <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold w-full text-center hover:underline transition-all">
+                    <button type="button" className="text-sm text-blue-600 hover:text-blue-700 font-semibold w-full text-center hover:underline transition-all">
                       View all notifications
                     </button>
                   </div>
@@ -365,13 +372,14 @@ export function Header() {
           <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-gray-200">
             <div className="relative" ref={profileRef}>
               <button
+                type="button"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center space-x-3 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className="relative">
                   <div className="flex items-center justify-center h-9 w-9 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" />
+                      <Image src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" width={36} height={36} />
                     ) : (
                       <User className="h-5 w-5 text-white" />
                     )}
@@ -395,7 +403,7 @@ export function Header() {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center h-12 w-12 bg-white/20 rounded-xl overflow-hidden">
                         {avatarUrl ? (
-                          <img src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" />
+                          <Image src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" width={48} height={48} />
                         ) : (
                           <User className="h-6 w-6 text-white" />
                         )}
@@ -412,6 +420,7 @@ export function Header() {
                   {/* Menu Items */}
                   <div className="py-2">
                     <button
+                      type="button"
                       onClick={() => {
                         setShowProfileMenu(false);
                         router.push('/dashboard/settings');
@@ -428,6 +437,7 @@ export function Header() {
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => {
                         setShowProfileMenu(false);
                         router.push('/dashboard/settings');
@@ -447,6 +457,7 @@ export function Header() {
                   {/* Logout */}
                   <div className="border-t border-gray-100">
                     <button
+                      type="button"
                       onClick={() => {
                         setShowProfileMenu(false);
                         signOut();

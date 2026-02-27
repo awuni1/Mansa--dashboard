@@ -133,7 +133,7 @@ export default function FormsPage() {
         const encodedBody = encodeURIComponent(body);
         window.open(`mailto:${submission.email}?subject=${encodedSubject}&body=${encodedBody}&from=mansatomansa@gmail.com`);
       } else {
-        alert('Email sent successfully from mansatomansa@gmail.com');
+        console.log('Email sent successfully from mansatomansa@gmail.com');
       }
     } catch (error) {
       console.error('Error sending email:', error);
@@ -266,7 +266,7 @@ export default function FormsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-        <div onClick={() => setTypeFilter('membership')} className="cursor-pointer">
+        <div onClick={() => setTypeFilter('membership')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('membership'); }} role="button" tabIndex={0} className="cursor-pointer">
           <Card className="border border-green-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
             <CardContent className="p-3 sm:p-4 lg:p-6">
             <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ export default function FormsPage() {
         </Card>
         </div>
 
-        <div onClick={() => setTypeFilter('project')} className="cursor-pointer">
+        <div onClick={() => setTypeFilter('project')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('project'); }} role="button" tabIndex={0} className="cursor-pointer">
           <Card className="border border-purple-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <div className="flex items-center justify-between">
@@ -298,7 +298,7 @@ export default function FormsPage() {
         </Card>
         </div>
 
-        <div onClick={() => setTypeFilter('contact')} className="cursor-pointer col-span-2 lg:col-span-1">
+        <div onClick={() => setTypeFilter('contact')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('contact'); }} role="button" tabIndex={0} className="cursor-pointer col-span-2 lg:col-span-1">
           <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -499,6 +499,7 @@ export default function FormsPage() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300"
                   aria-label="Close modal"

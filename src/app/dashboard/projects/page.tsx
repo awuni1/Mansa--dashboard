@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { api, Project } from '@/lib/api';
+import Image from 'next/image';
 import { FolderOpen, Plus, Eye, Check, X, Edit, Trash2, Clock, AlertCircle, ArrowRight, ArrowLeft, CheckCircle, Users } from 'lucide-react';
 
 interface ProjectModalProps {
@@ -84,6 +85,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
               </p>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
               aria-label="Close modal"
@@ -104,10 +106,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="project-title-input" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Project Title <span className="text-red-500">*</span>
               </label>
               <input
+                id="project-title-input"
                 type="text"
                 required
                 value={formData.title}
@@ -118,10 +121,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="project-description-textarea" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Short Description <span className="text-red-500">*</span>
               </label>
               <textarea
+                id="project-description-textarea"
                 required
                 rows={3}
                 value={formData.description}
@@ -132,10 +136,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="project-detailed-description-textarea" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Detailed Description
               </label>
               <textarea
+                id="project-detailed-description-textarea"
                 rows={6}
                 value={formData.detailed_description}
                 onChange={(e) => setFormData(prev => ({ ...prev, detailed_description: e.target.value }))}
@@ -155,14 +160,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="project-type-select" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Project Type <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="project-type-select"
                   value={formData.project_type}
                   onChange={(e) => setFormData(prev => ({ ...prev, project_type: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
-                  aria-label="Project type"
                 >
                   <option value="future">🔮 Future (Coming Soon)</option>
                   <option value="ongoing">🚀 Ongoing (Active Now)</option>
@@ -173,14 +178,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="project-status-select" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Project Status
                 </label>
                 <select
+                  id="project-status-select"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
-                  aria-label="Project status"
                 >
                   <option value="draft">📝 Draft</option>
                   <option value="concept">💡 Concept</option>
@@ -193,17 +198,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="project-max-participants-input" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Max Participants
                 </label>
                 <input
+                  id="project-max-participants-input"
                   type="number"
                   min="1"
                   value={formData.max_participants}
                   onChange={(e) => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) || 0 }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
                   placeholder="100"
-                  aria-label="Maximum participants"
                 />
               </div>
             </div>
@@ -218,28 +223,28 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="project-admission-start-date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Applications Open
                 </label>
                 <input
+                  id="project-admission-start-date"
                   type="date"
                   value={formData.admission_start_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_start_date: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
-                  aria-label="Admission start date"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="project-admission-end-date" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Applications Close
                 </label>
                 <input
+                  id="project-admission-end-date"
                   type="date"
                   value={formData.admission_end_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, admission_end_date: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
-                  aria-label="Admission end date"
                 />
               </div>
             </div>
@@ -319,6 +324,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     loadProjects();
     loadApplicationCounts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProjects = async () => {
@@ -398,14 +404,14 @@ export default function ProjectsPage() {
       );
 
       if (response.ok) {
-        alert('Application approved successfully!');
+        console.log('Application approved successfully!');
         if (selectedProjectId) {
           loadApplicationsForProject(selectedProjectId);
         }
       }
     } catch (error) {
       console.error('Error approving application:', error);
-      alert('Error approving application');
+      console.error('Error approving application');
     }
   };
 
@@ -424,14 +430,14 @@ export default function ProjectsPage() {
       );
 
       if (response.ok) {
-        alert('Application rejected successfully!');
+        console.log('Application rejected successfully!');
         if (selectedProjectId) {
           loadApplicationsForProject(selectedProjectId);
         }
       }
     } catch (error) {
       console.error('Error rejecting application:', error);
-      alert('Error rejecting application');
+      console.error('Error rejecting application');
     }
   };
 
@@ -456,15 +462,15 @@ export default function ProjectsPage() {
         setModalOpen(false);
         setEditingProject(null);
         loadProjects();
-        alert('✅ Project created successfully! It will appear on the main website immediately.');
+        console.log('✅ Project created successfully! It will appear on the main website immediately.');
       } else {
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to create project:', error);
-        alert(`❌ Failed to create project: ${error.detail || 'Unknown error'}`);
+        console.error(`❌ Failed to create project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      alert('❌ Error creating project. Please try again.');
+      console.error('❌ Error creating project. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -489,15 +495,15 @@ export default function ProjectsPage() {
         setModalOpen(false);
         setEditingProject(null);
         loadProjects();
-        alert('✅ Project updated successfully! Changes will appear on the main website immediately.');
+        console.log('✅ Project updated successfully! Changes will appear on the main website immediately.');
       } else {
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to update project:', error);
-        alert(`❌ Failed to update project: ${error.detail || 'Unknown error'}`);
+        console.error(`❌ Failed to update project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('❌ Error updating project. Please try again.');
+      console.error('❌ Error updating project. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -551,15 +557,15 @@ export default function ProjectsPage() {
 
       if (response.ok || response.status === 204) {
         loadProjects();
-        alert('✅ Project deleted successfully! Changes will appear on the main website immediately.');
+        console.log('✅ Project deleted successfully! Changes will appear on the main website immediately.');
       } else {
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         console.error('Failed to delete project:', error);
-        alert(`❌ Failed to delete project: ${error.detail || 'Unknown error'}`);
+        console.error(`❌ Failed to delete project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting project:', error);
-      alert('❌ Error deleting project. Please try again.');
+      console.error('❌ Error deleting project. Please try again.');
     } finally {
       setActionLoading(null);
     }
@@ -581,15 +587,15 @@ export default function ProjectsPage() {
 
       if (response.ok) {
         loadProjects();
-        alert('Project moved to Ongoing successfully!');
+        console.log('Project moved to Ongoing successfully!');
       } else {
         const error = await response.json();
         console.error('Failed to update project:', error);
-        alert(`Failed to update project: ${error.detail || 'Unknown error'}`);
+        console.error(`Failed to update project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('Error updating project');
+      console.error('Error updating project');
     } finally {
       setActionLoading(null);
     }
@@ -611,15 +617,15 @@ export default function ProjectsPage() {
 
       if (response.ok) {
         loadProjects();
-        alert('Project moved to Future/Draft successfully!');
+        console.log('Project moved to Future/Draft successfully!');
       } else {
         const error = await response.json();
         console.error('Failed to update project:', error);
-        alert(`Failed to update project: ${error.detail || 'Unknown error'}`);
+        console.error(`Failed to update project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('Error updating project');
+      console.error('Error updating project');
     } finally {
       setActionLoading(null);
     }
@@ -641,15 +647,15 @@ export default function ProjectsPage() {
 
       if (response.ok) {
         loadProjects();
-        alert('Project marked as Completed successfully!');
+        console.log('Project marked as Completed successfully!');
       } else {
         const error = await response.json();
         console.error('Failed to update project:', error);
-        alert(`Failed to update project: ${error.detail || 'Unknown error'}`);
+        console.error(`Failed to update project: ${error.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      alert('Error updating project');
+      console.error('Error updating project');
     } finally {
       setActionLoading(null);
     }
@@ -762,6 +768,7 @@ export default function ProjectsPage() {
       <Card className="overflow-hidden shadow-sm">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 divide-x divide-y lg:divide-y-0 divide-gray-200 dark:divide-gray-700">
           <button
+            type="button"
             onClick={() => setStatusFilter('all')}
             className={`p-3 sm:p-4 text-center transition-all duration-200 ${
               statusFilter === 'all'
@@ -781,6 +788,7 @@ export default function ProjectsPage() {
             </div>
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('draft')}
             className={`p-3 sm:p-4 text-center transition-all duration-200 ${
               statusFilter === 'draft'
@@ -800,6 +808,7 @@ export default function ProjectsPage() {
             </div>
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('active')}
             className={`p-3 sm:p-4 text-center transition-all duration-200 ${
               statusFilter === 'active'
@@ -819,6 +828,7 @@ export default function ProjectsPage() {
             </div>
           </button>
           <button
+            type="button"
             onClick={() => setStatusFilter('closed')}
             className={`p-3 sm:p-4 text-center transition-all duration-200 ${
               statusFilter === 'closed'
@@ -905,12 +915,14 @@ export default function ProjectsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-3">
                           {(project as any).image_url && (
-                            <img
+                            <Image
                               src={(project as any).image_url}
                               alt={project.title}
                               className="h-12 w-12 rounded object-cover"
+                              width={48}
+                              height={48}
                               onError={(e) => {
-                                e.currentTarget.style.display = 'none';
+                                (e.currentTarget as HTMLImageElement).style.display = 'none';
                               }}
                             />
                           )}
@@ -1122,6 +1134,7 @@ export default function ProjectsPage() {
                   <span>Project Applications ({applications.length})</span>
                 </h2>
                 <button
+                  type="button"
                   onClick={() => {
                     setApplicationsModalOpen(false);
                     setSelectedProjectId(null);

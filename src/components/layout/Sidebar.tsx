@@ -65,9 +65,10 @@ export function Sidebar() {
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
-          <div 
-            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" 
-            onClick={() => setMobileMenuOpen(false)} 
+          <div
+            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+            role="presentation"
           />
         </div>
       )}

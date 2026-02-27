@@ -22,6 +22,7 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     loadApplications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchTerm]);
 
   useEffect(() => {
@@ -218,8 +219,11 @@ export default function ApplicationsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <div 
-          onClick={() => setStatusFilter('pending')} 
+        <div
+          onClick={() => setStatusFilter('pending')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('pending'); }}
+          role="button"
+          tabIndex={0}
           className="cursor-pointer transform transition-all duration-300 hover:scale-105"
         >
           <Card className="border-2 border-yellow-100 hover:border-yellow-300 hover:shadow-2xl transition-all">
@@ -237,8 +241,11 @@ export default function ApplicationsPage() {
           </Card>
         </div>
 
-        <div 
-          onClick={() => setStatusFilter('approved')} 
+        <div
+          onClick={() => setStatusFilter('approved')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('approved'); }}
+          role="button"
+          tabIndex={0}
           className="cursor-pointer transform transition-all duration-300 hover:scale-105"
         >
           <Card className="border-2 border-green-100 hover:border-green-300 hover:shadow-2xl transition-all">
@@ -256,8 +263,11 @@ export default function ApplicationsPage() {
           </Card>
         </div>
 
-        <div 
-          onClick={() => setStatusFilter('denied')} 
+        <div
+          onClick={() => setStatusFilter('denied')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('denied'); }}
+          role="button"
+          tabIndex={0}
           className="cursor-pointer transform transition-all duration-300 hover:scale-105"
         >
           <Card className="border-2 border-red-100 hover:border-red-300 hover:shadow-2xl transition-all">
@@ -275,8 +285,11 @@ export default function ApplicationsPage() {
           </Card>
         </div>
 
-        <div 
-          onClick={() => setStatusFilter('waitlist')} 
+        <div
+          onClick={() => setStatusFilter('waitlist')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('waitlist'); }}
+          role="button"
+          tabIndex={0}
           className="cursor-pointer transform transition-all duration-300 hover:scale-105"
         >
           <Card className="border-2 border-blue-100 hover:border-blue-300 hover:shadow-2xl transition-all">
@@ -631,8 +644,8 @@ export default function ApplicationsPage() {
 
       {/* Application Details Modal */}
       {showModal && selectedApplication && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)} role="presentation">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} role="presentation">
             {/* Modal Header */}
             <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 sm:px-8 py-6 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-4">
@@ -645,6 +658,7 @@ export default function ApplicationsPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 title="Close Modal"

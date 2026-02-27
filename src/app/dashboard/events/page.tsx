@@ -551,6 +551,7 @@ export default function EventsManagementPage() {
                     checked={formData.is_virtual}
                     onChange={(e) => setFormData({...formData, is_virtual: e.target.checked})}
                     className="w-4 h-4"
+                    aria-label="This is a virtual event"
                   />
                   <Label htmlFor="is_virtual">This is a virtual event</Label>
                 </div>
@@ -622,6 +623,7 @@ export default function EventsManagementPage() {
                   checked={formData.published}
                   onChange={(e) => setFormData({...formData, published: e.target.checked})}
                   className="w-4 h-4"
+                  aria-label="Publish this event"
                 />
                 <Label htmlFor="published">Publish this event (make visible to public)</Label>
               </div>

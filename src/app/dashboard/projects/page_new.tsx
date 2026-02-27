@@ -18,6 +18,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     loadProjects();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProjects = async () => {
@@ -133,7 +134,7 @@ export default function ProjectsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div onClick={() => setStatusFilter('concept')} className="cursor-pointer">
+        <div onClick={() => setStatusFilter('concept')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('concept'); }} role="button" tabIndex={0} className="cursor-pointer">
           <Card className="border-2 border-yellow-100 hover:shadow-2xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -149,7 +150,7 @@ export default function ProjectsPage() {
           </Card>
         </div>
 
-        <div onClick={() => setStatusFilter('active')} className="cursor-pointer">
+        <div onClick={() => setStatusFilter('active')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('active'); }} role="button" tabIndex={0} className="cursor-pointer">
           <Card className="border-2 border-green-100 hover:shadow-2xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -165,7 +166,7 @@ export default function ProjectsPage() {
           </Card>
         </div>
 
-        <div onClick={() => setStatusFilter('completed')} className="cursor-pointer">
+        <div onClick={() => setStatusFilter('completed')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStatusFilter('completed'); }} role="button" tabIndex={0} className="cursor-pointer">
           <Card className="border-2 border-blue-100 hover:shadow-2xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -355,8 +356,8 @@ export default function ProjectsPage() {
 
       {/* View Project Modal */}
       {showViewModal && selectedProject && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowViewModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowViewModal(false)} role="presentation">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} role="presentation">
             <div className="sticky top-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white px-8 py-6 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
@@ -368,6 +369,7 @@ export default function ProjectsPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowViewModal(false)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 title="Close Modal"
@@ -442,8 +444,8 @@ export default function ProjectsPage() {
 
       {/* Create Project Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCreateModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCreateModal(false)} role="presentation">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} role="presentation">
             <div className="sticky top-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white px-8 py-6 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
@@ -455,6 +457,7 @@ export default function ProjectsPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                 title="Close Modal"

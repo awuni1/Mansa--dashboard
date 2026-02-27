@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-700 border-t-transparent mx-auto"></div>
           <p className="mt-4 text-gray-600 font-medium">Loading analytics...</p>
         </div>
       </div>
@@ -84,11 +84,11 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 text-white shadow-sm sm:shadow-md">
+      <div className="bg-slate-700 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 text-white shadow-sm sm:shadow-md">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1">Analytics Dashboard</h1>
-            <p className="text-blue-100 text-xs sm:text-sm lg:text-base">Comprehensive insights and metrics</p>
+            <p className="text-slate-200 text-xs sm:text-sm lg:text-base">Comprehensive insights and metrics</p>
           </div>
           <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white/30" />
         </div>
@@ -97,10 +97,10 @@ export default function AnalyticsPage() {
       {/* Overview Cards */}
       {overview && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-          <Card hover className="border-l-2 border-l-blue-500">
+          <Card hover className="border-l-2 border-l-slate-600">
             <CardContent className="p-2 sm:p-2.5 lg:p-3">
               <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-slate-700 rounded-lg shadow-sm flex-shrink-0">
                   <Users className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
                 <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
@@ -115,10 +115,10 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card hover className="border-l-2 border-l-green-500">
+          <Card hover className="border-l-2 border-l-green-700">
             <CardContent className="p-2 sm:p-2.5 lg:p-3">
               <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-green-700 rounded-lg shadow-sm flex-shrink-0">
                   <FolderOpen className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
                 <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
@@ -133,10 +133,10 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card hover className="border-l-2 border-l-purple-500">
+          <Card hover className="border-l-2 border-l-stone-600">
             <CardContent className="p-2 sm:p-2.5 lg:p-3">
               <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-stone-700 rounded-lg shadow-sm flex-shrink-0">
                   <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
                 <TrendingUp className="h-3 w-3 text-amber-500 flex-shrink-0" />
@@ -151,10 +151,10 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card hover className="border-l-2 border-l-orange-500">
+          <Card hover className="border-l-2 border-l-orange-700">
             <CardContent className="p-2 sm:p-2.5 lg:p-3">
               <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-orange-700 rounded-lg shadow-sm flex-shrink-0">
                   <Mail className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
                 <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
@@ -182,26 +182,26 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600">
+              <div className="text-center p-6 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="text-3xl font-bold text-slate-700 dark:text-slate-300">
                   {userAnalytics.new_registrations_this_month || 0}
                 </div>
                 <div className="text-sm text-gray-700 font-medium mt-2">New Registrations This Month</div>
               </div>
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-                <div className="text-3xl font-bold text-green-600">
+              <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                <div className="text-3xl font-bold text-green-700 dark:text-green-400">
                   {userAnalytics.total_approved_users || 0}
                 </div>
                 <div className="text-sm text-gray-700 font-medium mt-2">Approved Users</div>
               </div>
-              <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
-                <div className="text-3xl font-bold text-amber-600">
+              <div className="text-center p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
                   {userAnalytics.total_pending_users || 0}
                 </div>
                 <div className="text-sm text-gray-700 font-medium mt-2">Pending Approval</div>
               </div>
-              <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                <div className="text-3xl font-bold text-purple-600">
+              <div className="text-center p-6 bg-stone-50 dark:bg-stone-900/20 rounded-xl border border-stone-200 dark:border-stone-800">
+                <div className="text-3xl font-bold text-stone-700 dark:text-stone-400">
                   {userAnalytics.user_growth_rate ? userAnalytics.user_growth_rate.toFixed(1) : '0.0'}%
                 </div>
                 <div className="text-sm text-gray-700 font-medium mt-2">Growth Rate</div>
@@ -216,9 +216,9 @@ export default function AnalyticsPage() {
                 </h3>
                 <div className="space-y-3">
                   {userAnalytics.recent_registrations.slice(0, 5).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                    <div key={user.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                        <div className="w-12 h-12 bg-slate-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                           {user.first_name?.[0] || 'U'}
                         </div>
                         <div>

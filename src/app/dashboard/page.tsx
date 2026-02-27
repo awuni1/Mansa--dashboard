@@ -191,7 +191,8 @@ export default function DashboardPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 tracking-tight">Dashboard Overview</h1>
           <p className="text-blue-100 text-sm sm:text-base lg:text-lg">Complete control center for Mansa to Mansa platform</p>
         </div>
-        <button 
+        <button
+          type="button"
           onClick={loadDashboardData}
           className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-white text-blue-600 rounded-lg sm:rounded-xl hover:bg-blue-50 transition-all duration-200 font-semibold shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
         >

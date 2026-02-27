@@ -15,7 +15,12 @@ import {
   XCircle,
   AlertCircle,
   Mail,
-  Video
+  Video,
+  Download,
+  Edit,
+  Trash2,
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -44,18 +49,23 @@ export default function SessionsManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
+  const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
   const pageSize = 10;
 
   useEffect(() => {
     fetchBookings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filter]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
       const params = new URLSearchParams({
         page: page.toString(),
         page_size: pageSize.toString(),
+        role: 'admin',
       });
 
       if (filter !== 'all') {
@@ -63,7 +73,7 @@ export default function SessionsManagementPage() {
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mentorship/bookings/?${params}`,
+        `${apiUrl}/v1/mentorship/bookings/?${params}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -76,51 +86,50 @@ export default function SessionsManagementPage() {
       }
 
       const data = await response.json();
+      console.log('Sessions API response:', data);
       setBookings(data.results || []);
       setTotalCount(data.count || 0);
     } catch (error) {
       console.error('Error fetching bookings:', error);
-      // Mock data for demonstration
-      setBookings([
-        {
-          id: '1',
-          mentee_id: '101',
-          mentee_name: 'John Doe',
-          mentee_email: 'john@example.com',
-          mentor_id: '201',
-          mentor_name: 'Jane Smith',
-          mentor_email: 'jane@example.com',
-          session_date: '2026-01-30',
-          start_time: '14:00',
-          end_time: '15:00',
-          topic: 'Career guidance for software engineering',
-          status: 'confirmed',
-          meeting_link: 'https://meet.google.com/abc-defg-hij',
-          created_at: new Date().toISOString(),
-        },
-      ]);
-      setTotalCount(1);
+      setBookings([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    if (!dateStr) return 'N/A';
+    try {
+      // Handle both ISO timestamps and date-only strings
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', dateStr, error);
+      return 'Invalid Date';
+    }
   };
 
   const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    if (!time) return 'N/A';
+    try {
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      console.error('Error formatting time:', time, error);
+      return 'N/A';
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -149,6 +158,72 @@ export default function SessionsManagementPage() {
     }
   };
 
+  const toggleBookingSelection = (bookingId: string) => {
+    const newSelected = new Set(selectedBookings);
+    if (newSelected.has(bookingId)) {
+      newSelected.delete(bookingId);
+    } else {
+      newSelected.add(bookingId);
+    }
+    setSelectedBookings(newSelected);
+  };
+
+  const selectAllBookings = () => {
+    if (selectedBookings.size === filteredBookings.length) {
+      setSelectedBookings(new Set());
+    } else {
+      setSelectedBookings(new Set(filteredBookings.map(b => b.id)));
+    }
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Date', 'Time', 'Mentee', 'Mentor', 'Topic', 'Status', 'Meeting Link'];
+    const rows = filteredBookings.map(booking => [
+      booking.session_date,
+      `${booking.start_time} - ${booking.end_time}`,
+      `${booking.mentee_name} (${booking.mentee_email})`,
+      `${booking.mentor_name} (${booking.mentor_email})`,
+      booking.topic,
+      booking.status,
+      booking.meeting_link || 'N/A'
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mentorship-sessions-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleBulkAction = async (action: 'cancel' | 'complete') => {
+    if (selectedBookings.size === 0) {
+      console.error('Please select sessions to perform bulk actions');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} ${selectedBookings.size} selected session(s)?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // TODO: Implement bulk action API endpoint
+      console.log(`Bulk ${action} action would be performed on ${selectedBookings.size} sessions`);
+      setSelectedBookings(new Set());
+    } catch (error) {
+      console.error('Bulk action error:', error);
+      console.error('Failed to perform bulk action');
+    }
+  };
+
   const filteredBookings = bookings.filter(booking => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -172,18 +247,28 @@ export default function SessionsManagementPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <Calendar className="w-8 h-8 text-blue-600" />
-            Sessions Management
+            Sessions Command Center
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Monitor and manage all mentorship sessions
+            Complete oversight of all mentorship sessions
           </p>
         </div>
-        <Link
-          href="/dashboard/mentorship"
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-        >
-          ← Back to Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={exportToCSV}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+          <Link
+            href="/dashboard/mentorship"
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            ← Back
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -256,62 +341,99 @@ export default function SessionsManagementPage() {
       {/* Filters and Search */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by mentee, mentor, or topic..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-              />
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by mentee, mentor, or topic..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                />
+              </div>
+
+              {/* Filter */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFilter('all')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilter('upcoming')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'upcoming'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Upcoming
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilter('completed')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'completed'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Completed
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilter('cancelled')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'cancelled'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  Cancelled
+                </button>
+              </div>
             </div>
 
-            {/* Filter */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilter('upcoming')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'upcoming'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                Upcoming
-              </button>
-              <button
-                onClick={() => setFilter('completed')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'completed'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                Completed
-              </button>
-              <button
-                onClick={() => setFilter('cancelled')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'cancelled'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                Cancelled
-              </button>
-            </div>
+            {/* Bulk Actions */}
+            {selectedBookings.size > 0 && (
+              <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
+                  {selectedBookings.size} session(s) selected
+                </p>
+                <div className="flex-1"></div>
+                <button
+                  type="button"
+                  onClick={() => handleBulkAction('complete')}
+                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Mark Complete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkAction('cancel')}
+                  className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Cancel Selected
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBookings(new Set())}
+                  className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -319,7 +441,16 @@ export default function SessionsManagementPage() {
       {/* Sessions Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Mentorship Sessions</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Sessions ({filteredBookings.length})</CardTitle>
+            <button
+              type="button"
+              onClick={selectAllBookings}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {selectedBookings.size === filteredBookings.length ? 'Deselect All' : 'Select All'}
+            </button>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -337,9 +468,22 @@ export default function SessionsManagementPage() {
               {filteredBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow"
+                  className={`p-4 border rounded-lg transition-all ${
+                    selectedBookings.has(booking.id)
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+                      : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                  }`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedBookings.has(booking.id)}
+                      onChange={() => toggleBookingSelection(booking.id)}
+                      className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                      aria-label={`Select session: ${booking.topic}`}
+                    />
+
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -355,7 +499,7 @@ export default function SessionsManagementPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mentee</p>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                               {booking.mentee_name.charAt(0)}
                             </div>
                             <div>
@@ -370,7 +514,7 @@ export default function SessionsManagementPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mentor</p>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                               {booking.mentor_name.charAt(0)}
                             </div>
                             <div>
@@ -393,28 +537,66 @@ export default function SessionsManagementPage() {
                           {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
                         </span>
                       </div>
+                      
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 ml-5">
+                        🌍 Times shown in mentor&apos;s timezone
+                      </div>
 
                       {booking.description && (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                           {booking.description}
                         </p>
                       )}
-                    </div>
 
-                    <div className="flex items-center gap-2 ml-4">
+                      {/* Meeting Link */}
                       {booking.meeting_link && (
-                        <a
-                          href={booking.meeting_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
-                          title="Join Meeting"
-                        >
-                          <Video className="w-4 h-4" />
-                        </a>
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center gap-2">
+                            <Video className="w-4 h-4 text-purple-600" />
+                            <a
+                              href={booking.meeting_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+                            >
+                              Join Meeting
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
                       )}
                     </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedBooking(expandedBooking === booking.id ? null : booking.id)}
+                        className="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Expanded Details */}
+                  {expandedBooking === booking.id && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 dark:text-gray-400 mb-1">Booking ID</p>
+                          <p className="font-mono text-xs text-gray-900 dark:text-white">{booking.id}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 dark:text-gray-400 mb-1">Created At</p>
+                          <p className="text-gray-900 dark:text-white">
+                            {new Date(booking.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -428,9 +610,11 @@ export default function SessionsManagementPage() {
               </p>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
                   className="p-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -438,9 +622,11 @@ export default function SessionsManagementPage() {
                   Page {page} of {totalPages}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
                   className="p-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

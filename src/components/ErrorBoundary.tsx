@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Something went wrong</h1>
-                <p className="text-gray-600">We're sorry for the inconvenience</p>
+                <p className="text-gray-600">We&apos;re sorry for the inconvenience</p>
               </div>
             </div>
 

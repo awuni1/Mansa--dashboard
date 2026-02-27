@@ -168,7 +168,7 @@ export default function APITestPage() {
           {results.some(r => r.status === 'error') && (
             <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
               <p className="text-sm font-bold text-amber-800">
-                Some endpoints failed. Make sure you're logged in with a valid JWT token.
+                Some endpoints failed. Make sure you&apos;re logged in with a valid JWT token.
               </p>
             </div>
           )}

@@ -49,6 +49,7 @@ export default function MembersPage() {
     if (debouncedValue !== searchTerm) {
       setCurrentPage(1);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedValue]);
 
   const sendEmail = async (member: Member) => {
@@ -76,7 +77,7 @@ export default function MembersPage() {
         const encodedBody = encodeURIComponent(body);
         window.open(`mailto:${member.email}?subject=${encodedSubject}&body=${encodedBody}`);
       } else {
-        alert('Email sent successfully');
+        console.log('Email sent successfully');
       }
     } catch (error) {
       console.error('Error sending email:', error);
@@ -92,6 +93,7 @@ export default function MembersPage() {
     if (debouncedValue !== searchTerm) {
       setCurrentPage(1);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedValue]);
 
   const exportToCSV = () => {
@@ -429,6 +431,7 @@ export default function MembersPage() {
                           const pageNum = i + 1;
                           return (
                             <button
+                              type="button"
                               key={pageNum}
                               onClick={() => setCurrentPage(pageNum)}
                               className={`w-10 h-10 rounded-lg font-semibold transition-all ${
@@ -488,6 +491,7 @@ export default function MembersPage() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300"
                   aria-label="Close modal"
@@ -503,81 +507,81 @@ export default function MembersPage() {
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Full Name
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.full_name}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-green-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-green-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Email
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium break-all">{selectedMember.email}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border-2 border-purple-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     Phone Number
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.phone_number || 'N/A'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border-2 border-orange-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
                     Profession
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.profession || 'N/A'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border-2 border-red-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-red-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-red-900 mb-2 flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     Location
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.location || 'N/A'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border-2 border-indigo-100 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                  <p className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Membership Type
-                  </label>
+                  </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.membershiptype || 'N/A'}</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Briefcase className="h-5 w-5 text-blue-600" />
                     Skills
-                  </label>
+                  </p>
                   <p className="text-base text-gray-700 leading-relaxed">{selectedMember.skills || 'No skills listed'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-purple-600" />
                     Area of Expertise
-                  </label>
+                  </p>
                   <p className="text-base text-gray-700 leading-relaxed">{selectedMember.areaOfExpertise || 'No expertise listed'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
-                  <label className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Briefcase className="h-5 w-5 text-green-600" />
                     Experience
-                  </label>
+                  </p>
                   <p className="text-base text-gray-700 leading-relaxed">{selectedMember.experience || 'No experience listed'}</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border-2 border-blue-200">
-                  <label className="block text-sm font-bold text-blue-900 mb-2">Member Since</label>
+                  <p className="block text-sm font-bold text-blue-900 mb-2">Member Since</p>
                   <p className="text-base text-gray-900 font-medium">
                     {new Date(selectedMember.created_at).toLocaleString('en-US', {
                       weekday: 'long',

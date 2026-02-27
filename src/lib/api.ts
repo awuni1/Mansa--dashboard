@@ -555,6 +555,13 @@ class ApiClient {
     });
   }
 
+  async scheduleEmailCampaign(campaignId: number, scheduledAt: string): Promise<ApiResponse<EmailCampaign>> {
+    return this.request<EmailCampaign>(`/emails/campaigns/${campaignId}/schedule/`, {
+      method: 'POST',
+      body: JSON.stringify({ scheduled_at: scheduledAt }),
+    });
+  }
+
   async getEmailLogs(params?: { page?: number; search?: string }): Promise<ApiResponse<PaginatedResponse<EmailLog>>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', params.page.toString());
@@ -702,10 +709,15 @@ export interface EmailCampaign {
   id: number;
   name: string;
   template: number;
+  // User targeting
   target_all_users: boolean;
   target_approved_users: boolean;
   target_pending_users: boolean;
   specific_users: number[];
+  // Member targeting
+  target_all_members: boolean;
+  specific_member_emails: string;
+  // Scheduling
   scheduled_at?: string;
   sent_at?: string;
   status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';

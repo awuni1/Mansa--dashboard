@@ -51,22 +51,24 @@ export default function MentorsManagementPage() {
 
   useEffect(() => {
     fetchMentors();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filter]);
 
   const fetchMentors = async () => {
     try {
       setLoading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
       const params = new URLSearchParams({
         page: page.toString(),
         page_size: pageSize.toString(),
       });
 
       if (filter !== 'all') {
-        params.append('is_approved', filter === 'approved' ? 'true' : 'false');
+        params.append('status', filter);
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mentorship/mentors/?${params}`,
+        `${apiUrl}/v1/mentorship/mentors/?${params}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -90,8 +92,9 @@ export default function MentorsManagementPage() {
 
   const handleApprove = async (mentorId: string) => {
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mentorship/mentors/${mentorId}/approve/`,
+        `${apiUrl}/v1/mentorship/mentors/${mentorId}/approve/`,
         {
           method: 'POST',
           headers: {
@@ -103,13 +106,13 @@ export default function MentorsManagementPage() {
 
       if (response.ok) {
         fetchMentors();
-        alert('Mentor approved successfully!');
+        console.log('Mentor approved successfully!');
       } else {
         throw new Error('Failed to approve mentor');
       }
     } catch (error) {
       console.error('Error approving mentor:', error);
-      alert('Failed to approve mentor. Please try again.');
+      console.error('Failed to approve mentor. Please try again.');
     }
   };
 
@@ -119,8 +122,9 @@ export default function MentorsManagementPage() {
     }
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mentorship/mentors/${mentorId}/`,
+        `${apiUrl}/v1/mentorship/mentors/${mentorId}/`,
         {
           method: 'DELETE',
           headers: {
@@ -131,13 +135,13 @@ export default function MentorsManagementPage() {
 
       if (response.ok) {
         fetchMentors();
-        alert('Mentor application rejected.');
+        console.log('Mentor application rejected.');
       } else {
         throw new Error('Failed to reject mentor');
       }
     } catch (error) {
       console.error('Error rejecting mentor:', error);
-      alert('Failed to reject mentor. Please try again.');
+      console.error('Failed to reject mentor. Please try again.');
     }
   };
 
@@ -250,6 +254,7 @@ export default function MentorsManagementPage() {
             {/* Filter */}
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setFilter('all')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'all'
@@ -260,6 +265,7 @@ export default function MentorsManagementPage() {
                 All
               </button>
               <button
+                type="button"
                 onClick={() => setFilter('approved')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'approved'
@@ -270,6 +276,7 @@ export default function MentorsManagementPage() {
                 Approved
               </button>
               <button
+                type="button"
                 onClick={() => setFilter('pending')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'pending'
@@ -370,6 +377,7 @@ export default function MentorsManagementPage() {
                           {!mentor.is_approved && (
                             <>
                               <button
+                                type="button"
                                 onClick={() => handleApprove(mentor.id)}
                                 className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                 title="Approve"
@@ -377,6 +385,7 @@ export default function MentorsManagementPage() {
                                 <Check className="w-4 h-4" />
                               </button>
                               <button
+                                type="button"
                                 onClick={() => handleReject(mentor.id)}
                                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Reject"
@@ -387,6 +396,7 @@ export default function MentorsManagementPage() {
                           )}
                           {mentor.is_approved && (
                             <button
+                              type="button"
                               onClick={() => handleReject(mentor.id)}
                               className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                               title="Revoke"
@@ -411,9 +421,11 @@ export default function MentorsManagementPage() {
               </p>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
                   className="p-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -421,9 +433,11 @@ export default function MentorsManagementPage() {
                   Page {page} of {totalPages}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
                   className="p-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
