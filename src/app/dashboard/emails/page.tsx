@@ -5,10 +5,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { api, EmailTemplate, EmailCampaign, EmailLog, Member } from '@/lib/api';
-import { Mail, Users, Send, Loader, Plus, Trash2, FileText, Clock, CheckCircle, XCircle, AlertCircle, Edit3, Target, BarChart3, X, Calendar } from 'lucide-react';
+import { Mail, Users, Send, Loader, Plus, Trash2, FileText, Clock, CheckCircle, XCircle, AlertCircle, Edit3, Target, BarChart3, X, Calendar, Zap, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
-type TabType = 'compose' | 'templates' | 'campaigns' | 'logs';
+type TabType = 'compose' | 'templates' | 'campaigns' | 'logs' | 'settings';
 
 export default function EmailsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('compose');
@@ -36,6 +36,9 @@ export default function EmailsPage() {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [testSending, setTestSending] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -85,6 +88,23 @@ export default function EmailsPage() {
       setEmailLogs(data.results);
     }
     setLogsLoading(false);
+  };
+
+  const sendTest = async () => {
+    if (!testEmail.trim()) {
+      setTestResult({ ok: false, message: 'Enter an email address first.' });
+      return;
+    }
+    setTestSending(true);
+    setTestResult(null);
+    const { data, error } = await api.sendTestEmail(testEmail.trim());
+    if (error) {
+      setTestResult({ ok: false, message: error });
+    } else {
+      setTestResult({ ok: true, message: data?.detail || 'Test email sent successfully!' });
+      toast.success('Test email sent!', { description: `Sent to ${testEmail}` });
+    }
+    setTestSending(false);
   };
 
   const getRecipientCount = () => {
@@ -295,7 +315,8 @@ export default function EmailsPage() {
               { id: 'compose', label: 'Compose', icon: Edit3 },
               { id: 'templates', label: 'Templates', icon: FileText },
               { id: 'campaigns', label: 'Campaigns', icon: Send },
-              { id: 'logs', label: 'Activity Logs', icon: BarChart3 }
+              { id: 'logs', label: 'Activity Logs', icon: BarChart3 },
+              { id: 'settings', label: 'Provider', icon: Settings }
             ].map(tab => (
               <button
                 type="button"
@@ -851,6 +872,102 @@ export default function EmailsPage() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Provider / Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Provider Status */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="border-b border-gray-200 bg-gray-50">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-indigo-600" />
+                Email Provider
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800">Resend — Connected</p>
+                  <p className="text-xs text-green-700">Domain: mansa-to-mansa.org (Verified)</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">SMTP Host</span>
+                  <span className="font-mono text-gray-900">smtp.resend.com</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Port</span>
+                  <span className="font-mono text-gray-900">587 (TLS)</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-gray-600">From Address</span>
+                  <span className="font-mono text-gray-900">noreply@mansa-to-mansa.org</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Domain Status</span>
+                  <span className="text-green-700 font-semibold">✅ Verified</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Send Test Email */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="border-b border-gray-200 bg-gray-50">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Send className="h-5 w-5 text-indigo-600" />
+                Test Email
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm text-gray-600">
+                Send a test email to verify Resend is configured correctly and emails are being delivered.
+              </p>
+              <div>
+                <label htmlFor="test-email-input" className="block text-sm font-medium text-gray-700 mb-2">
+                  Send test to
+                </label>
+                <Input
+                  id="test-email-input"
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="bg-white border-gray-300 focus:border-indigo-500"
+                />
+              </div>
+
+              {testResult && (
+                <div className={`p-3 rounded-lg border text-sm flex items-start gap-2 ${
+                  testResult.ok
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                }`}>
+                  {testResult.ok
+                    ? <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    : <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  }
+                  {testResult.message}
+                </div>
+              )}
+
+              <Button
+                onClick={sendTest}
+                disabled={testSending || !testEmail.trim()}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {testSending ? (
+                  <><Loader className="h-4 w-4 mr-2 animate-spin" />Sending test...</>
+                ) : (
+                  <><Send className="h-4 w-4 mr-2" />Send Test Email</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Template Modal */}

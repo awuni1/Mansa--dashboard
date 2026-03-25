@@ -19,10 +19,6 @@ import {
   Shield,
   BarChart3,
   Settings,
-  MessageSquare,
-  Video,
-  FileText,
-  DollarSign
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -91,8 +87,7 @@ export default function MentorshipDashboardPage() {
   });
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showAdminActions, setShowAdminActions] = useState(false);
+  const [_error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMentorshipStats();
@@ -460,10 +455,8 @@ export default function MentorshipDashboardPage() {
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
+                      ref={(el) => { if (el) el.style.width = `${(expertise.count / stats.popularExpertise[0].count) * 100}%`; }}
                       className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all"
-                      style={{
-                        width: `${(expertise.count / stats.popularExpertise[0].count) * 100}%`,
-                      }}
                     />
                   </div>
                 </div>

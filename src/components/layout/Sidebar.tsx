@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Calendar,
   GraduationCap,
+  Newspaper,
   // MessageSquare, // Removed - WhatsApp functionality disabled
 } from 'lucide-react';
 
@@ -34,6 +35,7 @@ const navigation = [
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },
   { name: 'Email Center', href: '/dashboard/emails', icon: Mail },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Blog', href: '/dashboard/blog', icon: Newspaper },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

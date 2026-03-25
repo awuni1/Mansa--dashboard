@@ -231,7 +231,7 @@ class ApiClient {
     if (params?.search) searchParams.set('search', params.search);
 
     const query = searchParams.toString();
-    return this.request<PaginatedResponse<Member>>(`/platform/community-members/${query ? `?${query}` : ''}`);
+    return this.request<PaginatedResponse<Member>>(`/platform/members/${query ? `?${query}` : ''}`);
   }
 
   async getMemberLocations(): Promise<ApiResponse<MemberLocationData>> {
@@ -562,6 +562,13 @@ class ApiClient {
     });
   }
 
+  async sendTestEmail(email: string): Promise<ApiResponse<{ detail: string }>> {
+    return this.request<{ detail: string }>('/emails/test/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
   async getEmailLogs(params?: { page?: number; search?: string }): Promise<ApiResponse<PaginatedResponse<EmailLog>>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', params.page.toString());
@@ -591,6 +598,37 @@ class ApiClient {
   // Recent activities for notifications
   async getRecentActivities(limit: number = 10): Promise<ApiResponse<RecentActivity[]>> {
     return this.request<RecentActivity[]>(`/admin/recent-activities/?limit=${limit}`);
+  }
+
+  // ── Blog ──────────────────────────────────────────────────────────────────
+  async getBlogPosts(params?: { search?: string; status?: string }): Promise<ApiResponse<BlogPost[]>> {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.status) query.set('status', params.status);
+    const qs = query.toString();
+    const result = await this.request<any>(`/blog/posts/all/${qs ? `?${qs}` : ''}`);
+    if (result.data?.results) return { ...result, data: result.data.results };
+    return result;
+  }
+
+  async createBlogPost(post: Partial<BlogPost>): Promise<ApiResponse<BlogPost>> {
+    return this.request<BlogPost>('/blog/posts/', { method: 'POST', body: JSON.stringify(post) });
+  }
+
+  async updateBlogPost(slug: string, post: Partial<BlogPost>): Promise<ApiResponse<BlogPost>> {
+    return this.request<BlogPost>(`/blog/posts/${slug}/`, { method: 'PATCH', body: JSON.stringify(post) });
+  }
+
+  async deleteBlogPost(slug: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/blog/posts/${slug}/`, { method: 'DELETE' });
+  }
+
+  async publishBlogPost(slug: string): Promise<ApiResponse<BlogPost>> {
+    return this.request<BlogPost>(`/blog/posts/${slug}/publish/`, { method: 'POST' });
+  }
+
+  async unpublishBlogPost(slug: string): Promise<ApiResponse<BlogPost>> {
+    return this.request<BlogPost>(`/blog/posts/${slug}/unpublish/`, { method: 'POST' });
   }
 }
 
@@ -846,6 +884,26 @@ export interface Event {
   created_by?: number;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  cover_image_url: string | null;
+  author_name: string;
+  author_avatar_url: string | null;
+  author_id: number | null;
+  category: string;
+  tags: string[];
+  status: 'draft' | 'published';
+  is_featured: boolean;
+  view_count: number;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // Create and export API client instance

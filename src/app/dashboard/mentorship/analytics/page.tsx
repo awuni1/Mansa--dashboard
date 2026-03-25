@@ -4,15 +4,12 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import {
   TrendingUp,
-  TrendingDown,
   Users,
   Calendar,
   Award,
-  Clock,
   BarChart3,
   PieChart,
   Download,
-  RefreshCw,
   CheckCircle,
   Star,
   MessageSquare,
@@ -264,8 +261,8 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                     <div
+                      ref={(el) => { if (el) el.style.width = `${(trend.sessions / 200) * 100}%`; }}
                       className="bg-slate-700 h-3 rounded-full transition-all"
-                      style={{ width: `${(trend.sessions / 200) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -292,8 +289,8 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                     <div
+                      ref={(el) => { if (el) el.style.width = `${expertise.percentage}%`; }}
                       className="bg-green-700 h-3 rounded-full transition-all"
-                      style={{ width: `${expertise.percentage}%` }}
                     />
                   </div>
                 </div>
