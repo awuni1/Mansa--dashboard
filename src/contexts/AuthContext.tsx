@@ -59,20 +59,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data) {
-      // Get user info after successful login
-      const { data: userData, error: userError } = await api.getMe();
-      if (userData && !userError) {
-        // Check if user is admin
-        if (userData.role !== 'admin' && userData.role !== 'super_admin') {
+      // Decode role directly from JWT payload — no extra network request needed
+      try {
+        const payload = JSON.parse(atob(data.access.split('.')[1]));
+        const role = payload.role;
+        if (role !== 'admin' && role !== 'super_admin') {
           await api.logout();
           setLoading(false);
           return { error: 'Access denied. Admin privileges required.' };
         }
-        setUser(userData);
-      } else {
-        await api.logout();
-        setLoading(false);
-        return { error: userError || 'Failed to get user information' };
+        setUser({ email: payload.email, role } as any);
+      } catch {
+        // Fallback to getMe if token decode fails
+        const { data: userData, error: userError } = await api.getMe();
+        if (userData && !userError) {
+          if (userData.role !== 'admin' && userData.role !== 'super_admin') {
+            await api.logout();
+            setLoading(false);
+            return { error: 'Access denied. Admin privileges required.' };
+          }
+          setUser(userData);
+        } else {
+          await api.logout();
+          setLoading(false);
+          return { error: userError || 'Failed to get user information' };
+        }
       }
     }
 

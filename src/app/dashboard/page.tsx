@@ -474,7 +474,7 @@ export default function DashboardPage() {
                         app.status === 'denied' ? 'bg-red-100 text-red-800 border border-red-200' :
                         'bg-gray-100 text-gray-800 border border-gray-200'
                       }`}>
-                        {app.status.toUpperCase()}
+                        {(app.status || 'unknown').toUpperCase()}
                       </span>
                     </div>
                   </div>
