@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
           <Card hover className="border-l-2 border-l-orange-700">
             <CardContent className="p-2 sm:p-2.5 lg:p-3">
               <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-orange-700 rounded-lg shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-blue-700 rounded-lg shadow-sm flex-shrink-0">
                   <Mail className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
                 <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
@@ -277,7 +277,7 @@ export default function AnalyticsPage() {
                 <div className="text-sm text-gray-600">Approved Projects</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-blue-600">
                   {projectAnalytics.application_approval_rate?.toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-600">Approval Rate</div>

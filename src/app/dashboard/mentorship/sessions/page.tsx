@@ -257,7 +257,7 @@ export default function SessionsManagementPage() {
           <button
             type="button"
             onClick={exportToCSV}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -282,8 +282,8 @@ export default function SessionsManagementPage() {
                   {totalCount}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-                <Calendar className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                <Calendar className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -499,7 +499,7 @@ export default function SessionsManagementPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mentee</p>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                               {booking.mentee_name.charAt(0)}
                             </div>
                             <div>
@@ -514,7 +514,7 @@ export default function SessionsManagementPage() {
                         <div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mentor</p>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                               {booking.mentor_name.charAt(0)}
                             </div>
                             <div>
@@ -538,7 +538,7 @@ export default function SessionsManagementPage() {
                         </span>
                       </div>
                       
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 ml-5">
+                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 ml-5">
                         🌍 Times shown in mentor&apos;s timezone
                       </div>
 
@@ -551,13 +551,13 @@ export default function SessionsManagementPage() {
                       {/* Meeting Link */}
                       {booking.meeting_link && (
                         <div className="mt-3 flex items-center gap-2">
-                          <div className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center gap-2">
-                            <Video className="w-4 h-4 text-purple-600" />
+                          <div className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center gap-2">
+                            <Video className="w-4 h-4 text-blue-600" />
                             <a
                               href={booking.meeting_link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+                              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                             >
                               Join Meeting
                               <ExternalLink className="w-3 h-3" />

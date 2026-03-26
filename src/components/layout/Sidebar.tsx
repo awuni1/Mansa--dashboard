@@ -82,13 +82,13 @@ export function Sidebar() {
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Logo Section */}
-        <div className="flex items-center justify-center h-20 px-6 bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 relative overflow-hidden">
+        <div className="flex items-center justify-center h-20 px-6 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px]"></div>
           <div className="relative">
             <h1 className="text-2xl font-bold text-white tracking-tight">
               Mansa <span className="font-light">Admin</span>
             </h1>
-            <div className="h-0.5 w-12 bg-cyan-400 mt-1 rounded-full mx-auto"></div>
+            <div className="h-0.5 w-12 bg-blue-400 mt-1 rounded-full mx-auto"></div>
           </div>
         </div>
         
@@ -105,7 +105,7 @@ export function Sidebar() {
                 className={clsx(
                   'group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 relative',
                   isActive
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg shadow-blue-500/30'
                     : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                 )}
               >
@@ -123,7 +123,7 @@ export function Sidebar() {
                     {item.name}
                   </span>
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full animate-pulse">
+                    <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded-full animate-pulse">
                       NEW
                     </span>
                   )}

@@ -370,7 +370,7 @@ export default function AnalyticsPage() {
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                         index === 0 ? 'bg-amber-600 text-white' :
                         index === 1 ? 'bg-slate-500 text-white' :
-                        index === 2 ? 'bg-orange-700 text-white' :
+                        index === 2 ? 'bg-blue-700 text-white' :
                         'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                       }`}>
                         {index + 1}

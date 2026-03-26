@@ -185,7 +185,7 @@ export function Header() {
       case 'application':
         return <Info className="h-5 w-5 text-blue-500" />;
       case 'email':
-        return <Info className="h-5 w-5 text-purple-500" />;
+        return <Info className="h-5 w-5 text-blue-500" />;
       default:
         return <Info className="h-5 w-5 text-gray-500" />;
     }
@@ -247,7 +247,7 @@ export function Header() {
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-72 sm:w-80 lg:w-96 bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-slide-in-right z-50">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-3 sm:px-4 py-2.5 sm:py-3">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-600 px-3 sm:px-4 py-2.5 sm:py-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
                       Notifications
@@ -377,7 +377,7 @@ export function Header() {
                 className="flex items-center space-x-3 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className="relative">
-                  <div className="flex items-center justify-center h-9 w-9 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden">
+                  <div className="flex items-center justify-center h-9 w-9 bg-gradient-to-br from-blue-600 to-blue-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden">
                     {avatarUrl ? (
                       <Image src={avatarUrl} alt="User avatar" className="w-full h-full object-cover" width={36} height={36} />
                     ) : (
@@ -399,7 +399,7 @@ export function Header() {
               {showProfileMenu && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden z-50 animate-slideDown">
                   {/* User Info Header */}
-                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-3 border-b border-blue-700">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-600 px-4 py-3 border-b border-blue-700">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center h-12 w-12 bg-white/20 rounded-xl overflow-hidden">
                         {avatarUrl ? (
@@ -444,8 +444,8 @@ export function Header() {
                       }}
                       className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
                     >
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Settings className="h-4 w-4 text-purple-600" />
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Settings className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-gray-900">Settings</p>

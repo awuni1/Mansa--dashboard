@@ -147,21 +147,21 @@ export default function FormsPage() {
     switch (type) {
       case 'contact':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-2 border-blue-300">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-800 border-2 border-blue-300">
             <Mail className="h-3 w-3" />
             Contact
           </span>
         );
       case 'membership':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-2 border-green-300">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border-2 border-green-300">
             <Users className="h-3 w-3" />
             Membership
           </span>
         );
       case 'project':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-2 border-purple-300">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-800 border-2 border-blue-300">
             <Briefcase className="h-3 w-3" />
             Project
           </span>
@@ -221,9 +221,9 @@ export default function FormsPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-t-4 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-t-4 border-blue-600"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <FileText className="h-8 w-8 text-indigo-600 animate-pulse" />
+            <FileText className="h-8 w-8 text-blue-600 animate-pulse" />
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function FormsPage() {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 p-4 sm:p-6 lg:p-8 shadow-lg sm:shadow-2xl">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-600 p-4 sm:p-6 lg:p-8 shadow-lg sm:shadow-2xl">
         <div className="absolute inset-0 bg-grid-white/10"></div>
         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
           <div className="space-y-1 sm:space-y-2">
@@ -241,7 +241,7 @@ export default function FormsPage() {
               <FileText className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10" />
               Form Submissions
             </h1>
-            <p className="text-purple-100 text-sm sm:text-base lg:text-lg">Track and manage all platform submissions</p>
+            <p className="text-blue-100 text-sm sm:text-base lg:text-lg">Track and manage all platform submissions</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
             <div className="bg-white/20 backdrop-blur-sm px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl border border-white/30 flex-1 md:flex-none">
@@ -274,7 +274,7 @@ export default function FormsPage() {
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Membership Forms</p>
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 mt-1 sm:mt-2">{membershipCount}</p>
               </div>
-              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg sm:rounded-xl">
+              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg sm:rounded-xl">
                 <Users className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-green-600" />
               </div>
             </div>
@@ -283,15 +283,15 @@ export default function FormsPage() {
         </div>
 
         <div onClick={() => setTypeFilter('project')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('project'); }} role="button" tabIndex={0} className="cursor-pointer">
-          <Card className="border border-purple-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
+          <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Project Applications</p>
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600 mt-1 sm:mt-2">{projectCount}</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mt-1 sm:mt-2">{projectCount}</p>
               </div>
-              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg sm:rounded-xl">
-                <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-purple-600" />
+              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-blue-100 to-blue-100 rounded-lg sm:rounded-xl">
+                <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -306,7 +306,7 @@ export default function FormsPage() {
                 <p className="text-sm font-medium text-gray-600">Contact Forms</p>
                 <p className="text-3xl font-bold text-blue-600 mt-2">{contactCount}</p>
               </div>
-              <div className="p-4 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl">
+              <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl">
                 <Mail className="h-8 w-8 text-blue-600" />
               </div>
             </div>
@@ -321,16 +321,16 @@ export default function FormsPage() {
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             <div className="flex-1 w-full lg:w-auto">
               <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                 <Input
                   placeholder="Search by name, email, or content..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-6 text-base border-2 border-gray-200 focus:border-indigo-500 rounded-xl shadow-sm hover:shadow-md transition-all"
+                  className="pl-12 pr-4 py-6 text-base border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all"
                 />
                 {isSearching && (
                   <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                   </div>
                 )}
               </div>
@@ -351,7 +351,7 @@ export default function FormsPage() {
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all"
+                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all"
                     aria-label="Filter by form type"
                     title="Select form type"
                   >
@@ -369,10 +369,10 @@ export default function FormsPage() {
 
       {/* Submissions Table */}
       <Card className="border-2 border-gray-100 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b-2 border-gray-100">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b-2 border-gray-100">
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-lg">
+              <div className="p-2 bg-blue-600 rounded-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
               Submissions ({filteredSubmissions.length})
@@ -384,7 +384,7 @@ export default function FormsPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                  <TableRow className="bg-gradient-to-r from-blue-50 to-blue-50">
                     <TableHead className="font-bold text-gray-700">Submitter</TableHead>
                     <TableHead className="font-bold text-gray-700">Contact</TableHead>
                     <TableHead className="font-bold text-gray-700">Type</TableHead>
@@ -396,11 +396,11 @@ export default function FormsPage() {
                   {filteredSubmissions.map((submission, index) => (
                     <TableRow 
                       key={submission.id} 
-                      className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 border-b border-gray-100"
+                      className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 border-b border-gray-100"
                     >
                       <TableCell className="py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-bold text-base leading-none select-none">
                               {(submission.name || 'A')[0].toUpperCase()}
                             </span>
@@ -410,7 +410,7 @@ export default function FormsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Mail className="h-3 w-3 text-indigo-600" />
+                          <Mail className="h-3 w-3 text-blue-600" />
                           {submission.email || 'N/A'}
                         </div>
                       </TableCell>
@@ -459,8 +459,8 @@ export default function FormsPage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 mb-4">
-                <FileText className="h-10 w-10 text-indigo-600" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-100 mb-4">
+                <FileText className="h-10 w-10 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No submissions found</h3>
               <p className="text-gray-500 max-w-md mx-auto">
@@ -475,7 +475,7 @@ export default function FormsPage() {
       {showModal && selectedSubmission && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideInFromRight">
-            <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-700 to-pink-600 p-6 z-10">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 p-6 z-10">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-2xl shadow-lg leading-none">
@@ -485,7 +485,7 @@ export default function FormsPage() {
                     <h2 className="text-2xl font-bold text-white">Submission Details</h2>
                     <div className="flex items-center gap-2 mt-2">
                       {getFormTypeBadge(selectedSubmission.form_type)}
-                      <span className="text-indigo-100 text-sm flex items-center gap-1">
+                      <span className="text-blue-100 text-sm flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {new Date(selectedSubmission.created_at).toLocaleString('en-US', {
                           month: 'short',
@@ -527,8 +527,8 @@ export default function FormsPage() {
                   }
 
                   return (
-                    <div key={key} className="bg-gradient-to-br from-gray-50 to-indigo-50 p-5 rounded-xl border-2 border-indigo-100 hover:shadow-lg transition-all">
-                      <label className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                    <div key={key} className="bg-gradient-to-br from-gray-50 to-blue-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
+                      <label className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
                         {displayKey}
                       </label>
@@ -549,7 +549,7 @@ export default function FormsPage() {
                 {selectedSubmission.email && (
                   <Button 
                     onClick={() => sendEmail(selectedSubmission)}
-                    className="flex-1 py-6 text-base bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 transition-transform shadow-lg"
+                    className="flex-1 py-6 text-base bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 hover:scale-105 transition-transform shadow-lg"
                   >
                     <Mail className="h-5 w-5 mr-2" />
                     Send Email Response

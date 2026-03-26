@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-blue-50 p-4">
           <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="p-4 bg-red-100 rounded-full">
@@ -76,7 +76,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex gap-3">
               <Button 
                 onClick={this.handleReset}
-                className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                className="flex-1 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700"
               >
                 Reload Page
               </Button>

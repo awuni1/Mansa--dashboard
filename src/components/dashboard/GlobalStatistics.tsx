@@ -132,7 +132,7 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header with Key Metrics */}
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-none shadow-xl">
+      <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none shadow-xl">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-white/20 rounded-xl">
@@ -172,7 +172,7 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Membership Type Distribution */}
         <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                 <Award className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -217,10 +217,10 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
 
         {/* Gender Distribution */}
         <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900">
+          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
@@ -262,7 +262,7 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
 
         {/* Top Countries Bar Chart */}
         <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900">
+          <CardHeader className="border-b bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
                 <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -292,10 +292,10 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
 
         {/* Occupation/Industry Distribution */}
         <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-orange-50 to-amber-50 dark:from-gray-800 dark:to-gray-900">
+          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-amber-50 dark:from-gray-800 dark:to-gray-900">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                <Briefcase className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <CardTitle className="text-lg font-bold">Professional Fields</CardTitle>

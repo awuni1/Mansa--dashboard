@@ -165,7 +165,7 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
 
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+      <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -184,18 +184,18 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
               <div className="text-gray-600 dark:text-gray-400">Countries</div>
             </div>
             <div className="text-center px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{locationStats.totalCities}</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{locationStats.totalCities}</div>
               <div className="text-gray-600 dark:text-gray-400">Cities</div>
             </div>
             <div className="text-center px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{locationStats.totalMembers}</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{locationStats.totalMembers}</div>
               <div className="text-gray-600 dark:text-gray-400">Members</div>
             </div>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="p-0 relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <CardContent className="p-0 relative bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Legend */}
         <div className="absolute top-4 left-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-xs">
           <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -381,7 +381,7 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
                         >
                           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-4 border-2 border-red-500 animate-in fade-in duration-200">
                             <div className="flex items-start gap-3">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                                 <Users className="h-6 w-6 text-white" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -424,19 +424,19 @@ export default function WorldMap({ members, className = '' }: WorldMapProps) {
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400">Countries</p>
-              <p className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">
+              <p className="font-bold text-blue-600 dark:text-blue-400 text-lg">
                 {locationStats.totalCountries}
               </p>
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400">Cities Tracked</p>
-              <p className="font-bold text-purple-600 dark:text-purple-400 text-lg">
+              <p className="font-bold text-blue-600 dark:text-blue-400 text-lg">
                 {locationStats.totalCities}
               </p>
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400">Zoom Level</p>
-              <p className="font-bold text-pink-600 dark:text-pink-400 text-lg">
+              <p className="font-bold text-blue-600 dark:text-blue-400 text-lg">
                 {position.zoom.toFixed(1)}x
               </p>
             </div>

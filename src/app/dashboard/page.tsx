@@ -186,7 +186,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-4 bg-gradient-to-r from-blue-600 to-indigo-700 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 rounded-b-2xl sm:rounded-b-3xl shadow-lg sm:shadow-xl">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-4 bg-gradient-to-r from-blue-600 to-blue-700 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 rounded-b-2xl sm:rounded-b-3xl shadow-lg sm:shadow-xl">
         <div className="text-white">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 tracking-tight">Dashboard Overview</h1>
           <p className="text-blue-100 text-sm sm:text-base lg:text-lg">Complete control center for Mansa to Mansa platform</p>
@@ -227,15 +227,15 @@ export default function DashboardPage() {
         </Card>
 
         {/* Community Members */}
-        <Card className="bg-gradient-to-br from-emerald-50 via-emerald-100 to-emerald-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
           <CardContent className="p-2.5 sm:p-3 lg:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-emerald-700 uppercase tracking-wide mb-0.5">Community</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-emerald-900 mb-0.5">{stats.communityMembers.toLocaleString()}</p>
-                <p className="text-[9px] sm:text-[10px] text-emerald-600 font-medium">Active members</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Community</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{stats.communityMembers.toLocaleString()}</p>
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">Active members</p>
               </div>
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-emerald-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                 <Globe className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -243,15 +243,15 @@ export default function DashboardPage() {
         </Card>
 
         {/* Total Projects */}
-        <Card className="bg-gradient-to-br from-purple-50 via-purple-100 to-purple-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
           <CardContent className="p-2.5 sm:p-3 lg:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-purple-700 uppercase tracking-wide mb-0.5">Total Projects</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-900 mb-0.5">{stats.totalProjects}</p>
-                <p className="text-[9px] sm:text-[10px] text-purple-600 font-medium">{stats.activeProjects} active</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Total Projects</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{stats.totalProjects}</p>
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">{stats.activeProjects} active</p>
               </div>
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-purple-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                 <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -259,15 +259,15 @@ export default function DashboardPage() {
         </Card>
 
         {/* Applications */}
-        <Card className="bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
           <CardContent className="p-2.5 sm:p-3 lg:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-orange-700 uppercase tracking-wide mb-0.5">Applications</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900 mb-0.5">{stats.totalApplications}</p>
-                <p className="text-[9px] sm:text-[10px] text-orange-600 font-medium">{stats.pendingApplications} pending</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Applications</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{stats.totalApplications}</p>
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">{stats.pendingApplications} pending</p>
               </div>
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-orange-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                 <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -291,15 +291,15 @@ export default function DashboardPage() {
         </Card>
 
         {/* Research Cohort */}
-        <Card className="bg-gradient-to-br from-cyan-50 via-cyan-100 to-cyan-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
           <CardContent className="p-2.5 sm:p-3 lg:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-cyan-700 uppercase tracking-wide mb-0.5">Research Cohort</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-cyan-900 mb-0.5">{stats.researchCohort}</p>
-                <p className="text-[9px] sm:text-[10px] text-cyan-600 font-medium">Participants</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Research Cohort</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{stats.researchCohort}</p>
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">Participants</p>
               </div>
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-cyan-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                 <FlaskConical className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -307,15 +307,15 @@ export default function DashboardPage() {
         </Card>
 
         {/* Education Cohort */}
-        <Card className="bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
           <CardContent className="p-2.5 sm:p-3 lg:p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-pink-700 uppercase tracking-wide mb-0.5">Education Cohort</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-pink-900 mb-0.5">{stats.educationCohort}</p>
-                <p className="text-[9px] sm:text-[10px] text-pink-600 font-medium">Participants</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Education Cohort</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{stats.educationCohort}</p>
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">Participants</p>
               </div>
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-pink-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                 <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -324,15 +324,15 @@ export default function DashboardPage() {
 
         {/* Email Stats */}
         {overview && overview.total_emails_sent !== undefined && (
-          <Card className="bg-gradient-to-br from-indigo-50 via-indigo-100 to-indigo-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border-none shadow-sm hover:shadow-md transition-all duration-300">
             <CardContent className="p-2.5 sm:p-3 lg:p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[9px] sm:text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-0.5">Emails Sent</p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-indigo-900 mb-0.5">{(overview.total_emails_sent || 0).toLocaleString()}</p>
-                  <p className="text-[9px] sm:text-[10px] text-indigo-600 font-medium">Total campaigns</p>
+                  <p className="text-[9px] sm:text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Emails Sent</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 mb-0.5">{(overview.total_emails_sent || 0).toLocaleString()}</p>
+                  <p className="text-[9px] sm:text-[10px] text-blue-600 font-medium">Total campaigns</p>
                 </div>
-                <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-indigo-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
+                <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-600 rounded-lg sm:rounded-xl shadow-sm flex-shrink-0">
                   <Mail className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Members */}
         <Card className="border-none shadow-md sm:shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-200">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
@@ -379,7 +379,7 @@ export default function DashboardPage() {
                 recentMembers.map((member) => (
                   <div key={member.id} className="flex items-center justify-between gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg sm:rounded-xl hover:from-gray-100 hover:to-blue-100 transition-all duration-200 border border-gray-100 hover:border-blue-200 group">
                     <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-0">
-                      <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-md flex-shrink-0">
+                      <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-md flex-shrink-0">
                         <span className="text-white font-bold text-sm sm:text-base leading-none">
                           {(member.name || 'U').charAt(0).toUpperCase()}
                         </span>
@@ -420,17 +420,17 @@ export default function DashboardPage() {
 
         {/* Recent Applications */}
         <Card className="border-none shadow-md sm:shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b border-gray-200">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-red-50 border-b border-gray-200">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg">
-                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
                 <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Recent Applications</span>
               </div>
               <a 
                 href="/dashboard/applications"
-                className="text-xs sm:text-sm text-orange-600 hover:text-orange-800 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
               >
                 <span className="hidden sm:inline">View All</span>
                 <span className="sm:hidden">View</span>
@@ -452,13 +452,13 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 recentApplications.map((app) => (
-                  <div key={app.id} className="flex items-center justify-between gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-orange-50 rounded-lg sm:rounded-xl hover:from-gray-100 hover:to-orange-100 transition-all duration-200 border border-gray-100 hover:border-orange-200 group">
+                  <div key={app.id} className="flex items-center justify-between gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg sm:rounded-xl hover:from-gray-100 hover:to-blue-100 transition-all duration-200 border border-gray-100 hover:border-blue-200 group">
                     <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-0 overflow-hidden">
-                      <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full shadow-md flex-shrink-0">
+                      <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-red-600 rounded-full shadow-md flex-shrink-0">
                         <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                           {app.applicant_name || 'Unknown Applicant'}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-600 truncate">{app.applicant_email || 'No email'}</p>
@@ -487,17 +487,17 @@ export default function DashboardPage() {
 
       {/* Recent Projects */}
       <Card className="border-none shadow-md sm:shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-200">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
-                <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
               <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Recent Projects</span>
             </div>
             <a 
               href="/dashboard/projects"
-              className="text-xs sm:text-sm text-purple-600 hover:text-purple-800 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
             >
               <span className="hidden sm:inline">View All</span>
               <span className="sm:hidden">View</span>
@@ -519,9 +519,9 @@ export default function DashboardPage() {
               </div>
             ) : (
               recentProjects.map((project) => (
-                <div key={project.id} className="p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-white to-purple-50 rounded-lg sm:rounded-xl border border-purple-200 sm:border-2 sm:border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-200 group">
+                <div key={project.id} className="p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-white to-blue-50 rounded-lg sm:rounded-xl border border-blue-200 sm:border-2 sm:border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-200 group">
                   <div className="flex items-start justify-between mb-2 sm:mb-3">
-                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-md">
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md">
                       <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
                     <span className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-full ${
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                       {(project.status || 'draft').toUpperCase()}
                     </span>
                   </div>
-                  <h4 className="font-bold text-sm sm:text-base text-gray-900 mb-1.5 sm:mb-2 line-clamp-1 group-hover:text-purple-600 transition-colors">
+                  <h4 className="font-bold text-sm sm:text-base text-gray-900 mb-1.5 sm:mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
                     {project.title}
                   </h4>
                   <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 min-h-[32px] sm:min-h-[40px]">
@@ -592,7 +592,7 @@ export default function DashboardPage() {
               href="/dashboard/members"
               className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-blue-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-blue-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
                 <Users className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white" />
               </div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">View Members</p>
@@ -600,29 +600,29 @@ export default function DashboardPage() {
             </a>
             <a
               href="/dashboard/projects"
-              className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-purple-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-purple-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
+              className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-blue-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-blue-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
                 <FolderOpen className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Manage Projects</p>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Manage Projects</p>
               <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{stats.totalProjects} projects</p>
             </a>
             <a
               href="/dashboard/applications"
-              className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-orange-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-orange-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
+              className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-blue-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-blue-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-blue-500 to-red-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
                 <FileText className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-orange-600 transition-colors">Applications</p>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Applications</p>
               <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{stats.pendingApplications} pending</p>
             </a>
             <a
               href="/dashboard/analytics"
               className="group p-3 sm:p-4 lg:p-6 text-center bg-white hover:bg-green-50 rounded-lg sm:rounded-xl lg:rounded-2xl transition-all duration-300 cursor-pointer border border-gray-200 sm:border-2 border-transparent hover:border-green-300 shadow-sm sm:shadow-md hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-1"
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white" />
               </div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-green-600 transition-colors">Analytics</p>

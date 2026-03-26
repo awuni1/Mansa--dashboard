@@ -223,7 +223,7 @@ export default function MentorshipDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading mentorship dashboard...</p>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function MentorshipDashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-2">
-            <Shield className="w-10 h-10 text-emerald-600" />
+            <Shield className="w-10 h-10 text-blue-600" />
             Mentorship Command Center
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -245,9 +245,9 @@ export default function MentorshipDashboardPage() {
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-              <Zap className="w-4 h-4 text-emerald-500 animate-pulse" />
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Live Updates</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <Zap className="w-4 h-4 text-blue-500 animate-pulse" />
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Live Updates</span>
             </div>
             <button
               type="button"
@@ -305,13 +305,13 @@ export default function MentorshipDashboardPage() {
       {/* Overview Stats with Enhanced Design */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Mentors Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-gray-800">
+        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-emerald-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Total Mentors
             </CardTitle>
-            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-              <Users className="w-5 h-5 text-emerald-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Users className="w-5 h-5 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -319,7 +319,7 @@ export default function MentorshipDashboardPage() {
               {stats.totalMentors}
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 text-emerald-600 font-medium">
+              <span className="flex items-center gap-1 text-blue-600 font-medium">
                 <CheckCircle className="w-3 h-3" />
                 {stats.approvedMentors} Active
               </span>
@@ -368,13 +368,13 @@ export default function MentorshipDashboardPage() {
         </Card>
 
         {/* Sessions Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/10 dark:to-gray-800">
+        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-purple-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Total Sessions
             </CardTitle>
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <Calendar className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Calendar className="w-5 h-5 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -439,7 +439,7 @@ export default function MentorshipDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-emerald-600" />
+              <Award className="w-5 h-5 text-blue-600" />
               Popular Expertise Areas
             </CardTitle>
           </CardHeader>
@@ -456,7 +456,7 @@ export default function MentorshipDashboardPage() {
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       ref={(el) => { if (el) el.style.width = `${(expertise.count / stats.popularExpertise[0].count) * 100}%`; }}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all"
+                      className="bg-gradient-to-r from-blue-500 to-teal-500 h-2 rounded-full transition-all"
                     />
                   </div>
                 </div>
@@ -502,9 +502,9 @@ export default function MentorshipDashboardPage() {
 
       {/* Quick Actions */}
       <Card className="border-2 border-gray-200 dark:border-gray-700">
-        <CardHeader className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Settings className="w-5 h-5 text-emerald-600" />
+            <Settings className="w-5 h-5 text-blue-600" />
             Admin Control Panel
           </CardTitle>
         </CardHeader>
@@ -513,10 +513,10 @@ export default function MentorshipDashboardPage() {
             {/* Manage Mentors */}
             <Link
               href="/dashboard/mentorship/mentors"
-              className="group p-5 border-2 border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-gray-800 rounded-xl hover:border-emerald-500 hover:shadow-lg transition-all"
+              className="group p-5 border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 {stats.pendingMentors > 0 && (
@@ -555,10 +555,10 @@ export default function MentorshipDashboardPage() {
             {/* Manage Mentees */}
             <Link
               href="/dashboard/mentorship/mentees"
-              className="group p-5 border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/10 dark:to-gray-800 rounded-xl hover:border-purple-500 hover:shadow-lg transition-all"
+              className="group p-5 border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-purple-600 rounded-xl group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
                   <UserPlus className="w-6 h-6 text-white" />
                 </div>
               </div>

@@ -130,7 +130,7 @@ export default function MembersPage() {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fadeIn">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 p-4 sm:p-6 lg:p-8 shadow-lg sm:shadow-2xl">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-600 p-4 sm:p-6 lg:p-8 shadow-lg sm:shadow-2xl">
         <div className="absolute inset-0 bg-grid-white/10"></div>
         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
           <div className="space-y-1 sm:space-y-2">
@@ -162,7 +162,7 @@ export default function MembersPage() {
       </div>
 
       {error && (
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-4 shadow-md animate-slideInFromRight">
+        <div className="bg-gradient-to-r from-yellow-50 to-blue-50 border-l-4 border-yellow-400 rounded-lg p-4 shadow-md animate-slideInFromRight">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -247,7 +247,7 @@ export default function MembersPage() {
               <div className="hidden lg:block overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-blue-50 to-cyan-50">
+                    <TableRow className="bg-gradient-to-r from-blue-50 to-blue-50">
                       <TableHead className="font-bold text-gray-700">Member</TableHead>
                       <TableHead className="font-bold text-gray-700">Contact</TableHead>
                       <TableHead className="font-bold text-gray-700">Profession</TableHead>
@@ -260,11 +260,11 @@ export default function MembersPage() {
                     {filteredMembers.map((member, index) => (
                       <TableRow 
                         key={member.id} 
-                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200 border-b border-gray-100"
+                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 border-b border-gray-100"
                       >
                         <TableCell className="py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                               <span className="text-white font-bold text-base leading-none select-none">
                                 {((member.name || member.full_name || 'U')[0]).toUpperCase()}
                               </span>
@@ -291,7 +291,7 @@ export default function MembersPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-purple-600" />
+                            <Briefcase className="h-4 w-4 text-blue-600" />
                             <span className="font-medium text-gray-700">{member.profession || member.occupation || member.jobtitle || 'N/A'}</span>
                           </div>
                         </TableCell>
@@ -342,10 +342,10 @@ export default function MembersPage() {
                 {filteredMembers.map((member, index) => (
                   <div 
                     key={member.id} 
-                    className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200"
+                    className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200"
                   >
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="w-12 h-12 min-w-[48px] rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 min-w-[48px] rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-bold text-lg leading-none select-none">
                           {((member.name || member.full_name || 'U')[0]).toUpperCase()}
                         </span>
@@ -368,7 +368,7 @@ export default function MembersPage() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-gray-700">
-                        <Briefcase className="h-4 w-4 text-purple-600" />
+                        <Briefcase className="h-4 w-4 text-blue-600" />
                         <span>{member.profession || member.occupation || member.jobtitle || 'N/A'}</span>
                       </div>
                       <div className="flex items-center gap-2 text-gray-700">
@@ -436,7 +436,7 @@ export default function MembersPage() {
                               onClick={() => setCurrentPage(pageNum)}
                               className={`w-10 h-10 rounded-lg font-semibold transition-all ${
                                 currentPage === pageNum
-                                  ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg scale-110'
+                                  ? 'bg-gradient-to-br from-blue-600 to-blue-600 text-white shadow-lg scale-110'
                                   : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-400 hover:scale-105'
                               }`}
                             >
@@ -463,7 +463,7 @@ export default function MembersPage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 mb-4">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-100 mb-4">
                 <Users className="h-10 w-10 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No members found</h3>
@@ -479,7 +479,7 @@ export default function MembersPage() {
       {showModal && selectedMember && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideInFromRight">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 p-6 z-10">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 p-6 z-10">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-2xl shadow-lg leading-none">
@@ -506,7 +506,7 @@ export default function MembersPage() {
             
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
                   <p className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Full Name
@@ -514,7 +514,7 @@ export default function MembersPage() {
                   <p className="text-base text-gray-900 font-medium">{selectedMember.full_name}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-100 hover:shadow-lg transition-all">
+                <div className="bg-gradient-to-br from-green-50 to-blue-50 p-5 rounded-xl border-2 border-green-100 hover:shadow-lg transition-all">
                   <p className="text-sm font-bold text-green-900 mb-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     Email
@@ -522,16 +522,16 @@ export default function MembersPage() {
                   <p className="text-base text-gray-900 font-medium break-all">{selectedMember.email}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border-2 border-purple-100 hover:shadow-lg transition-all">
-                  <p className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
+                  <p className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     Phone Number
                   </p>
                   <p className="text-base text-gray-900 font-medium">{selectedMember.phone_number || 'N/A'}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border-2 border-orange-100 hover:shadow-lg transition-all">
-                  <p className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-amber-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
+                  <p className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
                     Profession
                   </p>
@@ -546,8 +546,8 @@ export default function MembersPage() {
                   <p className="text-base text-gray-900 font-medium">{selectedMember.location || 'N/A'}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border-2 border-indigo-100 hover:shadow-lg transition-all">
-                  <p className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
+                  <p className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Membership Type
                   </p>
@@ -566,7 +566,7 @@ export default function MembersPage() {
 
                 <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200 hover:shadow-lg transition-all">
                   <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-purple-600" />
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
                     Area of Expertise
                   </p>
                   <p className="text-base text-gray-700 leading-relaxed">{selectedMember.areaOfExpertise || 'No expertise listed'}</p>
@@ -580,7 +580,7 @@ export default function MembersPage() {
                   <p className="text-base text-gray-700 leading-relaxed">{selectedMember.experience || 'No experience listed'}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border-2 border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-50 p-6 rounded-xl border-2 border-blue-200">
                   <p className="block text-sm font-bold text-blue-900 mb-2">Member Since</p>
                   <p className="text-base text-gray-900 font-medium">
                     {new Date(selectedMember.created_at).toLocaleString('en-US', {
@@ -605,7 +605,7 @@ export default function MembersPage() {
                 </Button>
                 <Button 
                   onClick={() => sendEmail(selectedMember)}
-                  className="flex-1 py-6 text-base bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:scale-105 transition-transform shadow-lg"
+                  className="flex-1 py-6 text-base bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 hover:scale-105 transition-transform shadow-lg"
                 >
                   <Mail className="h-5 w-5 mr-2" />
                   Send Email

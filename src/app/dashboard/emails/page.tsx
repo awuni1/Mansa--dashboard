@@ -39,6 +39,9 @@ export default function EmailsPage() {
   const [testEmail, setTestEmail] = useState('');
   const [testSending, setTestSending] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [flyerFile, setFlyerFile] = useState<File | null>(null);
+  const [flyerUrl, setFlyerUrl] = useState<string>('');
+  const [flyerUploading, setFlyerUploading] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -117,6 +120,22 @@ export default function EmailsPage() {
     return members.length;
   };
 
+  const handleFlyerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFlyerFile(file);
+    setFlyerUploading(true);
+    const { data, error } = await api.uploadCampaignFlyer(file);
+    if (error) {
+      toast.error('Failed to upload flyer', { description: error });
+      setFlyerFile(null);
+    } else if (data) {
+      setFlyerUrl(data.flyer_url);
+      toast.success('Flyer uploaded successfully');
+    }
+    setFlyerUploading(false);
+  };
+
   const sendEmails = async () => {
     setSending(true);
     try {
@@ -139,11 +158,12 @@ export default function EmailsPage() {
         target_approved_users: false,
         target_pending_users: false,
         target_all_members: recipients === 'all_members',
-        specific_member_emails: recipients === 'custom' 
-          ? customEmails 
-          : recipients === 'individual' 
+        specific_member_emails: recipients === 'custom'
+          ? customEmails
+          : recipients === 'individual'
             ? members.filter(m => selectedMemberIds.includes(m.id)).map(m => m.email).join(',')
             : '',
+        ...(flyerUrl ? { flyer_url: flyerUrl } : {}),
       };
 
       if (isScheduled && scheduledAt) {
@@ -258,7 +278,7 @@ export default function EmailsPage() {
     switch (status) {
       case 'sent': return 'text-green-700 bg-green-50 border-green-200';
       case 'failed': return 'text-red-700 bg-red-50 border-red-200';
-      case 'sending': return 'text-indigo-700 bg-indigo-50 border-indigo-200';
+      case 'sending': return 'text-blue-700 bg-blue-50 border-blue-200';
       case 'scheduled': return 'text-blue-700 bg-blue-50 border-blue-200';
       case 'queued': return 'text-amber-700 bg-amber-50 border-amber-200';
       default: return 'text-gray-700 bg-gray-50 border-gray-200';
@@ -282,7 +302,7 @@ export default function EmailsPage() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-indigo-600 rounded-lg">
+              <div className="p-2 bg-blue-600 rounded-lg">
                 <Mail className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Email Management</h1>
@@ -324,7 +344,7 @@ export default function EmailsPage() {
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`flex-1 px-6 py-4 text-sm font-medium transition-colors flex items-center justify-center gap-2 border-b-2 ${
                   activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                    ? 'border-blue-600 text-blue-600 bg-blue-50/50'
                     : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
                 }`}
               >
@@ -343,7 +363,7 @@ export default function EmailsPage() {
             <Card className="border border-gray-200 shadow-sm">
               <CardHeader className="border-b border-gray-200 bg-gray-50">
                 <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Edit3 className="h-5 w-5 text-indigo-600" />
+                  <Edit3 className="h-5 w-5 text-blue-600" />
                   Compose Email
                 </CardTitle>
               </CardHeader>
@@ -364,7 +384,7 @@ export default function EmailsPage() {
                         setBody(template.text_content || template.html_content);
                       }
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
                   >
                     <option value="">Select a template...</option>
                     {templates.map(template => (
@@ -395,7 +415,7 @@ export default function EmailsPage() {
                         key={option.value}
                         className={`flex items-center justify-between p-4 rounded-lg cursor-pointer border-2 transition-all ${
                           recipients === option.value
-                            ? 'border-indigo-600 bg-indigo-50'
+                            ? 'border-blue-600 bg-blue-50'
                             : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                         htmlFor={`recipient-${option.value}`}
@@ -408,7 +428,7 @@ export default function EmailsPage() {
                             value={option.value}
                             checked={recipients === option.value}
                             onChange={(e) => setRecipients(e.target.value as any)}
-                            className="w-4 h-4 text-indigo-600"
+                            className="w-4 h-4 text-blue-600"
                             aria-label={option.label}
                           />
                           <span className="text-sm font-medium text-gray-900">{option.label}</span>
@@ -431,7 +451,7 @@ export default function EmailsPage() {
                           <button
                             type="button"
                             onClick={() => setSelectedMemberIds(members.map(m => m.id))}
-                            className="text-xs font-medium text-indigo-600 hover:text-indigo-700 px-3 py-1.5 rounded border border-indigo-200 hover:bg-indigo-50"
+                            className="text-xs font-medium text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50"
                           >
                             Select All
                           </button>
@@ -450,7 +470,7 @@ export default function EmailsPage() {
                             key={member.id}
                             className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
                               selectedMemberIds.includes(member.id)
-                                ? 'bg-indigo-50 border-indigo-200'
+                                ? 'bg-blue-50 border-blue-200'
                                 : 'bg-white border-gray-200 hover:bg-gray-50'
                             }`}
                             htmlFor={`member-${member.id}`}
@@ -466,7 +486,7 @@ export default function EmailsPage() {
                                   setSelectedMemberIds(selectedMemberIds.filter(id => id !== member.id));
                                 }
                               }}
-                              className="w-4 h-4 text-indigo-600 rounded"
+                              className="w-4 h-4 text-blue-600 rounded"
                               aria-label={`Select ${member.name}`}
                             />
                             <div className="flex-1">
@@ -491,7 +511,7 @@ export default function EmailsPage() {
                         onChange={(e) => setCustomEmails(e.target.value)}
                         rows={4}
                         placeholder="email1@example.com, email2@example.com, email3@example.com"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       />
                     </div>
                   )}
@@ -505,7 +525,7 @@ export default function EmailsPage() {
                       type="checkbox"
                       checked={isScheduled}
                       onChange={(e) => setIsScheduled(e.target.checked)}
-                      className="w-4 h-4 text-indigo-600 rounded"
+                      className="w-4 h-4 text-blue-600 rounded"
                       aria-label="Schedule email for later"
                     />
                     <span className="text-sm font-medium text-gray-700">Schedule for later</span>
@@ -516,7 +536,7 @@ export default function EmailsPage() {
                       value={scheduledAt}
                       onChange={(e) => setScheduledAt(e.target.value)}
                       aria-label="Schedule date and time"
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                     />
                   )}
                 </div>
@@ -531,7 +551,7 @@ export default function EmailsPage() {
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="Enter email subject or select a template"
-                    className="bg-white border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   />
                 </div>
 
@@ -545,9 +565,46 @@ export default function EmailsPage() {
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     rows={8}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white font-mono text-sm resize-y focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white font-mono text-sm resize-y focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                     placeholder="Enter your email content or select a template to start"
                   />
+                </div>
+
+                {/* Event Flyer */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Event Flyer <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <label className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={handleFlyerChange}
+                        disabled={flyerUploading}
+                      />
+                      {flyerUploading ? (
+                        <span className="text-sm text-blue-600">Uploading...</span>
+                      ) : flyerFile ? (
+                        <span className="text-sm text-green-600 font-medium">✓ {flyerFile.name}</span>
+                      ) : (
+                        <span className="text-sm text-gray-500">Click to upload flyer (JPEG, PNG, WebP — max 5MB)</span>
+                      )}
+                    </label>
+                    {flyerUrl && (
+                      <button
+                        type="button"
+                        onClick={() => { setFlyerFile(null); setFlyerUrl(''); }}
+                        className="text-sm text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {flyerUrl && (
+                    <img src={flyerUrl} alt="Flyer preview" className="mt-3 max-h-40 rounded-lg border border-gray-200" />
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -560,6 +617,8 @@ export default function EmailsPage() {
                       setBody('');
                       setScheduledAt('');
                       setIsScheduled(false);
+                      setFlyerFile(null);
+                      setFlyerUrl('');
                     }}
                   >
                     Clear
@@ -568,7 +627,7 @@ export default function EmailsPage() {
                     onClick={sendEmails}
                     loading={sending}
                     disabled={!selectedTemplate || sending}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {sending ? (
                       <>
@@ -597,7 +656,7 @@ export default function EmailsPage() {
               </CardHeader>
               <CardContent className="p-4 space-y-4">
                 <div className="text-center py-6">
-                  <div className="text-4xl font-bold text-indigo-600 mb-2">{getRecipientCount()}</div>
+                  <div className="text-4xl font-bold text-blue-600 mb-2">{getRecipientCount()}</div>
                   <p className="text-sm text-gray-600">Total Recipients</p>
                 </div>
                 <div className="space-y-2 pt-4 border-t border-gray-200">
@@ -617,10 +676,10 @@ export default function EmailsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 shadow-sm bg-indigo-50/50">
+            <Card className="border border-gray-200 shadow-sm bg-blue-50/50">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-indigo-600 rounded-lg">
+                  <div className="p-2 bg-blue-600 rounded-lg">
                     <AlertCircle className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -645,7 +704,7 @@ export default function EmailsPage() {
           <CardHeader className="border-b border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-indigo-600" />
+                <FileText className="h-5 w-5 text-blue-600" />
                 Email Templates
               </CardTitle>
               <Button
@@ -654,7 +713,7 @@ export default function EmailsPage() {
                   setEditingTemplate(null);
                   setShowTemplateModal(true);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Template
@@ -727,7 +786,7 @@ export default function EmailsPage() {
                     setEditingTemplate(null);
                     setShowTemplateModal(true);
                   }}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Template
@@ -744,7 +803,7 @@ export default function EmailsPage() {
           <CardHeader className="border-b border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Send className="h-5 w-5 text-indigo-600" />
+                <Send className="h-5 w-5 text-blue-600" />
                 Email Campaigns
               </CardTitle>
             </div>
@@ -784,7 +843,7 @@ export default function EmailsPage() {
                           <Button
                             size="sm"
                             onClick={() => sendCampaign(campaign.id)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
                             <Send className="h-3.5 w-3.5 mr-1.5" />
                             Send
@@ -819,14 +878,14 @@ export default function EmailsPage() {
         <Card className="border border-gray-200 shadow-sm">
           <CardHeader className="border-b border-gray-200 bg-gray-50">
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-indigo-600" />
+              <BarChart3 className="h-5 w-5 text-blue-600" />
               Activity Logs
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {logsLoading ? (
               <div className="text-center py-12">
-                <Loader className="h-8 w-8 animate-spin mx-auto text-indigo-600 mb-3" />
+                <Loader className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-3" />
                 <p className="text-gray-600">Loading activity logs...</p>
               </div>
             ) : emailLogs.length > 0 ? (
@@ -881,7 +940,7 @@ export default function EmailsPage() {
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="border-b border-gray-200 bg-gray-50">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-indigo-600" />
+                <Zap className="h-5 w-5 text-blue-600" />
                 Email Provider
               </CardTitle>
             </CardHeader>
@@ -918,7 +977,7 @@ export default function EmailsPage() {
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="border-b border-gray-200 bg-gray-50">
               <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Send className="h-5 w-5 text-indigo-600" />
+                <Send className="h-5 w-5 text-blue-600" />
                 Test Email
               </CardTitle>
             </CardHeader>
@@ -936,7 +995,7 @@ export default function EmailsPage() {
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="bg-white border-gray-300 focus:border-indigo-500"
+                  className="bg-white border-gray-300 focus:border-blue-500"
                 />
               </div>
 
@@ -957,7 +1016,7 @@ export default function EmailsPage() {
               <Button
                 onClick={sendTest}
                 disabled={testSending || !testEmail.trim()}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {testSending ? (
                   <><Loader className="h-4 w-4 mr-2 animate-spin" />Sending test...</>
@@ -1006,7 +1065,7 @@ export default function EmailsPage() {
                   id="template-type-select"
                   value={templateForm.template_type}
                   onChange={(e) => setTemplateForm({ ...templateForm, template_type: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   aria-label="Template type"
                 >
                   <option value="welcome">Welcome</option>
@@ -1035,7 +1094,7 @@ export default function EmailsPage() {
                   onChange={(e) => setTemplateForm({ ...templateForm, text_content: e.target.value })}
                   rows={10}
                   placeholder="Write your email message here... (No coding needed - just type your message)"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
                 <p className="mt-1.5 text-xs text-gray-500">
                   💡 Tip: Write naturally. You can use &#123;&#123;name&#125;&#125; to personalize with recipient&apos;s name
@@ -1052,7 +1111,7 @@ export default function EmailsPage() {
                   onChange={(e) => setTemplateForm({ ...templateForm, html_content: e.target.value })}
                   rows={6}
                   placeholder="Leave empty to use plain text above, or add custom HTML formatting..."
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
             </div>
@@ -1066,7 +1125,7 @@ export default function EmailsPage() {
               </Button>
               <Button 
                 onClick={editingTemplate ? updateTemplate : createTemplate}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {editingTemplate ? 'Update Template' : 'Create Template'}
               </Button>

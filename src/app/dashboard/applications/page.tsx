@@ -162,12 +162,12 @@ export default function ApplicationsPage() {
       case 'pending':
         return `${baseClasses} bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-700 border-yellow-300`;
       case 'approved':
-        return `${baseClasses} bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-300`;
+        return `${baseClasses} bg-gradient-to-r from-green-50 to-blue-50 text-green-700 border-green-300`;
       case 'denied':
       case 'rejected':
         return `${baseClasses} bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border-red-300`;
       case 'waitlist':
-        return `${baseClasses} bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-300`;
+        return `${baseClasses} bg-gradient-to-r from-blue-50 to-blue-50 text-blue-700 border-blue-300`;
       default:
         return `${baseClasses} bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 border-gray-300`;
     }
@@ -195,7 +195,7 @@ export default function ApplicationsPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Hero Section with Gradient */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 sm:p-8 lg:p-12 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 p-6 sm:p-8 lg:p-12 shadow-2xl">
         <div className="absolute inset-0 bg-grid-white/10"></div>
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
@@ -255,7 +255,7 @@ export default function ApplicationsPage() {
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Approved</p>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600 mt-2">{approvedCount}</p>
                 </div>
-                <div className="p-3 sm:p-4 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
+                <div className="p-3 sm:p-4 bg-gradient-to-br from-green-100 to-blue-100 rounded-xl">
                   <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-green-600" />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function ApplicationsPage() {
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Waitlist</p>
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mt-2">{waitlistCount}</p>
                 </div>
-                <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl">
+                <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl">
                   <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-blue-600" />
                 </div>
               </div>
@@ -314,13 +314,13 @@ export default function ApplicationsPage() {
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             <div className="flex-1 w-full lg:w-auto">
               <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                 <input
                   type="text"
                   placeholder="Search by applicant name, email, or project..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base border-2 border-gray-200 focus:border-indigo-500 rounded-xl shadow-sm hover:shadow-md transition-all focus:outline-none"
+                  className="w-full pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all focus:outline-none"
                 />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function ApplicationsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all text-sm sm:text-base font-medium"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all text-sm sm:text-base font-medium"
                 aria-label="Filter by status"
                 title="Select status filter"
               >
@@ -352,7 +352,7 @@ export default function ApplicationsPage() {
               <Button 
                 variant="primary"
                 onClick={() => setStatusFilter('all')}
-                className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700"
               >
                 <Users className="h-4 w-4" />
                 View All ({totalCount})
@@ -363,9 +363,9 @@ export default function ApplicationsPage() {
       </Card>
       {/* Applications Table */}
       <Card className="border-2 border-gray-100 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b-2 border-gray-100">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b-2 border-gray-100">
           <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg">
+            <div className="p-2 bg-blue-600 rounded-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
             Applications Directory ({filteredApplications.length})
@@ -378,7 +378,7 @@ export default function ApplicationsPage() {
               <div className="hidden lg:block overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                    <TableRow className="bg-gradient-to-r from-blue-50 to-blue-50">
                       <TableHead className="font-bold text-gray-700">Applicant</TableHead>
                       <TableHead className="font-bold text-gray-700">Project</TableHead>
                       <TableHead className="font-bold text-gray-700">Status</TableHead>
@@ -395,11 +395,11 @@ export default function ApplicationsPage() {
                       return (
                         <TableRow 
                           key={application.id}
-                          className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 border-b border-gray-100"
+                          className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 border-b border-gray-100"
                         >
                           <TableCell className="py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                                 <span className="text-white font-bold text-base">
                                   {applicantName[0]?.toUpperCase() || 'A'}
                                 </span>
@@ -436,7 +436,7 @@ export default function ApplicationsPage() {
                                   setSelectedApplication(application);
                                   setShowModal(true);
                                 }}
-                                className="hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
+                                className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
                                 title="View Details"
                               >
                                 <Eye className="h-4 w-4" />
@@ -490,10 +490,10 @@ export default function ApplicationsPage() {
                   return (
                     <div 
                       key={application.id}
-                      className="p-4 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200"
+                      className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200"
                     >
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-bold text-lg">
                             {applicantName[0]?.toUpperCase() || 'A'}
                           </span>
@@ -509,7 +509,7 @@ export default function ApplicationsPage() {
                       
                       <div className="space-y-2 text-sm mb-3">
                         <div className="flex items-start gap-2">
-                          <FileText className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                          <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <span className="font-medium text-gray-700">Project: </span>
                             <span className="text-gray-600">
@@ -518,7 +518,7 @@ export default function ApplicationsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
-                          <Clock className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+                          <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
                           <span>Applied: {new Date(appliedDate).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -587,7 +587,7 @@ export default function ApplicationsPage() {
                   </Button>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700">
-                      Page <span className="font-bold text-indigo-600">{currentPage}</span> of <span className="font-bold">{totalPages}</span>
+                      Page <span className="font-bold text-blue-600">{currentPage}</span> of <span className="font-bold">{totalPages}</span>
                     </span>
                   </div>
                   <Button
@@ -622,7 +622,7 @@ export default function ApplicationsPage() {
                 <Button 
                   variant="primary"
                   onClick={() => setStatusFilter('all')}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700"
                 >
                   View All Applications
                 </Button>
@@ -647,14 +647,14 @@ export default function ApplicationsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)} role="presentation">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} role="presentation">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 sm:px-8 py-6 flex items-center justify-between rounded-t-2xl z-10">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 text-white px-6 sm:px-8 py-6 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
                   <FileText className="h-7 w-7" />
                 </div>
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold">Application Details</h2>
-                  <p className="text-indigo-100 text-sm mt-1">Complete application information</p>
+                  <p className="text-blue-100 text-sm mt-1">Complete application information</p>
                 </div>
               </div>
               <button
@@ -671,9 +671,9 @@ export default function ApplicationsPage() {
             {/* Modal Content */}
             <div className="p-6 sm:p-8 space-y-8">
               {/* Applicant Info Section */}
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border-2 border-indigo-100">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-50 rounded-xl p-6 border-2 border-blue-100">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-2xl">
                       {(selectedApplication.applicant_name || selectedApplication.full_name || 'A')[0]?.toUpperCase()}
                     </span>
@@ -682,7 +682,7 @@ export default function ApplicationsPage() {
                     <h3 className="text-2xl font-bold text-gray-900">
                       {selectedApplication.applicant_name || selectedApplication.full_name || 'N/A'}
                     </h3>
-                    <p className="text-indigo-600 font-medium">
+                    <p className="text-blue-600 font-medium">
                       {selectedApplication.applicant_email || selectedApplication.email || 'N/A'}
                     </p>
                   </div>
@@ -694,7 +694,7 @@ export default function ApplicationsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-white rounded-lg p-4">
                     <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                      <FileText className="h-4 w-4 text-indigo-600" />
+                      <FileText className="h-4 w-4 text-blue-600" />
                       <span className="font-medium">Project</span>
                     </div>
                     <p className="text-gray-900 font-semibold">
@@ -704,7 +704,7 @@ export default function ApplicationsPage() {
 
                   <div className="bg-white rounded-lg p-4">
                     <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                      <Clock className="h-4 w-4 text-indigo-600" />
+                      <Clock className="h-4 w-4 text-blue-600" />
                       <span className="font-medium">Applied Date</span>
                     </div>
                     <p className="text-gray-900 font-semibold">
@@ -726,7 +726,7 @@ export default function ApplicationsPage() {
               {selectedApplication.skills && (
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
                       <Users className="h-4 w-4 text-white" />
                     </div>
                     Skills & Expertise
@@ -735,7 +735,7 @@ export default function ApplicationsPage() {
                     {selectedApplication.skills.split(',').map((skill, index) => (
                       <span
                         key={index}
-                        className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 text-green-700 rounded-full text-sm font-semibold"
+                        className="px-4 py-2 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 text-green-700 rounded-full text-sm font-semibold"
                       >
                         {skill.trim()}
                       </span>
@@ -748,12 +748,12 @@ export default function ApplicationsPage() {
               {selectedApplication.motivation && (
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 text-white" />
                     </div>
                     Motivation
                   </h4>
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-50 border-2 border-blue-200 rounded-xl p-5">
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {selectedApplication.motivation}
                     </p>
@@ -765,12 +765,12 @@ export default function ApplicationsPage() {
               {(selectedApplication as any).experience && (
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                       <TrendingUp className="h-4 w-4 text-white" />
                     </div>
                     Experience
                   </h4>
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-5">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-50 border-2 border-blue-200 rounded-xl p-5">
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {(selectedApplication as any).experience}
                     </p>
@@ -782,7 +782,7 @@ export default function ApplicationsPage() {
               {(selectedApplication as any).portfolio_url && (
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-red-600 rounded-lg flex items-center justify-center">
                       <Download className="h-4 w-4 text-white" />
                     </div>
                     Portfolio
@@ -791,7 +791,7 @@ export default function ApplicationsPage() {
                     href={(selectedApplication as any).portfolio_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-all transform hover:scale-105 font-semibold"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-red-600 text-white rounded-lg hover:from-blue-600 hover:to-red-700 transition-all transform hover:scale-105 font-semibold"
                   >
                     <Download className="h-5 w-5" />
                     View Portfolio
@@ -803,12 +803,12 @@ export default function ApplicationsPage() {
               {(selectedApplication as any).project_description && (
                 <div>
                   <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 text-white" />
                     </div>
                     Project Description
                   </h4>
-                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-xl p-5">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-50 border-2 border-blue-200 rounded-xl p-5">
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {(selectedApplication as any).project_description}
                     </p>
@@ -862,7 +862,7 @@ export default function ApplicationsPage() {
                         updateApplicationStatus(selectedApplication.id, 'approved');
                         setShowModal(false);
                       }}
-                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 py-3 text-base font-semibold"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 py-3 text-base font-semibold"
                     >
                       <CheckCircle className="h-5 w-5 mr-2" />
                       Approve Application
@@ -886,7 +886,7 @@ export default function ApplicationsPage() {
                     sendStatusEmail(selectedApplication, selectedApplication.status);
                     setShowModal(false);
                   }}
-                  className="flex-1 sm:flex-none border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 py-3 text-base font-semibold"
+                  className="flex-1 sm:flex-none border-2 border-blue-600 text-blue-600 hover:bg-blue-50 py-3 text-base font-semibold"
                 >
                   <Mail className="h-5 w-5 mr-2" />
                   Send Email

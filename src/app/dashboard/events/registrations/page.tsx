@@ -288,8 +288,8 @@ export default function EventRegistrationsPage() {
                     {stats.students}
                   </p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
               <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
@@ -330,8 +330,8 @@ export default function EventRegistrationsPage() {
                     {stats.attended}
                   </p>
                 </div>
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
               <div className="mt-4 text-sm text-red-600 dark:text-red-400">

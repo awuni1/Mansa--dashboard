@@ -33,7 +33,7 @@ export function CardHeader({ children, className, gradient = false }: CardHeader
   return (
     <div className={clsx(
       'border-b border-gray-100 pb-3 sm:pb-4 mb-4 sm:mb-5',
-      gradient && 'bg-gradient-to-r from-blue-50 to-cyan-50 -mx-3 sm:-mx-5 lg:-mx-6 px-3 sm:px-5 lg:px-6 py-3 sm:py-4 mb-4 sm:mb-5 rounded-t-xl sm:rounded-t-2xl',
+      gradient && 'bg-gradient-to-r from-blue-50 to-blue-50 -mx-3 sm:-mx-5 lg:-mx-6 px-3 sm:px-5 lg:px-6 py-3 sm:py-4 mb-4 sm:mb-5 rounded-t-xl sm:rounded-t-2xl',
       className
     )}>
       {children}

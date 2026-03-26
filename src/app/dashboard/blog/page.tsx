@@ -50,9 +50,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   technology: 'bg-blue-100 text-blue-700',
   innovation: 'bg-blue-100 text-blue-700',
   africa: 'bg-amber-100 text-amber-700',
-  community: 'bg-emerald-100 text-emerald-700',
+  community: 'bg-blue-100 text-blue-700',
   research: 'bg-blue-100 text-blue-700',
-  business: 'bg-orange-100 text-orange-700',
+  business: 'bg-blue-100 text-blue-700',
 };
 function categoryColor(cat: string) {
   return CATEGORY_COLORS[cat?.toLowerCase()] ?? 'bg-slate-100 text-slate-600';
@@ -98,7 +98,7 @@ function PostCard({
         {/* Status badge */}
         <div className="absolute top-3 left-3">
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm ${
-            isPublished ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-white'
+            isPublished ? 'bg-blue-500 text-white' : 'bg-amber-400 text-white'
           }`}>
             {isPublished ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
             {isPublished ? 'Published' : 'Draft'}
@@ -175,7 +175,7 @@ function PostCard({
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             isPublished
               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
           }`}
         >
           {isPublished ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -316,7 +316,7 @@ export default function BlogManagementPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Total Posts', value: posts.length, icon: <Newspaper className="w-5 h-5" />, bg: 'from-blue-500 to-blue-600', card: 'from-blue-50 to-blue-100', text: 'text-blue-900', sub: 'text-blue-600' },
-          { label: 'Published', value: published, icon: <CheckCircle className="w-5 h-5" />, bg: 'from-emerald-500 to-emerald-600', card: 'from-emerald-50 to-emerald-100', text: 'text-emerald-900', sub: 'text-emerald-600' },
+          { label: 'Published', value: published, icon: <CheckCircle className="w-5 h-5" />, bg: 'from-blue-500 to-blue-600', card: 'from-blue-50 to-blue-100', text: 'text-blue-900', sub: 'text-blue-600' },
           { label: 'Drafts', value: drafts, icon: <Clock className="w-5 h-5" />, bg: 'from-amber-400 to-amber-500', card: 'from-amber-50 to-amber-100', text: 'text-amber-900', sub: 'text-amber-600' },
           { label: 'Total Views', value: totalViews.toLocaleString(), icon: <TrendingUp className="w-5 h-5" />, bg: 'from-blue-800 to-blue-900', card: 'from-blue-100 to-blue-200', text: 'text-blue-900', sub: 'text-blue-700' },
         ].map((s) => (

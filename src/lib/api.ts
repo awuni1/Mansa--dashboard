@@ -569,6 +569,22 @@ class ApiClient {
     });
   }
 
+  async uploadCampaignFlyer(file: File): Promise<ApiResponse<{ flyer_url: string }>> {
+    const url = `${this.baseUrl}/emails/upload-flyer/`;
+    const formData = new FormData();
+    formData.append('flyer', file);
+    const headers: Record<string, string> = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    try {
+      const response = await fetch(url, { method: 'POST', headers, body: formData });
+      const data = await response.json();
+      if (!response.ok) return { error: data.error || 'Upload failed' };
+      return { data };
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : 'Network error' };
+    }
+  }
+
   async getEmailLogs(params?: { page?: number; search?: string }): Promise<ApiResponse<PaginatedResponse<EmailLog>>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', params.page.toString());
@@ -755,6 +771,8 @@ export interface EmailCampaign {
   // Member targeting
   target_all_members: boolean;
   specific_member_emails: string;
+  // Optional flyer
+  flyer_url?: string;
   // Scheduling
   scheduled_at?: string;
   sent_at?: string;

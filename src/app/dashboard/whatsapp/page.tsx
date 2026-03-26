@@ -9,7 +9,7 @@ export default function WhatsAppManagerPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-center">
-            <AlertCircle className="h-5 w-5 text-orange-500" />
+            <AlertCircle className="h-5 w-5 text-blue-500" />
             <span>WhatsApp Manager Disabled</span>
           </CardTitle>
         </CardHeader>

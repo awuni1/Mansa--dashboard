@@ -169,7 +169,7 @@ export default function MentorsManagementPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <UserCheck className="w-8 h-8 text-emerald-600" />
+            <UserCheck className="w-8 h-8 text-blue-600" />
             Mentor Management
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -178,7 +178,7 @@ export default function MentorsManagementPage() {
         </div>
         <Link
           href="/dashboard/mentorship"
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           ← Back to Dashboard
         </Link>
@@ -195,8 +195,8 @@ export default function MentorsManagementPage() {
                   {totalCount}
                 </p>
               </div>
-              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 rounded-full">
-                <UserCheck className="w-6 h-6 text-emerald-600" />
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                <UserCheck className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -247,7 +247,7 @@ export default function MentorsManagementPage() {
                 placeholder="Search by name, email, title, or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
               />
             </div>
 
@@ -258,7 +258,7 @@ export default function MentorsManagementPage() {
                 onClick={() => setFilter('all')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'all'
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
@@ -269,7 +269,7 @@ export default function MentorsManagementPage() {
                 onClick={() => setFilter('approved')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'approved'
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
@@ -280,7 +280,7 @@ export default function MentorsManagementPage() {
                 onClick={() => setFilter('pending')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   filter === 'pending'
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
@@ -299,7 +299,7 @@ export default function MentorsManagementPage() {
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-4 text-gray-600 dark:text-gray-400">Loading mentors...</p>
             </div>
           ) : filteredMentors.length === 0 ? (
@@ -324,7 +324,7 @@ export default function MentorsManagementPage() {
                     <tr key={mentor.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">
                             {mentor.name?.charAt(0) || 'M'}
                           </div>
                           <div>

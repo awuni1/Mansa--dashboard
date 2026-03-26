@@ -79,7 +79,7 @@ export default function APITestPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-600 rounded-2xl p-8 text-white shadow-xl">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">API Endpoint Tests</h1>

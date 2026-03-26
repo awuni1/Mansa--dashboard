@@ -64,7 +64,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 rounded-t-2xl">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-600 px-6 py-5 rounded-t-2xl">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -154,7 +154,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
           {/* Project Settings Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <div className="h-8 w-1 bg-purple-600 rounded-full"></div>
+              <div className="h-8 w-1 bg-blue-600 rounded-full"></div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Project Settings</h3>
             </div>
 
@@ -167,7 +167,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   id="project-type-select"
                   value={formData.project_type}
                   onChange={(e) => setFormData(prev => ({ ...prev, project_type: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
                 >
                   <option value="future">🔮 Future (Coming Soon)</option>
                   <option value="ongoing">🚀 Ongoing (Active Now)</option>
@@ -185,7 +185,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   id="project-status-select"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base cursor-pointer"
                 >
                   <option value="draft">📝 Draft</option>
                   <option value="concept">💡 Concept</option>
@@ -207,7 +207,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
                   min="1"
                   value={formData.max_participants}
                   onChange={(e) => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all text-base"
                   placeholder="100"
                 />
               </div>
@@ -264,7 +264,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ isOpen, onClose, onSubmit, 
             <Button
               type="submit"
               disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-2.5 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white px-8 py-2.5 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               {loading ? (
                 <>
@@ -701,7 +701,7 @@ export default function ProjectsPage() {
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>;
       case 'closed':
       case 'completed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Completed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Completed</span>;
       case 'archived':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">Archived</span>;
       default:
@@ -736,7 +736,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-md sm:shadow-lg">
+      <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-md sm:shadow-lg">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -832,17 +832,17 @@ export default function ProjectsPage() {
             onClick={() => setStatusFilter('closed')}
             className={`p-3 sm:p-4 text-center transition-all duration-200 ${
               statusFilter === 'closed'
-                ? 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800'
+                ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800'
                 : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <div className={`text-xl sm:text-2xl font-bold ${
-              statusFilter === 'closed' ? 'text-purple-600' : 'text-gray-900 dark:text-white'
+              statusFilter === 'closed' ? 'text-blue-600' : 'text-gray-900 dark:text-white'
             }`}>
               {completedProjectsCount}
             </div>
             <div className={`text-xs sm:text-sm font-medium mt-1 ${
-              statusFilter === 'closed' ? 'text-purple-700' : 'text-gray-500 dark:text-gray-400'
+              statusFilter === 'closed' ? 'text-blue-700' : 'text-gray-500 dark:text-gray-400'
             }`}>
               Completed
             </div>
@@ -1102,7 +1102,7 @@ export default function ProjectsPage() {
                   setEditingProject(null);
                   setModalOpen(true);
                 }}
-                className="mt-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg"
+                className="mt-6 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white shadow-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Project
