@@ -33,8 +33,10 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
   const membershipStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
-      const type = member.membershipType || 'Unspecified';
-      stats.set(type, (stats.get(type) || 0) + 1);
+      const raw = member.membershipType || 'Unspecified';
+      const key = raw.trim().toLowerCase();
+      const display = key === 'unspecified' ? 'Unspecified' : key.charAt(0).toUpperCase() + key.slice(1);
+      stats.set(display, (stats.get(display) || 0) + 1);
     });
     return Array.from(stats.entries())
       .map(([name, value]) => ({ name, value }))
@@ -45,8 +47,10 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
   const genderStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
-      const gender = member.gender || 'Not specified';
-      stats.set(gender, (stats.get(gender) || 0) + 1);
+      const raw = member.gender || 'Not specified';
+      const gender = raw.trim().toLowerCase();
+      const display = gender === 'not specified' ? 'Not specified' : gender.charAt(0).toUpperCase() + gender.slice(1);
+      stats.set(display, (stats.get(display) || 0) + 1);
     });
     return Array.from(stats.entries())
       .map(([name, value]) => ({ name, value }))
@@ -58,8 +62,9 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
     const stats = new Map<string, number>();
     members.forEach(member => {
       if (member.country) {
-        const country = member.country.trim();
-        stats.set(country, (stats.get(country) || 0) + 1);
+        const key = member.country.trim().toLowerCase();
+        const display = key.charAt(0).toUpperCase() + key.slice(1);
+        stats.set(display, (stats.get(display) || 0) + 1);
       }
     });
     return Array.from(stats.entries())
@@ -85,7 +90,7 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
 
   // Calculate key metrics
   const totalCountries = useMemo(() => {
-    return new Set(members.filter(m => m.country).map(m => m.country)).size;
+    return new Set(members.filter(m => m.country).map(m => m.country!.trim().toLowerCase())).size;
   }, [members]);
 
   const totalCities = useMemo(() => {

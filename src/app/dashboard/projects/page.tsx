@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { api, Project } from '@/lib/api';
@@ -345,16 +346,13 @@ export default function ProjectsPage() {
 
   const loadApplicationCounts = async () => {
     try {
-      const { data, error } = await api.getPlatformApplications({});
-      if (!error && data?.results) {
-        // Count applications per project
-        const counts: Record<number, number> = {};
-        data.results.forEach((app: any) => {
-          const projectId = app.project_id;
-          counts[projectId] = (counts[projectId] || 0) + 1;
-        });
-        setApplicationCounts(counts);
-      }
+      const { data: projectData } = await api.getPlatformProjects({});
+      const projectList: Project[] = projectData?.results || [];
+      const counts: Record<number, number> = {};
+      projectList.forEach((project) => {
+        counts[project.id] = (project as any).participants_count ?? 0;
+      });
+      setApplicationCounts(counts);
     } catch (error) {
       console.error('Error loading application counts:', error);
     }
@@ -392,26 +390,27 @@ export default function ProjectsPage() {
   const handleApproveApplication = async (applicationId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/applications/${applicationId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/applications/${applicationId}/approve/`,
         {
-          method: 'PATCH',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          },
-          body: JSON.stringify({ status: 'approved' })
+          }
         }
       );
 
       if (response.ok) {
-        console.log('Application approved successfully!');
+        toast.success('Application approved! Congratulation email sent to applicant.');
         if (selectedProjectId) {
           loadApplicationsForProject(selectedProjectId);
         }
+      } else {
+        const data = await response.json().catch(() => ({}));
+        toast.error(data.detail || 'Failed to approve application.');
       }
     } catch (error) {
-      console.error('Error approving application:', error);
-      console.error('Error approving application');
+      toast.error('Network error. Please try again.');
     }
   };
 
