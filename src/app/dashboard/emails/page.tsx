@@ -1,17 +1,19 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { api, EmailTemplate, EmailCampaign, EmailLog, Member } from '@/lib/api';
-import { Mail, Users, Send, Loader, Plus, Trash2, FileText, Clock, CheckCircle, XCircle, AlertCircle, Edit3, Target, BarChart3, X, Calendar, Zap, Settings } from 'lucide-react';
+import {
+  Mail, Send, Loader, Plus, Trash2, FileText,
+  XCircle, Edit3, BarChart3, X, Zap, Target,
+  CheckCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-type TabType = 'compose' | 'templates' | 'campaigns' | 'logs' | 'settings';
+type ModalType = 'compose' | 'template' | null;
 
 export default function EmailsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('compose');
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [recipients, setRecipients] = useState<'all_members' | 'individual' | 'custom'>('all_members');
@@ -23,1112 +25,492 @@ export default function EmailsPage() {
   const [sending, setSending] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [isScheduled, setIsScheduled] = useState(false);
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
-  const [templateForm, setTemplateForm] = useState({
-    name: '',
-    template_type: 'campaign',
-    subject: '',
-    html_content: '',
-    text_content: '',
-  });
+  const [templateForm, setTemplateForm] = useState({ name: '', template_type: 'campaign', subject: '', html_content: '', text_content: '' });
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
-  const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
-  const [logsLoading, setLogsLoading] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [testSending, setTestSending] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [flyerFile, setFlyerFile] = useState<File | null>(null);
   const [flyerUrl, setFlyerUrl] = useState<string>('');
   const [flyerUploading, setFlyerUploading] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
 
-  useEffect(() => {
-    loadTemplates();
-    loadMembers();
-    if (activeTab === 'campaigns') {
-      loadCampaigns();
-    } else if (activeTab === 'logs') {
-      loadEmailLogs();
-    }
-  }, [activeTab]);
+  useEffect(() => { loadTemplates(); loadMembers(); loadCampaigns(); loadEmailLogs(); }, []);
 
   const loadTemplates = async () => {
     const { data, error } = await api.getEmailTemplates();
-    if (data && !error) {
-      setTemplates(data.results);
-    }
+    if (data && !error) setTemplates(data.results);
   };
 
   const loadMembers = async () => {
-    let allMembers: Member[] = [];
-    let page = 1;
-    let hasMore = true;
+    let allMembers: Member[] = [], page = 1, hasMore = true;
     while (hasMore) {
+      if (page > 20) break; // cap at ~2000 records to prevent OOM
       const { data, error } = await api.getPlatformMembers({ page });
-      if (data && !error) {
-        allMembers = [...allMembers, ...data.results];
-        hasMore = data.next !== null;
-        page++;
-      } else {
-        hasMore = false;
-      }
+      if (data && !error) { allMembers = [...allMembers, ...data.results]; hasMore = data.next !== null; page++; }
+      else { hasMore = false; }
     }
     setMembers(allMembers);
   };
 
   const loadCampaigns = async () => {
     const { data, error } = await api.getEmailCampaigns();
-    if (data && !error) {
-      setCampaigns(data.results);
-    }
+    if (data && !error) setCampaigns(data.results);
   };
 
   const loadEmailLogs = async () => {
-    setLogsLoading(true);
     const { data, error } = await api.getEmailLogs({ page: 1 });
-    if (data && !error) {
-      setEmailLogs(data.results);
-    }
-    setLogsLoading(false);
-  };
-
-  const sendTest = async () => {
-    if (!testEmail.trim()) {
-      setTestResult({ ok: false, message: 'Enter an email address first.' });
-      return;
-    }
-    setTestSending(true);
-    setTestResult(null);
-    const { data, error } = await api.sendTestEmail(testEmail.trim());
-    if (error) {
-      setTestResult({ ok: false, message: error });
-    } else {
-      setTestResult({ ok: true, message: data?.detail || 'Test email sent successfully!' });
-      toast.success('Test email sent!', { description: `Sent to ${testEmail}` });
-    }
-    setTestSending(false);
+    if (data && !error) setEmailLogs(data.results);
   };
 
   const getRecipientCount = () => {
-    if (recipients === 'custom') {
-      return customEmails.split(',').filter(e => e.trim()).length;
-    }
-    if (recipients === 'individual') {
-      return selectedMemberIds.length;
-    }
+    if (recipients === 'custom') return customEmails.split(',').filter(e => e.trim()).length;
+    if (recipients === 'individual') return selectedMemberIds.length;
     return members.length;
   };
 
   const handleFlyerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFlyerFile(file);
-    setFlyerUploading(true);
+    setFlyerFile(file); setFlyerUploading(true);
     const { data, error } = await api.uploadCampaignFlyer(file);
-    if (error) {
-      toast.error('Failed to upload flyer', { description: error });
-      setFlyerFile(null);
-    } else if (data) {
-      setFlyerUrl(data.flyer_url);
-      toast.success('Flyer uploaded successfully');
-    }
+    if (error) { toast.error('Failed to upload flyer'); setFlyerFile(null); }
+    else if (data) { setFlyerUrl(data.flyer_url); toast.success('Flyer uploaded!'); }
     setFlyerUploading(false);
   };
 
   const sendEmails = async () => {
     setSending(true);
+    if (!selectedTemplate) { toast.error('Select a template first'); setSending(false); return; }
+    if (recipients === 'individual' && selectedMemberIds.length === 0) { toast.error('Select at least one member'); setSending(false); return; }
     try {
-      if (!selectedTemplate) {
-        toast.error('Please select a template');
-        setSending(false);
-        return;
-      }
-
-      if (recipients === 'individual' && selectedMemberIds.length === 0) {
-        toast.error('Please select at least one member');
-        setSending(false);
-        return;
-      }
-
       const campaignData: any = {
-        name: `Campaign - ${new Date().toISOString()}`,
-        template: selectedTemplate.id,
-        target_all_users: false,
-        target_approved_users: false,
-        target_pending_users: false,
+        name: `Campaign - ${new Date().toISOString()}`, template: selectedTemplate.id,
         target_all_members: recipients === 'all_members',
-        specific_member_emails: recipients === 'custom'
-          ? customEmails
-          : recipients === 'individual'
-            ? members.filter(m => selectedMemberIds.includes(m.id)).map(m => m.email).join(',')
-            : '',
+        specific_member_emails: recipients === 'custom' ? customEmails : recipients === 'individual' ? members.filter(m => selectedMemberIds.includes(m.id)).map(m => m.email).join(',') : '',
         ...(flyerUrl ? { flyer_url: flyerUrl } : {}),
       };
-
-      if (isScheduled && scheduledAt) {
-        campaignData.scheduled_at = new Date(scheduledAt).toISOString();
-      }
-
+      if (isScheduled && scheduledAt) campaignData.scheduled_at = new Date(scheduledAt).toISOString();
       const { data: campaign, error: campaignError } = await api.createEmailCampaign(campaignData);
-
-      if (campaignError || !campaign) {
-        toast.error('Failed to create campaign', { description: campaignError || 'Unknown error' });
-        setSending(false);
-        return;
+      if (campaignError || !campaign) { toast.error('Failed to create campaign'); setSending(false); return; }
+      if (isScheduled) { toast.success('Campaign scheduled!'); }
+      else {
+        const { error: sendError } = await api.sendEmailCampaign(campaign.id);
+        if (sendError) { toast.error('Failed to send campaign'); }
+        else { toast.success(`Sent to ${getRecipientCount()} recipient(s)!`); loadCampaigns(); }
       }
-
-      if (isScheduled) {
-        toast.success('Campaign scheduled successfully!', {
-          description: `Will be sent on ${new Date(scheduledAt).toLocaleString()}`
-        });
-      } else {
-        const { data: sentCampaign, error: sendError } = await api.sendEmailCampaign(campaign.id);
-        if (sendError) {
-          toast.error('Failed to send campaign', { description: sendError });
-        } else {
-          toast.success('Campaign sent successfully!', {
-            description: `Sent to ${getRecipientCount()} recipient(s)`
-          });
-          loadCampaigns();
-        }
-      }
-
-      if (recipients === 'individual') {
-        setSelectedMemberIds([]);
-      }
-    } catch (error) {
-      console.error('Error sending emails:', error);
-      toast.error('Error occurred while sending emails');
-    } finally {
-      setSending(false);
-    }
+      setActiveModal(null);
+    } catch { toast.error('Error sending.'); } finally { setSending(false); }
   };
 
   const createTemplate = async () => {
-    const { data, error } = await api.createEmailTemplate(templateForm);
-    if (error) {
-      toast.error('Failed to create template', { description: error });
-      return;
-    }
-    toast.success('Template created successfully!');
-    setShowTemplateModal(false);
-    loadTemplates();
-    resetTemplateForm();
+    const { error } = await api.createEmailTemplate(templateForm);
+    if (error) { toast.error('Failed to create template'); return; }
+    toast.success('Template created!'); setActiveModal(null); loadTemplates(); resetTemplateForm();
   };
 
   const updateTemplate = async () => {
     if (!editingTemplate) return;
-    const { data, error } = await api.updateEmailTemplate(editingTemplate.id, templateForm);
-    if (error) {
-      toast.error('Failed to update template', { description: error });
-      return;
-    }
-    toast.success('Template updated successfully!');
-    setShowTemplateModal(false);
-    setEditingTemplate(null);
-    loadTemplates();
-    resetTemplateForm();
+    const { error } = await api.updateEmailTemplate(editingTemplate.id, templateForm);
+    if (error) { toast.error('Failed to update template'); return; }
+    toast.success('Template updated!'); setActiveModal(null); setEditingTemplate(null); loadTemplates(); resetTemplateForm();
   };
 
   const deleteTemplate = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm('Delete this template?')) return;
     const { error } = await api.deleteEmailTemplate(id);
-    if (error) {
-      toast.error('Failed to delete template', { description: error });
-      return;
-    }
-    toast.success('Template deleted successfully!');
-    loadTemplates();
+    if (error) { toast.error('Failed to delete'); return; }
+    toast.success('Template deleted!'); loadTemplates();
   };
 
   const sendCampaign = async (id: number) => {
-    if (!confirm('Are you sure you want to send this campaign?')) return;
+    if (!confirm('Send this campaign now?')) return;
     const { error } = await api.sendEmailCampaign(id);
-    if (error) {
-      toast.error('Failed to send campaign', { description: error });
-      return;
-    }
-    toast.success('Campaign sent successfully!');
-    loadCampaigns();
+    if (error) { toast.error('Failed to send'); return; }
+    toast.success('Campaign sent!'); loadCampaigns();
   };
 
   const deleteCampaign = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this campaign?')) return;
+    if (!confirm('Delete this campaign?')) return;
     const { error } = await api.deleteEmailCampaign(id);
-    if (error) {
-      toast.error('Failed to delete campaign', { description: error });
-      return;
-    }
-    toast.success('Campaign deleted successfully!');
-    loadCampaigns();
+    if (error) { toast.error('Failed to delete'); return; }
+    toast.success('Deleted!'); loadCampaigns();
   };
 
-  const resetTemplateForm = () => {
-    setTemplateForm({
-      name: '',
-      template_type: 'campaign',
-      subject: '',
-      html_content: '',
-      text_content: '',
-    });
+  const sendTest = async () => {
+    if (!testEmail.trim()) { setTestResult({ ok: false, message: 'Enter an email address.' }); return; }
+    setTestSending(true); setTestResult(null);
+    const { data, error } = await api.sendTestEmail(testEmail.trim());
+    if (error) { setTestResult({ ok: false, message: error }); }
+    else { setTestResult({ ok: true, message: data?.detail || 'Test sent!' }); toast.success(`Test sent to ${testEmail}`); }
+    setTestSending(false);
   };
+
+  const resetTemplateForm = () => setTemplateForm({ name: '', template_type: 'campaign', subject: '', html_content: '', text_content: '' });
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'sent': return 'text-green-700 bg-green-50 border-green-200';
-      case 'failed': return 'text-red-700 bg-red-50 border-red-200';
-      case 'sending': return 'text-blue-700 bg-blue-50 border-blue-200';
-      case 'scheduled': return 'text-blue-700 bg-blue-50 border-blue-200';
-      case 'queued': return 'text-amber-700 bg-amber-50 border-amber-200';
-      default: return 'text-gray-700 bg-gray-50 border-gray-200';
-    }
+    if (status === 'sent') return 'bg-green-100 text-green-700';
+    if (status === 'failed') return 'bg-red-100 text-red-700';
+    if (status === 'sending' || status === 'scheduled') return 'bg-blue-100 text-blue-700';
+    if (status === 'queued') return 'bg-amber-100 text-amber-700';
+    return 'bg-gray-100 text-gray-600';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'sent': return <CheckCircle className="h-4 w-4" />;
-      case 'failed': return <XCircle className="h-4 w-4" />;
-      case 'sending': return <Loader className="h-4 w-4 animate-spin" />;
-      case 'scheduled': return <Calendar className="h-4 w-4" />;
-      default: return <AlertCircle className="h-4 w-4" />;
-    }
-  };
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const newArrivals = members.filter(m => m.created_at && new Date(m.created_at) >= thirtyDaysAgo).length;
+  const inactiveCount = members.filter(m => m.is_active === false).length;
+
+  const sentLogs = emailLogs.filter(l => ['sent', 'opened', 'clicked'].includes(l.status));
+  const openedLogs = emailLogs.filter(l => l.status === 'opened' || l.status === 'clicked');
+  const clickedLogs = emailLogs.filter(l => l.status === 'clicked');
+  const openRate = sentLogs.length > 0 ? (openedLogs.length / sentLogs.length * 100).toFixed(1) : null;
+  const ctr = sentLogs.length > 0 ? (clickedLogs.length / sentLogs.length * 100).toFixed(1) : null;
+
+  const targetSegments = [
+    { label: 'All Members', count: members.length, badge: 'ACTIVE', color: 'bg-green-100 text-green-700' },
+    { label: 'New Members (Last 30d)', count: newArrivals, badge: 'NEW', color: 'bg-blue-100 text-blue-700' },
+    { label: 'Inactive Members', count: inactiveCount, badge: 'INACTIVE', color: 'bg-gray-100 text-gray-500' },
+  ];
+
+  const timelineItems = [
+    ...campaigns.slice(0, 3).map(c => ({ id: c.id, label: c.name, date: c.created_at, status: c.status, type: 'campaign' as const })),
+    ...emailLogs.slice(0, 2).map(l => ({ id: l.id, label: l.subject, date: l.created_at, status: l.status, type: 'log' as const })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      {/* Professional Header */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Mail className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">Email Management</h1>
-            </div>
-            <p className="text-gray-600">Create, schedule, and track email campaigns</p>
+    <div className="space-y-5 pb-8">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Email Center</h1>
+          <p className="text-sm text-gray-500 mt-1">Execute and monitor strategic communication arrays.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setActiveModal('compose')}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold tracking-wider rounded-lg transition-colors shadow-sm">
+            <Plus className="h-3.5 w-3.5" /> NEW CAMPAIGN
+          </button>
+          <button type="button" onClick={() => { setIsScheduled(false); setActiveModal('compose'); }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold tracking-wider rounded-lg transition-colors shadow-sm">
+            <Zap className="h-3.5 w-3.5" /> DEPLOY URGENT
+          </button>
+        </div>
+      </div>
+
+      {/* ── Stats row ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Total Emails Sent */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Emails Sent</p>
+          <div className="flex items-baseline gap-2 mb-1">
+            <p className="text-2xl font-bold text-gray-900">{sentLogs.length >= 1000 ? `${(sentLogs.length / 1000).toFixed(1)}K` : sentLogs.length}</p>
+            <span className="text-xs font-semibold text-gray-400">{campaigns.length} campaigns</span>
           </div>
-          
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{templates.length}</div>
-              <div className="text-sm text-gray-600">Templates</div>
+          <p className="text-[11px] text-gray-400 mb-3">total delivered</p>
+          <div className="flex items-end gap-0.5 h-10">
+            {(() => {
+              if (emailLogs.length === 0) return <div className="w-full text-[10px] text-gray-300 flex items-center justify-center">No data yet</div>;
+              const byDay = Array.from({ length: 12 }, (_, i) => {
+                const d = new Date(); d.setDate(d.getDate() - (11 - i));
+                const ds = d.toISOString().slice(0, 10);
+                return emailLogs.filter(l => l.created_at?.slice(0, 10) === ds).length;
+              });
+              const max = Math.max(...byDay, 1);
+              return byDay.map((v, i) => (
+                <div key={i} className={`flex-1 rounded-sm ${i >= 9 ? 'bg-blue-500' : 'bg-blue-100'}`} style={{ height: `${Math.max(8, Math.round(v / max * 100))}%` }} />
+              ));
+            })()}
+          </div>
+        </div>
+
+        {/* Open Rate */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-start justify-between">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Open Rate</p>
+            <p className="text-3xl font-bold text-gray-900">{openRate !== null ? `${openRate}%` : '—'}</p>
+            <p className="text-[11px] text-gray-400 mt-1">{sentLogs.length} emails tracked</p>
+            <div className="mt-4">
+              <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Click-Through Rate</p>
+              <p className="text-xl font-bold text-gray-900">{ctr !== null ? `${ctr}%` : '—'}</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{campaigns.length}</div>
-              <div className="text-sm text-gray-600">Campaigns</div>
+          </div>
+          <div className="relative w-16 h-16 flex-shrink-0">
+            <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3b82f6" strokeWidth="3"
+                strokeDasharray={`${openRate ?? 0} ${100 - Number(openRate ?? 0)}`} strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-gray-700">{openRate !== null ? `${Math.round(Number(openRate))}%` : '—'}</span>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{members.length}</div>
-              <div className="text-sm text-gray-600">Members</div>
+          </div>
+        </div>
+
+        {/* Provider + Test */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-3">Provider Status</p>
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <p className="text-sm font-semibold text-green-700">SMTP — Configured</p>
+          </div>
+          <div className="space-y-1 text-[11px] mb-3">
+            {[['Provider', 'SMTP via .env.local'], ['Transport', 'Nodemailer'], ['Status', '✓ Ready']].map(([k, v]) => (
+              <div key={k} className="flex justify-between py-1 border-b border-gray-50">
+                <span className="text-gray-500">{k}</span><span className="font-mono text-gray-700">{v}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="test@example.com" aria-label="Test email address"
+              className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+            <button type="button" onClick={sendTest} disabled={testSending} title="Send test email" className="px-2.5 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              {testSending ? <Loader className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            </button>
+          </div>
+          {testResult && <p className={`text-[11px] mt-1.5 ${testResult.ok ? 'text-green-600' : 'text-red-600'}`}>{testResult.message}</p>}
+        </div>
+      </div>
+
+      {/* ── Templates + Segments ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Active Templates */}
+        <div className="lg:col-span-3 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+            <span className="text-[11px] font-bold tracking-widest text-gray-500 uppercase">Active Templates</span>
+            <button type="button" onClick={() => { resetTemplateForm(); setEditingTemplate(null); setActiveModal('template'); }}
+              className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider flex items-center gap-1">
+              <Plus className="h-3 w-3" /> New
+            </button>
+          </div>
+          {templates.length === 0 ? (
+            <div className="py-10 text-center">
+              <FileText className="h-10 w-10 text-gray-200 mx-auto mb-3" />
+              <p className="text-sm text-gray-400 mb-3">No templates yet</p>
+              <button type="button" onClick={() => { resetTemplateForm(); setActiveModal('template'); }}
+                className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">Create Template</button>
             </div>
+          ) : (
+            templates.map((template, idx) => (
+              <div key={template.id} className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${idx < templates.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <FileText className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{template.name}</p>
+                    <p className="text-[11px] text-gray-400 truncate">{template.subject}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">{template.template_type}</span>
+                  <button type="button" title="Edit template"
+                    onClick={() => { setEditingTemplate(template); setTemplateForm({ name: template.name, template_type: template.template_type, subject: template.subject, html_content: template.html_content, text_content: template.text_content || '' }); setActiveModal('template'); }}
+                    className="p-1.5 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors">
+                    <Edit3 className="h-3.5 w-3.5" />
+                  </button>
+                  <button type="button" title="Delete template" onClick={() => deleteTemplate(template.id)} className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Target Segments */}
+        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+            <span className="text-[11px] font-bold tracking-widest text-gray-500 uppercase">Target Segments</span>
+            <Target className="h-4 w-4 text-gray-400" />
+          </div>
+          {targetSegments.map((seg, idx) => (
+            <div key={seg.label} className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${idx < targetSegments.length - 1 ? 'border-b border-gray-50' : ''}`}>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{seg.label}</p>
+                <p className="text-[11px] text-gray-400">{seg.count} members</p>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${seg.color}`}>{seg.badge}</span>
+            </div>
+          ))}
+          <div className="px-5 py-3 border-t border-gray-50">
+            <button type="button" onClick={() => setActiveModal('compose')} className="w-full py-2 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-1.5">
+              <Mail className="h-3.5 w-3.5" /> Deploy to Segment
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <Card className="border border-gray-200 shadow-sm">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
-            {[
-              { id: 'compose', label: 'Compose', icon: Edit3 },
-              { id: 'templates', label: 'Templates', icon: FileText },
-              { id: 'campaigns', label: 'Campaigns', icon: Send },
-              { id: 'logs', label: 'Activity Logs', icon: BarChart3 },
-              { id: 'settings', label: 'Provider', icon: Settings }
-            ].map(tab => (
-              <button
-                type="button"
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex-1 px-6 py-4 text-sm font-medium transition-colors flex items-center justify-center gap-2 border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600 bg-blue-50/50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-                }`}
-              >
-                <tab.icon className="h-5 w-5" />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+      {/* ── Deployment Timeline ── */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+          <span className="text-[11px] font-bold tracking-widest text-gray-500 uppercase">Deployment Timeline</span>
+          <BarChart3 className="h-4 w-4 text-gray-400" />
         </div>
-      </Card>
-
-      {/* Compose Tab */}
-      {activeTab === 'compose' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="border-b border-gray-200 bg-gray-50">
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Edit3 className="h-5 w-5 text-blue-600" />
-                  Compose Email
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                {/* Template Selection */}
-                <div>
-                  <label htmlFor="email-template-select" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Template *
-                  </label>
-                  <select
-                    id="email-template-select"
-                    value={selectedTemplate?.id || ''}
-                    onChange={(e) => {
-                      const template = templates.find(t => t.id === parseInt(e.target.value));
-                      setSelectedTemplate(template || null);
-                      if (template) {
-                        setSubject(template.subject);
-                        setBody(template.text_content || template.html_content);
-                      }
-                    }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                  >
-                    <option value="">Select a template...</option>
-                    {templates.map(template => (
-                      <option key={template.id} value={template.id}>
-                        {template.name} ({template.template_type})
-                      </option>
-                    ))}
-                  </select>
-                  {templates.length === 0 && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      No templates available. Create one in the Templates tab first.
-                    </p>
-                  )}
-                </div>
-
-                {/* Recipients */}
-                <div>
-                  <p className="block text-sm font-medium text-gray-700 mb-3">
-                    Recipients *
-                  </p>
-                  <div className="space-y-2">
-                    {[
-                      { value: 'all_members', label: 'All Community Members', count: members.length },
-                      { value: 'individual', label: 'Select Individual Members', count: selectedMemberIds.length },
-                      { value: 'custom', label: 'Custom Email Addresses', count: customEmails.split(',').filter(e => e.trim()).length }
-                    ].map((option) => (
-                      <label 
-                        key={option.value}
-                        className={`flex items-center justify-between p-4 rounded-lg cursor-pointer border-2 transition-all ${
-                          recipients === option.value
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                        htmlFor={`recipient-${option.value}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input
-                            id={`recipient-${option.value}`}
-                            type="radio"
-                            name="recipients"
-                            value={option.value}
-                            checked={recipients === option.value}
-                            onChange={(e) => setRecipients(e.target.value as any)}
-                            className="w-4 h-4 text-blue-600"
-                            aria-label={option.label}
-                          />
-                          <span className="text-sm font-medium text-gray-900">{option.label}</span>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-600">
-                          {option.count} recipients
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
-                  {/* Individual Member Selection */}
-                  {recipients === 'individual' && (
-                    <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-3">
-                        <label className="text-sm font-medium text-gray-700">
-                          Select Members ({selectedMemberIds.length} selected)
-                        </label>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedMemberIds(members.map(m => m.id))}
-                            className="text-xs font-medium text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50"
-                          >
-                            Select All
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedMemberIds([])}
-                            className="text-xs font-medium text-gray-600 hover:text-gray-700 px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50"
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto space-y-2">
-                        {members.map((member) => (
-                          <label
-                            key={member.id}
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
-                              selectedMemberIds.includes(member.id)
-                                ? 'bg-blue-50 border-blue-200'
-                                : 'bg-white border-gray-200 hover:bg-gray-50'
-                            }`}
-                            htmlFor={`member-${member.id}`}
-                          >
-                            <input
-                              id={`member-${member.id}`}
-                              type="checkbox"
-                              checked={selectedMemberIds.includes(member.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedMemberIds([...selectedMemberIds, member.id]);
-                                } else {
-                                  setSelectedMemberIds(selectedMemberIds.filter(id => id !== member.id));
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 rounded"
-                              aria-label={`Select ${member.name}`}
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">{member.name}</div>
-                              <div className="text-xs text-gray-500">{member.email}</div>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
+        <div className="p-5">
+          {timelineItems.length === 0 ? (
+            <div className="flex items-center gap-4">
+              {[{ label: 'Create', color: 'bg-blue-500' }, { label: 'Review', color: 'bg-amber-400' }, { label: 'Send', color: 'bg-green-500' }, { label: 'Report', color: 'bg-gray-200' }].map((step, i, arr) => (
+                <React.Fragment key={step.label}>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className={`w-9 h-9 rounded-full ${step.color} flex items-center justify-center`}>
+                      <span className="text-white text-xs font-bold">{i + 1}</span>
                     </div>
+                    <span className="text-[11px] font-semibold text-gray-500">{step.label}</span>
+                  </div>
+                  {i < arr.length - 1 && <div className="flex-1 h-0.5 bg-gray-100 -mt-3" />}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {timelineItems.map((item) => (
+                <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 py-2.5 border-b border-gray-50 last:border-0">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.status === 'sent' ? 'bg-green-500' : item.status === 'failed' ? 'bg-red-500' : item.status === 'scheduled' ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{item.label}</p>
+                    <p className="text-[11px] text-gray-400">{new Date(item.date).toLocaleDateString()}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getStatusColor(item.status)}`}>{item.status}</span>
+                  {item.type === 'campaign' && item.status === 'draft' && (
+                    <button type="button" onClick={() => sendCampaign(item.id as number)} className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1">
+                      <Send className="h-3 w-3" /> Send
+                    </button>
                   )}
-
-                  {/* Custom Emails */}
-                  {recipients === 'custom' && (
-                    <div className="mt-4">
-                      <label htmlFor="custom-emails-textarea" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Addresses (comma-separated)
-                      </label>
-                      <textarea
-                        id="custom-emails-textarea"
-                        value={customEmails}
-                        onChange={(e) => setCustomEmails(e.target.value)}
-                        rows={4}
-                        placeholder="email1@example.com, email2@example.com, email3@example.com"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Scheduling */}
-                <div>
-                  <label htmlFor="schedule-checkbox" className="flex items-center gap-2 mb-3">
-                    <input
-                      id="schedule-checkbox"
-                      type="checkbox"
-                      checked={isScheduled}
-                      onChange={(e) => setIsScheduled(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded"
-                      aria-label="Schedule email for later"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Schedule for later</span>
-                  </label>
-                  {isScheduled && (
-                    <input
-                      type="datetime-local"
-                      value={scheduledAt}
-                      onChange={(e) => setScheduledAt(e.target.value)}
-                      aria-label="Schedule date and time"
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    />
+                  {item.type === 'campaign' && (
+                    <button type="button" title="Delete campaign" onClick={() => deleteCampaign(item.id as number)} className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   )}
                 </div>
-
-                {/* Subject Line */}
-                <div>
-                  <label htmlFor="email-subject-input" className="block text-sm font-medium text-gray-700 mb-2">
-                    Subject Line *
-                  </label>
-                  <Input
-                    id="email-subject-input"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Enter email subject or select a template"
-                    className="bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-
-                {/* Email Body */}
-                <div>
-                  <label htmlFor="email-body-textarea" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Content *
-                  </label>
-                  <textarea
-                    id="email-body-textarea"
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    rows={8}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white font-mono text-sm resize-y focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    placeholder="Enter your email content or select a template to start"
-                  />
-                </div>
-
-                {/* Event Flyer */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Event Flyer <span className="text-gray-400 font-normal">(optional)</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <label className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        className="hidden"
-                        onChange={handleFlyerChange}
-                        disabled={flyerUploading}
-                      />
-                      {flyerUploading ? (
-                        <span className="text-sm text-blue-600">Uploading...</span>
-                      ) : flyerFile ? (
-                        <span className="text-sm text-green-600 font-medium">✓ {flyerFile.name}</span>
-                      ) : (
-                        <span className="text-sm text-gray-500">Click to upload flyer (JPEG, PNG, WebP — max 5MB)</span>
-                      )}
-                    </label>
-                    {flyerUrl && (
-                      <button
-                        type="button"
-                        onClick={() => { setFlyerFile(null); setFlyerUrl(''); }}
-                        className="text-sm text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  {flyerUrl && (
-                    <img src={flyerUrl} alt="Flyer preview" className="mt-3 max-h-40 rounded-lg border border-gray-200" />
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedTemplate(null);
-                      setSubject('');
-                      setBody('');
-                      setScheduledAt('');
-                      setIsScheduled(false);
-                      setFlyerFile(null);
-                      setFlyerUrl('');
-                    }}
-                  >
-                    Clear
-                  </Button>
-                  <Button
-                    onClick={sendEmails}
-                    loading={sending}
-                    disabled={!selectedTemplate || sending}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {sending ? (
-                      <>
-                        <Loader className="h-4 w-4 mr-2 animate-spin" />
-                        {isScheduled ? 'Scheduling...' : 'Sending...'}
-                      </>
-                    ) : (
-                      <>
-                        {isScheduled ? <Calendar className="h-4 w-4 mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-                        {isScheduled ? 'Schedule Campaign' : 'Send Now'}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar Stats */}
-          <div className="space-y-6">
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="border-b border-gray-200 bg-gray-50">
-                <CardTitle className="text-sm font-semibold text-gray-900">
-                  Campaign Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-4">
-                <div className="text-center py-6">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">{getRecipientCount()}</div>
-                  <p className="text-sm text-gray-600">Total Recipients</p>
-                </div>
-                <div className="space-y-2 pt-4 border-t border-gray-200">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Templates</span>
-                    <span className="font-semibold text-gray-900">{templates.length}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Campaigns</span>
-                    <span className="font-semibold text-gray-900">{campaigns.length}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Community Members</span>
-                    <span className="font-semibold text-gray-900">{members.length}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-gray-200 shadow-sm bg-blue-50/50">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-600 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Best Practices</h4>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      <li>• Test your template before sending</li>
-                      <li>• Review recipient count carefully</li>
-                      <li>• Schedule campaigns during business hours</li>
-                      <li>• Track engagement in Activity Logs</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Templates Tab */}
-      {activeTab === 'templates' && (
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                Email Templates
-              </CardTitle>
-              <Button
-                onClick={() => {
-                  resetTemplateForm();
-                  setEditingTemplate(null);
-                  setShowTemplateModal(true);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Template
-              </Button>
+      {/* ── Compose Modal ── */}
+      {activeModal === 'compose' && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2"><Send className="h-5 w-5 text-blue-600" /> New Campaign</h2>
+              <button type="button" onClick={() => setActiveModal(null)} aria-label="Close modal" className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X className="h-5 w-5" /></button>
             </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            {templates.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {templates.map((template) => (
-                  <div 
-                    key={template.id} 
-                    className="border border-gray-200 rounded-lg p-5 bg-white hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{template.name}</h3>
-                        <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
-                          {template.template_type}
-                        </span>
-                      </div>
-                      <FileText className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Subject:</strong> {template.subject}
-                    </p>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Created: {new Date(template.created_at).toLocaleDateString()}
-                    </p>
-                    <div className="flex gap-2 pt-3 border-t border-gray-200">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditingTemplate(template);
-                          setTemplateForm({
-                            name: template.name,
-                            template_type: template.template_type,
-                            subject: template.subject,
-                            html_content: template.html_content,
-                            text_content: template.text_content || '',
-                          });
-                          setShowTemplateModal(true);
-                        }}
-                        className="flex-1"
-                      >
-                        <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteTemplate(template.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Templates Yet</h3>
-                <p className="text-gray-600 mb-4">Create your first email template to get started.</p>
-                <Button
-                  onClick={() => {
-                    resetTemplateForm();
-                    setEditingTemplate(null);
-                    setShowTemplateModal(true);
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Template
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Campaigns Tab */}
-      {activeTab === 'campaigns' && (
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Send className="h-5 w-5 text-blue-600" />
-                Email Campaigns
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            {campaigns.length > 0 ? (
-              <div className="space-y-3">
-                {campaigns.map((campaign) => (
-                  <div 
-                    key={campaign.id} 
-                    className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900">{campaign.name}</h3>
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${getStatusColor(campaign.status)}`}>
-                            {getStatusIcon(campaign.status)}
-                            {campaign.status}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {new Date(campaign.created_at).toLocaleDateString()}
-                          </span>
-                          {campaign.sent_at && (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              Sent {new Date(campaign.sent_at).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {campaign.status === 'draft' && (
-                          <Button
-                            size="sm"
-                            onClick={() => sendCampaign(campaign.id)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Send className="h-3.5 w-3.5 mr-1.5" />
-                            Send
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteCampaign(campaign.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Send className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Campaigns Yet</h3>
-                <p className="text-gray-600">Campaigns will appear here once you start sending emails.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Logs Tab */}
-      {activeTab === 'logs' && (
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-gray-50">
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              Activity Logs
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {logsLoading ? (
-              <div className="text-center py-12">
-                <Loader className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-3" />
-                <p className="text-gray-600">Loading activity logs...</p>
-              </div>
-            ) : emailLogs.length > 0 ? (
-              <div className="space-y-3">
-                {emailLogs.map((log) => (
-                  <div 
-                    key={log.id} 
-                    className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Mail className="h-4 w-4 text-gray-400" />
-                          <h4 className="font-medium text-gray-900">{log.subject}</h4>
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${getStatusColor(log.status)}`}>
-                            {getStatusIcon(log.status)}
-                            {log.status}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-600 ml-7">
-                          {log.sent_at ? (
-                            <span>Sent: {new Date(log.sent_at).toLocaleString()}</span>
-                          ) : (
-                            <span>Created: {new Date(log.created_at).toLocaleString()}</span>
-                          )}
-                        </div>
-                        {log.error_message && (
-                          <div className="mt-2 ml-7 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
-                            {log.error_message}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Activity Yet</h3>
-                <p className="text-gray-600">Email activity logs will appear here once you start sending campaigns.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Provider / Settings Tab */}
-      {activeTab === 'settings' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Provider Status */}
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="border-b border-gray-200 bg-gray-50">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-blue-600" />
-                Email Provider
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-green-800">Resend — Connected</p>
-                  <p className="text-xs text-green-700">Domain: mansa-to-mansa.org (Verified)</p>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">SMTP Host</span>
-                  <span className="font-mono text-gray-900">smtp.resend.com</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Port</span>
-                  <span className="font-mono text-gray-900">587 (TLS)</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">From Address</span>
-                  <span className="font-mono text-gray-900">noreply@mansa-to-mansa.org</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Domain Status</span>
-                  <span className="text-green-700 font-semibold">✅ Verified</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Send Test Email */}
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="border-b border-gray-200 bg-gray-50">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Send className="h-5 w-5 text-blue-600" />
-                Test Email
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <p className="text-sm text-gray-600">
-                Send a test email to verify Resend is configured correctly and emails are being delivered.
-              </p>
+            <div className="p-6 space-y-4">
               <div>
-                <label htmlFor="test-email-input" className="block text-sm font-medium text-gray-700 mb-2">
-                  Send test to
-                </label>
-                <Input
-                  id="test-email-input"
-                  type="email"
-                  value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="bg-white border-gray-300 focus:border-blue-500"
-                />
-              </div>
-
-              {testResult && (
-                <div className={`p-3 rounded-lg border text-sm flex items-start gap-2 ${
-                  testResult.ok
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-red-50 border-red-200 text-red-800'
-                }`}>
-                  {testResult.ok
-                    ? <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    : <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  }
-                  {testResult.message}
-                </div>
-              )}
-
-              <Button
-                onClick={sendTest}
-                disabled={testSending || !testEmail.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {testSending ? (
-                  <><Loader className="h-4 w-4 mr-2 animate-spin" />Sending test...</>
-                ) : (
-                  <><Send className="h-4 w-4 mr-2" />Send Test Email</>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Template Modal */}
-      {showTemplateModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {editingTemplate ? 'Edit Template' : 'Create Template'}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setShowTemplateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Close template modal"
-                title="Close"
-              >
-                <X className="h-5 w-5 text-gray-400" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto flex-1 space-y-4">
-              <div>
-                <label htmlFor="template-name-input" className="block text-sm font-medium text-gray-700 mb-2">Template Name *</label>
-                <Input
-                  id="template-name-input"
-                  value={templateForm.name}
-                  onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
-                  placeholder="e.g., Welcome Email"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="template-type-select" className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
-                <select
-                  id="template-type-select"
-                  value={templateForm.template_type}
-                  onChange={(e) => setTemplateForm({ ...templateForm, template_type: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  aria-label="Template type"
-                >
-                  <option value="welcome">Welcome</option>
-                  <option value="approval">Approval</option>
-                  <option value="denial">Denial</option>
-                  <option value="campaign">Campaign</option>
-                  <option value="notification">Notification</option>
+                <label htmlFor="compose-template" className="block text-[13px] font-medium text-gray-700 mb-1.5">Email Template *</label>
+                <select id="compose-template" value={selectedTemplate?.id || ''} onChange={(e) => { const t = templates.find(t => t.id === parseInt(e.target.value)); setSelectedTemplate(t || null); if (t) { setSubject(t.subject); setBody(t.text_content || t.html_content); } }}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white">
+                  <option value="">Select a template...</option>
+                  {templates.map(t => <option key={t.id} value={t.id}>{t.name} ({t.template_type})</option>)}
                 </select>
               </div>
-
               <div>
-                <label htmlFor="template-subject-input" className="block text-sm font-medium text-gray-700 mb-2">Subject Line *</label>
-                <Input
-                  id="template-subject-input"
-                  value={templateForm.subject}
-                  onChange={(e) => setTemplateForm({ ...templateForm, subject: e.target.value })}
-                  placeholder="e.g., Welcome to our community!"
-                />
+                <p className="block text-[13px] font-medium text-gray-700 mb-2">Recipients *</p>
+                <div className="space-y-2">
+                  {([
+                    { value: 'all_members', label: 'All Community Members', count: members.length },
+                    { value: 'individual', label: 'Select Individual Members', count: selectedMemberIds.length },
+                    { value: 'custom', label: 'Custom Email Addresses', count: customEmails.split(',').filter(e => e.trim()).length },
+                  ] as const).map((opt) => (
+                    <label key={opt.value} htmlFor={`rec-${opt.value}`} className={`flex items-center justify-between p-3 rounded-lg cursor-pointer border transition-all ${recipients === opt.value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}>
+                      <div className="flex items-center gap-3">
+                        <input id={`rec-${opt.value}`} type="radio" name="recipients" value={opt.value} checked={recipients === opt.value} onChange={(e) => setRecipients(e.target.value as typeof recipients)} className="w-4 h-4 text-blue-600" aria-label={opt.label} />
+                        <span className="text-[13px] font-medium text-gray-900">{opt.label}</span>
+                      </div>
+                      <span className="text-[13px] font-semibold text-gray-600">{opt.count}</span>
+                    </label>
+                  ))}
+                </div>
+                {recipients === 'individual' && (
+                  <div className="mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50 max-h-48 overflow-y-auto">
+                    {members.map((member) => (
+                      <label key={member.id} htmlFor={`mem-${member.id}`} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer mb-1 border ${selectedMemberIds.includes(member.id) ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100 hover:bg-gray-50'}`}>
+                        <input id={`mem-${member.id}`} type="checkbox" checked={selectedMemberIds.includes(member.id)} onChange={(e) => { if (e.target.checked) setSelectedMemberIds([...selectedMemberIds, member.id]); else setSelectedMemberIds(selectedMemberIds.filter(id => id !== member.id)); }} className="w-4 h-4 text-blue-600 rounded" aria-label={`Select ${member.name}`} />
+                        <div><div className="text-[13px] font-medium text-gray-900">{member.name}</div><div className="text-xs text-gray-500">{member.email}</div></div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {recipients === 'custom' && (
+                  <textarea value={customEmails} onChange={(e) => setCustomEmails(e.target.value)} rows={3} aria-label="Custom email addresses" placeholder="email1@example.com, email2@example.com"
+                    className="mt-3 border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white" />
+                )}
               </div>
-
-              <div>
-                <label htmlFor="template-text-content" className="block text-sm font-medium text-gray-700 mb-2">Email Message *</label>
-                <textarea
-                  id="template-text-content"
-                  value={templateForm.text_content}
-                  onChange={(e) => setTemplateForm({ ...templateForm, text_content: e.target.value })}
-                  rows={10}
-                  placeholder="Write your email message here... (No coding needed - just type your message)"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  💡 Tip: Write naturally. You can use &#123;&#123;name&#125;&#125; to personalize with recipient&apos;s name
-                </p>
+              <div className="flex items-center gap-2">
+                <input id="sched-cb" type="checkbox" checked={isScheduled} onChange={(e) => setIsScheduled(e.target.checked)} className="w-4 h-4 text-blue-600 rounded" aria-label="Schedule for later" />
+                <label htmlFor="sched-cb" className="text-[13px] font-medium text-gray-700">Schedule for later</label>
               </div>
-
+              {isScheduled && (
+                <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} aria-label="Schedule date and time"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white" />
+              )}
               <div>
-                <label htmlFor="template-html-content" className="block text-sm font-medium text-gray-700 mb-2">
-                  HTML Content (Optional - for advanced users)
+                <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Event Flyer (optional)</label>
+                <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                  <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={handleFlyerChange} disabled={flyerUploading} aria-label="Upload event flyer" />
+                  <span className="text-[13px] text-gray-500">{flyerUploading ? 'Uploading...' : flyerFile ? `✓ ${flyerFile.name}` : 'Click to upload flyer'}</span>
                 </label>
-                <textarea
-                  id="template-html-content"
-                  value={templateForm.html_content}
-                  onChange={(e) => setTemplateForm({ ...templateForm, html_content: e.target.value })}
-                  rows={6}
-                  placeholder="Leave empty to use plain text above, or add custom HTML formatting..."
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
               </div>
             </div>
+            <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
+              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-[13px] font-medium text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+              <button type="button" onClick={sendEmails} disabled={!selectedTemplate || sending}
+                className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                {sending ? <><Loader className="h-4 w-4 animate-spin" /> Sending...</> : <><Send className="h-4 w-4" /> {isScheduled ? 'Schedule' : 'Send Now'}</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowTemplateModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={editingTemplate ? updateTemplate : createTemplate}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+      {/* ── Template Modal ── */}
+      {activeModal === 'template' && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full shadow-xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-200">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+              <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">{editingTemplate ? 'Edit Template' : 'Create Template'}</span>
+              <button type="button" onClick={() => setActiveModal(null)} aria-label="Close modal" className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="h-4 w-4 text-gray-400" /></button>
+            </div>
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+              <div>
+                <label htmlFor="tpl-name" className="block text-[13px] font-medium text-gray-700 mb-1.5">Template Name *</label>
+                <Input id="tpl-name" value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="e.g., Welcome Email"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white" />
+              </div>
+              <div>
+                <label htmlFor="tpl-type" className="block text-[13px] font-medium text-gray-700 mb-1.5">Type *</label>
+                <select id="tpl-type" value={templateForm.template_type} onChange={(e) => setTemplateForm({ ...templateForm, template_type: e.target.value })} aria-label="Template type"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white">
+                  {['welcome', 'approval', 'denial', 'campaign', 'notification'].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="tpl-subject" className="block text-[13px] font-medium text-gray-700 mb-1.5">Subject Line *</label>
+                <Input id="tpl-subject" value={templateForm.subject} onChange={(e) => setTemplateForm({ ...templateForm, subject: e.target.value })} placeholder="e.g., Welcome to our community!"
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white" />
+              </div>
+              <div>
+                <label htmlFor="tpl-text" className="block text-[13px] font-medium text-gray-700 mb-1.5">Email Message *</label>
+                <textarea id="tpl-text" value={templateForm.text_content} onChange={(e) => setTemplateForm({ ...templateForm, text_content: e.target.value })} rows={8}
+                  placeholder="Write your email... Use {{name}} to personalize."
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white resize-none" />
+              </div>
+              <div>
+                <label htmlFor="tpl-html" className="block text-[13px] font-medium text-gray-700 mb-1.5">HTML Content (optional)</label>
+                <textarea id="tpl-html" value={templateForm.html_content} onChange={(e) => setTemplateForm({ ...templateForm, html_content: e.target.value })} rows={5}
+                  placeholder="Leave empty to use plain text above..."
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 w-full bg-white font-mono resize-none" />
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
+              <button type="button" onClick={() => setActiveModal(null)} className="px-3 py-1.5 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button type="button" onClick={editingTemplate ? updateTemplate : createTemplate} className="px-3 py-1.5 text-[13px] font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                 {editingTemplate ? 'Update Template' : 'Create Template'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

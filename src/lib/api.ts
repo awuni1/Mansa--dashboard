@@ -1,5 +1,5 @@
 // Django Backend API Client
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -158,6 +158,14 @@ class ApiClient {
 
   async getMe(): Promise<ApiResponse<User>> {
     return this.request<User>('/users/me/');
+  }
+
+  async updateMe(data: { first_name?: string; last_name?: string; bio?: string; email?: string }): Promise<ApiResponse<User>> {
+    return this.request<User>('/users/me/', { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async changePassword(data: { old_password: string; new_password: string }): Promise<ApiResponse<{ detail: string }>> {
+    return this.request<{ detail: string }>('/users/change-password/', { method: 'POST', body: JSON.stringify(data) });
   }
 
   async logout(): Promise<void> {
@@ -646,6 +654,86 @@ class ApiClient {
   async unpublishBlogPost(slug: string): Promise<ApiResponse<BlogPost>> {
     return this.request<BlogPost>(`/blog/posts/${slug}/unpublish/`, { method: 'POST' });
   }
+
+  // Admin user-control methods
+  async deleteUser(userId: string | number): Promise<ApiResponse<void>> {
+    return this.request<void>(`/users/admin/${userId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async assignRole(userId: string | number, role: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/users/admin/${userId}/assign_role/`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  async promoteToMentor(userId: string | number, payload?: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/mentorship/promote-to-mentor/', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, ...payload }),
+    });
+  }
+
+  async deleteMentor(mentorId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/v1/mentorship/mentors/${mentorId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleUserActive(userId: string | number, isActive: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/users/admin/${userId}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_active: isActive }),
+    });
+  }
+
+  // Automation methods
+  async getAutomationRules(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/automation/rules/');
+  }
+
+  async createAutomationRule(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/automation/rules/', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateAutomationRule(id: number, data: Partial<Record<string, any>>): Promise<ApiResponse<any>> {
+    return this.request<any>(`/automation/rules/${id}/`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteAutomationRule(id: number): Promise<ApiResponse<void>> {
+    return this.request<void>(`/automation/rules/${id}/`, { method: 'DELETE' });
+  }
+
+  async getAutomationLogs(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/automation/rules/logs/');
+  }
+
+  // Cadence methods
+  async getCadences(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/cadences/cadences/');
+  }
+
+  async createCadence(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/cadences/cadences/', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async deleteCadence(id: number): Promise<ApiResponse<void>> {
+    return this.request<void>(`/cadences/cadences/${id}/`, { method: 'DELETE' });
+  }
+
+  async getCadenceEnrollments(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/cadences/cadences/enrollments/');
+  }
+
+  async getCadenceLogs(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/cadences/cadences/logs/');
+  }
+
+  async createCadenceStep(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/cadences/cadence-steps/', { method: 'POST', body: JSON.stringify(data) });
+  }
 }
 
 // Type definitions
@@ -922,6 +1010,76 @@ export interface BlogPost {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ---- Automation types ----
+
+export interface AutomationCondition {
+  id: number;
+  rule: number;
+  field: string;
+  operator: string;
+  value: string;
+  logical_operator: 'and' | 'or';
+  order: number;
+}
+
+export interface AutomationRule {
+  id: number;
+  name: string;
+  trigger: string;
+  target_model: string;
+  action: string;
+  email_template: number | null;
+  is_active: boolean;
+  created_by: number | null;
+  created_at: string;
+  conditions: AutomationCondition[];
+}
+
+export interface AutomationRunLog {
+  id: number;
+  rule: number;
+  rule_name: string;
+  target_object_id: string;
+  target_repr: string;
+  ran_at: string;
+  success: boolean;
+  error_message: string;
+}
+
+// ---- Cadence types ----
+
+export interface CadenceStep {
+  id: number;
+  cadence: number;
+  step_number: number;
+  delay_days: number;
+  action: string;
+  subject: string;
+  body: string;
+}
+
+export interface Cadence {
+  id: number;
+  name: string;
+  trigger: string;
+  is_active: boolean;
+  created_by: number | null;
+  created_at: string;
+  steps: CadenceStep[];
+}
+
+export interface CadenceEnrollment {
+  id: number;
+  cadence: number;
+  cadence_name: string;
+  recipient_email: string;
+  recipient_name: string;
+  current_step: number;
+  status: 'active' | 'completed' | 'cancelled';
+  enrolled_at: string;
+  next_send_at: string | null;
 }
 
 // Create and export API client instance

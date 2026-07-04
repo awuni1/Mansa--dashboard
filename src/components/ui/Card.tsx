@@ -12,9 +12,9 @@ export function Card({ children, className, padding = true, hover = false }: Car
   return (
     <div
       className={clsx(
-        'bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-100 transition-all duration-300',
-        hover && 'hover:shadow-xl sm:hover:shadow-2xl hover:scale-[1.01] sm:hover:scale-[1.02] hover:border-gray-200 cursor-pointer',
-        padding && 'p-3 sm:p-5 lg:p-6',
+        'bg-white rounded-xl border border-gray-200 transition-all duration-200',
+        hover && 'hover:border-blue-300 hover:shadow-sm cursor-pointer',
+        padding && 'p-5',
         className
       )}
     >
@@ -29,11 +29,10 @@ interface CardHeaderProps {
   gradient?: boolean;
 }
 
-export function CardHeader({ children, className, gradient = false }: CardHeaderProps) {
+export function CardHeader({ children, className, gradient: _gradient }: CardHeaderProps) {
   return (
     <div className={clsx(
-      'border-b border-gray-100 pb-3 sm:pb-4 mb-4 sm:mb-5',
-      gradient && 'bg-gradient-to-r from-blue-50 to-blue-50 -mx-3 sm:-mx-5 lg:-mx-6 px-3 sm:px-5 lg:px-6 py-3 sm:py-4 mb-4 sm:mb-5 rounded-t-xl sm:rounded-t-2xl',
+      'flex items-center justify-between border-b border-gray-100 pb-3 mb-4',
       className
     )}>
       {children}
@@ -49,8 +48,8 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className, icon }: CardTitleProps) {
   return (
-    <h3 className={clsx('text-xl font-bold text-gray-900 flex items-center', className)}>
-      {icon && <span className="mr-3 text-blue-600">{icon}</span>}
+    <h3 className={clsx('text-[13px] font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2', className)}>
+      {icon && <span className="text-gray-400">{icon}</span>}
       {children}
     </h3>
   );
@@ -62,7 +61,7 @@ interface CardDescriptionProps {
 }
 
 export function CardDescription({ children, className }: CardDescriptionProps) {
-  return <p className={clsx('text-sm text-gray-600 mt-1', className)}>{children}</p>;
+  return <p className={clsx('text-[12px] text-gray-500 mt-0.5', className)}>{children}</p>;
 }
 
 interface CardContentProps {

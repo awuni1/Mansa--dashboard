@@ -59,31 +59,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data) {
-      // Decode role directly from JWT payload — no extra network request needed
-      try {
-        const payload = JSON.parse(atob(data.access.split('.')[1]));
-        const role = payload.role;
-        if (role !== 'admin' && role !== 'super_admin') {
+      // Always verify role via a server-validated getMe() call — never trust JWT payload decoded client-side
+      const { data: userData, error: userError } = await api.getMe();
+      if (userData && !userError) {
+        if (userData.role !== 'admin' && userData.role !== 'super_admin') {
           await api.logout();
           setLoading(false);
           return { error: 'Access denied. Admin privileges required.' };
         }
-        setUser({ email: payload.email, role } as any);
-      } catch {
-        // Fallback to getMe if token decode fails
-        const { data: userData, error: userError } = await api.getMe();
-        if (userData && !userError) {
-          if (userData.role !== 'admin' && userData.role !== 'super_admin') {
-            await api.logout();
-            setLoading(false);
-            return { error: 'Access denied. Admin privileges required.' };
-          }
-          setUser(userData);
-        } else {
-          await api.logout();
-          setLoading(false);
-          return { error: userError || 'Failed to get user information' };
-        }
+        setUser(userData);
+        // Set a session cookie so Next.js middleware can gate /dashboard/* server-side
+        document.cookie = 'dash_session=1; path=/; SameSite=Strict; max-age=28800';
+      } else {
+        await api.logout();
+        setLoading(false);
+        return { error: userError || 'Failed to verify credentials' };
       }
     }
 
@@ -94,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await api.logout();
     setUser(null);
+    document.cookie = 'dash_session=; path=/; max-age=0';
   };
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';

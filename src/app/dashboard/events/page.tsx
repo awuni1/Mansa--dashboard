@@ -1,647 +1,466 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, Clock, MapPin, Image as ImageIcon, Upload, Trash2, Eye, Edit, ArrowRight, ArrowLeft, CheckCircle, Users } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import Image from 'next/image'
-import Link from 'next/link'
-import api, { Event } from '@/lib/api'
-import { toast } from 'sonner'
+import React, { useState, useEffect } from 'react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Clock, MapPin, Image as ImageIcon, Upload, Trash2, Edit, ArrowRight, ArrowLeft, Users, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import api, { Event } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function EventsManagementPage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'list' | 'create'>('list')
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [filterStatus, setFilterStatus] = useState<'all' | 'upcoming' | 'past'>('all')
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
-  // Form state
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: 'networking',
-    date: '',
-    start_time: '',
-    end_time: '',
-    location: '',
-    is_virtual: false,
-    virtual_link: '',
-    max_attendees: '',
-    published: false
-  })
-  const [flyerFile, setFlyerFile] = useState<File | null>(null)
-  const [imageFiles, setImageFiles] = useState<File[]>([])
+    title: '', description: '', category: 'networking',
+    date: '', start_time: '', end_time: '', location: '',
+    is_virtual: false, virtual_link: '', max_attendees: '', published: false,
+  });
+  const [flyerFile, setFlyerFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  useEffect(() => {
-    fetchEvents()
-  }, [])
+  useEffect(() => { fetchEvents(); }, []);
 
   const fetchEvents = async () => {
     try {
-      setLoading(true)
-      const response = await api.getEvents()
+      setLoading(true);
+      const response = await api.getEvents();
       if (response.data) {
-        // Ensure we have an array - handle both direct array and paginated response
-        const eventsData = Array.isArray(response.data) 
-          ? response.data 
-          : (response.data as any).results || []
-        setEvents(eventsData)
-      } else if (response.error) {
-        console.error('Error fetching events:', response.error)
-        setEvents([]) // Set empty array on error
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error)
-      setEvents([]) // Set empty array on error
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const eventData = new FormData()
-    Object.entries(formData).forEach(([key, value]) => {
-      // Handle max_attendees - convert empty string to empty value, or keep the number
-      if (key === 'max_attendees') {
-        if (value && String(value).trim() !== '') {
-          eventData.append(key, String(value))
-        }
-        // Don't append if empty - let backend handle as null
-      } else if (key === 'is_virtual' || key === 'published') {
-        // Handle booleans - convert to proper boolean values
-        eventData.append(key, value ? 'true' : 'false')
-      } else {
-        eventData.append(key, String(value))
-      }
-    })
-    
-    if (flyerFile) {
-      eventData.append('flyer', flyerFile)
-    }
-    
-    imageFiles.forEach((file) => {
-      eventData.append('images', file)
-    })
-
-    try {
-      const response = editingEvent 
-        ? await api.updateEvent(editingEvent.id, eventData)
-        : await api.createEvent(eventData)
-
-      if (response.data) {
-        await fetchEvents()
-        resetForm()
-        setActiveTab('list')
-        toast.success(`Event ${editingEvent ? 'updated' : 'created'} successfully!`, {
-          description: `The event "${formData.title}" has been ${editingEvent ? 'updated' : 'created'}.`
-        })
-      } else if (response.error) {
-        console.error('Error saving event:', response.error)
-        console.error('Full response:', response)
-        // Check if it's an authentication error
-        if (response.error.includes('Session expired') || response.error.includes('Authentication')) {
-          toast.error('Session expired', {
-            description: 'Your session has expired. Please log in again.'
-          })
-          setTimeout(() => {
-            window.location.href = '/login'
-          }, 2000)
-        } else {
-          toast.error(`Failed to ${editingEvent ? 'update' : 'create'} event`, {
-            description: response.error
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Error saving event:', error)
-      toast.error('An unexpected error occurred', {
-        description: 'Please try again or contact support if the issue persists.'
-      })
-    }
-  }
+        const eventsData = Array.isArray(response.data) ? response.data : (response.data as any).results || [];
+        setEvents(eventsData);
+      } else { setEvents([]); }
+    } catch { setEvents([]); } finally { setLoading(false); }
+  };
 
   const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      category: 'networking',
-      date: '',
-      start_time: '',
-      end_time: '',
-      location: '',
-      is_virtual: false,
-      virtual_link: '',
-      max_attendees: '',
-      published: false
-    })
-    setFlyerFile(null)
-    setImageFiles([])
-    setEditingEvent(null)
-  }
+    setFormData({ title: '', description: '', category: 'networking', date: '', start_time: '', end_time: '', location: '', is_virtual: false, virtual_link: '', max_attendees: '', published: false });
+    setFlyerFile(null); setImageFiles([]); setEditingEvent(null);
+  };
 
-  const handleEdit = (event: Event) => {
-    setEditingEvent(event)
-    setFormData({
-      title: event.title,
-      description: event.description,
-      category: event.category,
-      date: event.date,
-      start_time: event.start_time,
-      end_time: event.end_time,
-      location: event.location,
-      is_virtual: event.is_virtual,
-      virtual_link: event.virtual_link || '',
-      max_attendees: event.max_attendees?.toString() || '',
-      published: event.published
-    })
-    setActiveTab('create')
-  }
+  const openCreate = () => { resetForm(); setShowCreateModal(true); };
+  const openEdit = (event: Event) => {
+    setEditingEvent(event);
+    setFormData({ title: event.title, description: event.description, category: event.category, date: event.date, start_time: event.start_time, end_time: event.end_time, location: event.location, is_virtual: event.is_virtual, virtual_link: event.virtual_link || '', max_attendees: event.max_attendees?.toString() || '', published: event.published });
+    setShowCreateModal(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const eventData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'max_attendees') { if (value && String(value).trim() !== '') eventData.append(key, String(value)); }
+      else if (key === 'is_virtual' || key === 'published') { eventData.append(key, value ? 'true' : 'false'); }
+      else { eventData.append(key, String(value)); }
+    });
+    if (flyerFile) eventData.append('flyer', flyerFile);
+    imageFiles.forEach((file) => eventData.append('images', file));
+    try {
+      const response = editingEvent ? await api.updateEvent(editingEvent.id, eventData) : await api.createEvent(eventData);
+      if (response.data) {
+        await fetchEvents(); resetForm(); setShowCreateModal(false);
+        toast.success(`Event ${editingEvent ? 'updated' : 'created'} successfully!`);
+      } else if (response.error) { toast.error(`Failed: ${response.error}`); }
+    } catch { toast.error('An unexpected error occurred.'); }
+  };
 
   const handleDelete = async (eventId: string | number) => {
-    toast.warning('Are you sure you want to delete this event?', {
-      description: 'This action cannot be undone.',
-      action: {
-        label: 'Delete',
-        onClick: async () => {
-          try {
-            const response = await api.deleteEvent(eventId)
-
-            if (response.data) {
-              await fetchEvents()
-              toast.success('Event deleted successfully')
-            } else if (response.error) {
-              console.error('Error deleting event:', response.error)
-              toast.error('Failed to delete event', {
-                description: response.error
-              })
-            }
-          } catch (error) {
-            console.error('Error deleting event:', error)
-            toast.error('Failed to delete event', {
-              description: 'An unexpected error occurred.'
-            })
-          }
-        },
-      },
-      cancel: {
-        label: 'Cancel',
-        onClick: () => {},
-      },
-    })
-  }
+    toast.warning('Delete this event?', {
+      action: { label: 'Delete', onClick: async () => {
+        const response = await api.deleteEvent(eventId);
+        if (response.data) { await fetchEvents(); toast.success('Event deleted.'); }
+        else { toast.error('Failed to delete.'); }
+      }},
+      cancel: { label: 'Cancel', onClick: () => {} },
+    });
+  };
 
   const moveEvent = async (eventId: string | number, newStatus: 'upcoming' | 'past') => {
-    try {
-      const response = newStatus === 'past'
-        ? await api.moveEventToPast(eventId)
-        : await api.moveEventToUpcoming(eventId)
-
-      if (response.data) {
-        await fetchEvents()
-        toast.success(`Event moved to ${newStatus}`)
-      } else if (response.error) {
-        console.error('Error moving event:', response.error)
-        toast.error('Failed to move event', {
-          description: response.error
-        })
-      }
-    } catch (error) {
-      console.error('Error moving event:', error)
-      toast.error('Failed to move event', {
-        description: 'An unexpected error occurred.'
-      })
-    }
-  }
+    const response = newStatus === 'past' ? await api.moveEventToPast(eventId) : await api.moveEventToUpcoming(eventId);
+    if (response.data) { await fetchEvents(); toast.success(`Moved to ${newStatus}.`); }
+    else { toast.error('Failed to move event.'); }
+  };
 
   const togglePublish = async (eventId: string | number) => {
-    try {
-      const response = await api.toggleEventPublish(eventId)
+    const response = await api.toggleEventPublish(eventId);
+    if (response.data) {
+      await fetchEvents();
+      toast.success(response.data.published ? 'Event published.' : 'Event unpublished.');
+    } else { toast.error('Failed.'); }
+  };
 
-      if (response.data) {
-        await fetchEvents()
-        toast.success(
-          response.data.published ? 'Event published' : 'Event unpublished',
-          {
-            description: response.data.published
-              ? 'The event is now visible to the public.'
-              : 'The event is now hidden from the public.'
-          }
-        )
-      } else if (response.error) {
-        console.error('Error toggling publish:', response.error)
-        toast.error('Failed to toggle publish status', {
-          description: response.error
-        })
-      }
-    } catch (error) {
-      console.error('Error toggling publish:', error)
-      toast.error('Failed to toggle publish status', {
-        description: 'An unexpected error occurred.'
-      })
-    }
-  }
-
-  const filteredEvents = Array.isArray(events) ? events.filter(event => {
-    if (filterStatus === 'all') return true
-    return event.status === filterStatus
-  }) : []
+  /* ── Calendar helpers ── */
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const monthName = calendarDate.toLocaleString('default', { month: 'long' }).toUpperCase();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const eventDays = new Set(
+    events.filter(e => { const d = new Date(e.date); return d.getFullYear() === year && d.getMonth() === month; }).map(e => new Date(e.date).getDate())
+  );
+  const upcomingEvents = Array.isArray(events) ? events.filter(e => e.status === 'upcoming') : [];
+  const pastEvents = Array.isArray(events) ? events.filter(e => e.status === 'past') : [];
+  const totalAttendees = events.reduce((s, e) => s + (e.max_attendees || 0), 0);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="space-y-5 pb-8">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Events Management
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage upcoming and past community events
-          </p>
+          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Temporal Coordinates</p>
+          <h1 className="text-3xl font-bold text-gray-900 leading-tight">Events Ecosystem</h1>
         </div>
-        <Link href="/dashboard/events/registrations">
-          <Button className="gap-2">
-            <Users className="w-4 h-4" />
-            View Registrations
-          </Button>
-        </Link>
+        <button type="button" onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs font-bold tracking-wider rounded-lg transition-all whitespace-nowrap">
+          <Plus className="h-4 w-4" /> + SCHEDULE NEW EVENT
+        </button>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-4 mb-6">
-        <Button
-          variant={activeTab === 'list' ? 'primary' : 'outline'}
-          onClick={() => {
-            setActiveTab('list')
-            resetForm()
-          }}
-        >
-          Events List
-        </Button>
-        <Button
-          variant={activeTab === 'create' ? 'primary' : 'outline'}
-          onClick={() => setActiveTab('create')}
-        >
-          {editingEvent ? 'Edit Event' : 'Create New Event'}
-        </Button>
-      </div>
+      {/* ── Main 2-column layout ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
-      {/* Events List */}
-      {activeTab === 'list' && (
-        <div>
-          {/* Filter */}
-          <div className="mb-6">
-            <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Events</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="past">Past</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Left panel: Live Metrics + Active Registrations */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Live Metrics */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <h2 className="text-[11px] font-bold tracking-widest text-gray-500 uppercase mb-4">Live Metrics</h2>
+            <div className="space-y-5">
+              {/* Capacity */}
+              <div>
+                <div className="flex items-baseline justify-between mb-1">
+                  <div>
+                    <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Total Capacity</p>
+                    <p className="text-2xl font-bold text-gray-900">{totalAttendees >= 1000 ? `${(totalAttendees / 1000).toFixed(1)}K` : totalAttendees}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{events.length} events</span>
+                </div>
+                <div className="flex items-end gap-0.5 h-10 mt-2">
+                  {(() => {
+                    const vals = events.slice(-10).map(e => e.max_attendees || 0);
+                    const max = Math.max(...vals, 1);
+                    return vals.length > 0
+                      ? vals.map((v, i) => (
+                          <div key={i} className={`flex-1 rounded-sm ${i >= vals.length - 3 ? 'bg-blue-500' : 'bg-blue-100'}`} style={{ height: `${Math.max(8, Math.round(v / max * 100))}%` }} />
+                        ))
+                      : <div className="w-full flex items-center justify-center text-xs text-gray-300">No data</div>;
+                  })()}
+                </div>
+              </div>
+              {/* Active rate */}
+              <div>
+                <div className="flex items-baseline justify-between mb-1">
+                  <div>
+                    <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Upcoming Rate</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {events.length > 0 ? `${Math.round(upcomingEvents.length / events.length * 100)}%` : '0%'}
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{upcomingEvents.length} upcoming</span>
+                </div>
+                <div className="flex items-end gap-0.5 h-10 mt-2">
+                  {(() => {
+                    const vals = events.slice(-10).map(e => e.status === 'upcoming' ? 100 : 30);
+                    return vals.length > 0
+                      ? vals.map((v, i) => (
+                          <div key={i} className={`flex-1 rounded-sm ${events.slice(-10)[i]?.status === 'upcoming' ? 'bg-green-500' : 'bg-green-100'}`} style={{ height: `${v}%` }} />
+                        ))
+                      : <div className="w-full flex items-center justify-center text-xs text-gray-300">No data</div>;
+                  })()}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Loading events...</p>
+          {/* Active Registrations */}
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+              <h2 className="text-[11px] font-bold tracking-widest text-gray-500 uppercase">Active Registrations</h2>
+              <button type="button" onClick={() => { window.location.href = '/dashboard/events/registrations'; }} className="text-[10px] font-bold text-blue-600 hover:text-blue-700 tracking-wider uppercase">View All Records</button>
             </div>
-          ) : filteredEvents.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">No events found</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6">
-              {filteredEvents.map((event) => (
-                <Card key={event.id}>
-                  <CardContent className="p-6">
-                    <div className="flex gap-6">
-                      {/* Event Flyer */}
-                      <div className="flex-shrink-0">
-                        <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                          {event.flyer ? (
-                            <Image
-                              src={event.flyer}
-                              alt={event.title}
-                              width={192}
-                              height={192}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon className="w-12 h-12 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" /></div>
+            ) : upcomingEvents.length === 0 ? (
+              <div className="px-5 py-8 text-center">
+                <Calendar className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-400">No upcoming events</p>
+              </div>
+            ) : (
+              <div>
+                {upcomingEvents.slice(0, 4).map((event) => (
+                  <div key={event.id} className="flex items-center justify-between px-5 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-700 text-xs font-bold">{event.title[0]}</span>
                       </div>
-
-                      {/* Event Details */}
-                      <div className="flex-grow">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-xl font-bold">{event.title}</h3>
-                              <Badge variant={event.status === 'upcoming' ? 'default' : 'secondary'}>
-                                {event.status}
-                              </Badge>
-                              {event.published && (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Published
-                                </Badge>
-                              )}
-                            </div>
-                            <Badge variant="outline">{event.category}</Badge>
-                          </div>
-                        </div>
-
-                        <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                          {event.description}
-                        </p>
-
-                        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(event.date).toLocaleDateString()}
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <Clock className="w-4 h-4" />
-                            {event.start_time} - {event.end_time}
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <MapPin className="w-4 h-4" />
-                            {event.location}
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <ImageIcon className="w-4 h-4" />
-                            {event.images?.length || 0} photos
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(event)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => togglePublish(event.id)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            {event.published ? 'Unpublish' : 'Publish'}
-                          </Button>
-                          {event.status === 'upcoming' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => moveEvent(event.id, 'past')}
-                            >
-                              <ArrowRight className="w-4 h-4 mr-2" />
-                              Move to Past
-                            </Button>
-                          )}
-                          {event.status === 'past' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => moveEvent(event.id, 'upcoming')}
-                            >
-                              <ArrowLeft className="w-4 h-4 mr-2" />
-                              Move to Upcoming
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => handleDelete(event.id)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </Button>
-                        </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{event.title}</p>
+                        <p className="text-[11px] text-gray-400">{new Date(event.date).toLocaleDateString()} · {event.location}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                      <Link href={`/dashboard/events/registrations?eventId=${event.id}&eventTitle=${encodeURIComponent(event.title)}`} title="View Registrations" className="p-1 rounded hover:bg-green-100 text-gray-400 hover:text-green-600 transition-colors">
+                        <Users className="h-3.5 w-3.5" />
+                      </Link>
+                      <button type="button" onClick={() => openEdit(event)} title="Edit" className="p-1 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors">
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      <button type="button" onClick={() => handleDelete(event.id)} title="Delete" className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="px-5 py-2.5 text-center">
+                  <button type="button" onClick={openCreate} className="text-xs font-bold text-blue-600 hover:text-blue-700 tracking-wider uppercase">
+                    + SCHEDULE NEW EVENT
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right panel: Calendar + Event cards */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* Calendar */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-bold text-gray-700 tracking-wider">{monthName} {year}</h2>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => setCalendarDate(new Date(year, month - 1, 1))} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => setCalendarDate(new Date(year, month + 1, 1))} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          )}
+            <div className="grid grid-cols-7 gap-1">
+              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d) => (
+                <div key={d} className="text-center text-[10px] font-bold text-gray-400 pb-2">{d}</div>
+              ))}
+              {[...Array(firstDay)].map((_, i) => <div key={`empty-${i}`} />)}
+              {[...Array(daysInMonth)].map((_, i) => {
+                const day = i + 1;
+                const hasEvent = eventDays.has(day);
+                const isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
+                return (
+                  <div key={day} className={`text-center py-1.5 text-xs font-semibold rounded-lg transition-colors ${isToday ? 'bg-blue-600 text-white' : hasEvent ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+                    {day}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Event cards */}
+          <div className="space-y-3">
+            {loading ? (
+              <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto" />
+              </div>
+            ) : events.length === 0 ? (
+              <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+                <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500 mb-3">No events yet</p>
+                <button type="button" onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Schedule First Event</button>
+              </div>
+            ) : (
+              events.map((event) => (
+                <div key={event.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex">
+                    {/* Date badge */}
+                    <div className="w-16 flex-shrink-0 bg-blue-600 flex flex-col items-center justify-center text-white py-4">
+                      <span className="text-xs font-bold uppercase">{new Date(event.date).toLocaleString('default', { month: 'short' })}</span>
+                      <span className="text-2xl font-bold leading-none">{new Date(event.date).getDate()}</span>
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${event.status === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                              {event.status?.toUpperCase()}
+                            </span>
+                            {event.published && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">PUBLISHED</span>}
+                          </div>
+                          <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{event.title}</h3>
+                          <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-400">
+                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {event.start_time}</span>
+                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {event.location}</span>
+                          </div>
+                        </div>
+                        {/* Image */}
+                        <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                          {event.flyer ? (
+                            <Image src={event.flyer} alt={event.title} width={64} height={48} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-4 w-4 text-gray-300" /></div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Actions */}
+                      <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-gray-100">
+                        <button type="button" onClick={() => togglePublish(event.id)} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors ${event.published ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}>
+                          {event.published ? 'Unpublish' : 'Publish'}
+                        </button>
+                        {event.status === 'upcoming' && (
+                          <button type="button" onClick={() => moveEvent(event.id, 'past')} className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1">
+                            <ArrowRight className="h-3 w-3" /> Past
+                          </button>
+                        )}
+                        {event.status === 'past' && (
+                          <button type="button" onClick={() => moveEvent(event.id, 'upcoming')} className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1">
+                            <ArrowLeft className="h-3 w-3" /> Upcoming
+                          </button>
+                        )}
+                        <Link
+                          href={`/dashboard/events/registrations?eventId=${event.id}&eventTitle=${encodeURIComponent(event.title)}`}
+                          className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors flex items-center gap-1"
+                        >
+                          <Users className="h-3 w-3" /> Registrations
+                        </Link>
+                        <button type="button" onClick={() => openEdit(event)} className="ml-auto p-1 rounded hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors">
+                          <Edit className="h-3.5 w-3.5" />
+                        </button>
+                        <button type="button" onClick={() => handleDelete(event.id)} className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Past events summary ── */}
+      {pastEvents.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <h2 className="text-[11px] font-bold tracking-widest text-gray-500 uppercase mb-3">Past Events</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {pastEvents.map((event) => (
+              <div key={event.id} className="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                <p className="text-xs font-semibold text-gray-700 line-clamp-1">{event.title}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{new Date(event.date).toLocaleDateString()}</p>
+                <div className="flex gap-1 mt-2">
+                  <Link href={`/dashboard/events/registrations?eventId=${event.id}&eventTitle=${encodeURIComponent(event.title)}`} className="text-[10px] px-2 py-0.5 rounded bg-green-50 text-green-700 hover:bg-green-100 transition-colors flex items-center gap-0.5">
+                    <Users className="h-2.5 w-2.5" /> Regs
+                  </Link>
+                  <button type="button" onClick={() => openEdit(event)} className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-colors">Edit</button>
+                  <button type="button" onClick={() => moveEvent(event.id, 'upcoming')} className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-0.5">
+                    <ArrowLeft className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Create/Edit Event Form */}
-      {activeTab === 'create' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</CardTitle>
-            <CardDescription>
-              Fill in the details to {editingEvent ? 'update' : 'create'} an event
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                
+      {/* ── Create / Edit Modal ── */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+              <h2 className="text-base font-bold text-gray-900">{editingEvent ? 'Edit Event' : 'Schedule New Event'}</h2>
+              <button type="button" onClick={() => { setShowCreateModal(false); resetForm(); }} aria-label="Close" className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div>
+                <Label htmlFor="event-title">Event Title *</Label>
+                <input id="event-title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+              </div>
+              <div>
+                <Label htmlFor="event-description">Description *</Label>
+                <Textarea id="event-description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} required className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="event-category">Category</Label>
+                <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['networking', 'workshop', 'conference', 'webinar', 'social', 'fundraiser', 'other'].map(c => (
+                      <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label htmlFor="title">Event Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    required
-                  />
+                  <Label htmlFor="event-date">Date *</Label>
+                  <input id="event-date" type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
                 </div>
-
                 <div>
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    rows={4}
-                    required
-                  />
+                  <Label htmlFor="event-start">Start *</Label>
+                  <input id="event-start" type="time" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} required
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
                 </div>
-
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="networking">Networking</SelectItem>
-                      <SelectItem value="workshop">Workshop</SelectItem>
-                      <SelectItem value="conference">Conference</SelectItem>
-                      <SelectItem value="webinar">Webinar</SelectItem>
-                      <SelectItem value="social">Social</SelectItem>
-                      <SelectItem value="fundraiser">Fundraiser</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="event-end">End *</Label>
+                  <input id="event-end" type="time" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} required
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
                 </div>
               </div>
-
-              {/* Event Details */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Event Details</h3>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="date">Date *</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="start_time">Start Time *</Label>
-                    <Input
-                      id="start_time"
-                      type="time"
-                      value={formData.start_time}
-                      onChange={(e) => setFormData({...formData, start_time: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end_time">End Time *</Label>
-                    <Input
-                      id="end_time"
-                      type="time"
-                      value={formData.end_time}
-                      onChange={(e) => setFormData({...formData, end_time: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="location">Location *</Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    placeholder="e.g., Virtual Event, NYC, London"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_virtual"
-                    checked={formData.is_virtual}
-                    onChange={(e) => setFormData({...formData, is_virtual: e.target.checked})}
-                    className="w-4 h-4"
-                    aria-label="This is a virtual event"
-                  />
-                  <Label htmlFor="is_virtual">This is a virtual event</Label>
-                </div>
-
-                {formData.is_virtual && (
-                  <div>
-                    <Label htmlFor="virtual_link">Virtual Event Link</Label>
-                    <Input
-                      id="virtual_link"
-                      type="url"
-                      value={formData.virtual_link}
-                      onChange={(e) => setFormData({...formData, virtual_link: e.target.value})}
-                      placeholder="https://zoom.us/..."
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label htmlFor="max_attendees">Max Attendees (optional)</Label>
-                  <Input
-                    id="max_attendees"
-                    type="number"
-                    value={formData.max_attendees}
-                    onChange={(e) => setFormData({...formData, max_attendees: e.target.value})}
-                    placeholder="Leave empty for unlimited"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="event-location">Location *</Label>
+                <input id="event-location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="e.g., Virtual, NYC" required
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
               </div>
-
-              {/* Media Upload */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Media</h3>
-                
-                <div>
-                  <Label htmlFor="flyer">Event Flyer</Label>
-                  <Input
-                    id="flyer"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setFlyerFile(e.target.files?.[0] || null)}
-                  />
-                  {flyerFile && (
-                    <p className="text-sm text-gray-600 mt-2">Selected: {flyerFile.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="images">Event Photos (Multiple)</Label>
-                  <Input
-                    id="images"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
-                  />
-                  {imageFiles.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      {imageFiles.length} file(s) selected
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Publishing */}
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="published"
-                  checked={formData.published}
-                  onChange={(e) => setFormData({...formData, published: e.target.checked})}
-                  className="w-4 h-4"
-                  aria-label="Publish this event"
-                />
-                <Label htmlFor="published">Publish this event (make visible to public)</Label>
+                <input type="checkbox" id="is_virtual" checked={formData.is_virtual} onChange={(e) => setFormData({ ...formData, is_virtual: e.target.checked })} className="w-4 h-4" aria-label="Virtual event" />
+                <Label htmlFor="is_virtual">This is a virtual event</Label>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <Button type="submit">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {editingEvent ? 'Update Event' : 'Create Event'}
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
+              {formData.is_virtual && (
+                <div>
+                  <Label htmlFor="virtual_link">Virtual Link</Label>
+                  <input id="virtual_link" type="url" value={formData.virtual_link} onChange={(e) => setFormData({ ...formData, virtual_link: e.target.value })} placeholder="https://zoom.us/..."
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+                </div>
+              )}
+              <div>
+                <Label htmlFor="max_attendees">Max Attendees (optional)</Label>
+                <input id="max_attendees" type="number" value={formData.max_attendees} onChange={(e) => setFormData({ ...formData, max_attendees: e.target.value })}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none" placeholder="Unlimited" />
+              </div>
+              <div>
+                <Label htmlFor="flyer">Event Flyer</Label>
+                <input id="flyer" type="file" accept="image/*" onChange={(e) => setFlyerFile(e.target.files?.[0] || null)}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                {flyerFile && <p className="text-xs text-gray-500 mt-1">Selected: {flyerFile.name}</p>}
+              </div>
+              <div>
+                <Label htmlFor="images">Event Photos</Label>
+                <input id="images" type="file" accept="image/*" multiple onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                {imageFiles.length > 0 && <p className="text-xs text-gray-500 mt-1">{imageFiles.length} file(s) selected</p>}
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="published" checked={formData.published} onChange={(e) => setFormData({ ...formData, published: e.target.checked })} className="w-4 h-4" aria-label="Publish event" />
+                <Label htmlFor="published">Publish this event</Label>
+              </div>
+              <div className="flex gap-3 pt-2 border-t border-gray-100">
+                <button type="submit" className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors">
+                  <Upload className="h-4 w-4" /> {editingEvent ? 'Update Event' : 'Create Event'}
+                </button>
+                <button type="button" onClick={() => { setShowCreateModal(false); resetForm(); }} className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
-  )
+  );
 }

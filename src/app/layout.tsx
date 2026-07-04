@@ -1,12 +1,11 @@
-'use client';
-
 import type { Metadata } from "next";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '@/lib/queryClient';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Providers from "@/components/providers/Providers";
 import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Mansa Dashboard",
+  description: "Mansa-to-Mansa Admin Dashboard",
+};
 
 export default function RootLayout({
   children,
@@ -16,16 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-            {process.env.NODE_ENV === 'development' && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
-          </QueryClientProvider>
-        </ErrorBoundary>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

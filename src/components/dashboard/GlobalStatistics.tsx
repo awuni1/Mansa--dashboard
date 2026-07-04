@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Globe, Users, MapPin, TrendingUp, Award, Briefcase } from 'lucide-react';
 
@@ -22,14 +21,13 @@ interface GlobalStatisticsProps {
 }
 
 const COLORS = {
-  primary: ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'],
-  gender: ['#8b5cf6', '#ec4899', '#06b6d4', '#10b981'],
+  primary:    ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a'],
+  gender:     ['#8b5cf6', '#ec4899', '#06b6d4', '#10b981'],
   occupation: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'],
-  country: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#ef4444', '#6366f1'],
+  country:    ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#ef4444', '#6366f1'],
 };
 
 export default function GlobalStatistics({ members, className = '' }: GlobalStatisticsProps) {
-  // Process membership type statistics
   const membershipStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
@@ -43,7 +41,6 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
       .sort((a, b) => b.value - a.value);
   }, [members]);
 
-  // Process gender statistics
   const genderStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
@@ -57,7 +54,6 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
       .sort((a, b) => b.value - a.value);
   }, [members]);
 
-  // Process country distribution (top 10)
   const countryStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
@@ -73,14 +69,13 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
       .slice(0, 10);
   }, [members]);
 
-  // Process occupation/industry statistics (top 8)
   const occupationStats = useMemo(() => {
     const stats = new Map<string, number>();
     members.forEach(member => {
-      const occ = member.occupation || member.industry || 'Unspecified';
-      if (occ) {
-        stats.set(occ, (stats.get(occ) || 0) + 1);
-      }
+      const raw = member.occupation || member.industry || 'Unspecified';
+      const key = raw.trim().toLowerCase();
+      const display = key === 'unspecified' ? 'Unspecified' : key.charAt(0).toUpperCase() + key.slice(1);
+      stats.set(display, (stats.get(display) || 0) + 1);
     });
     return Array.from(stats.entries())
       .map(([name, value]) => ({ name, value }))
@@ -88,24 +83,23 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
       .slice(0, 8);
   }, [members]);
 
-  // Calculate key metrics
-  const totalCountries = useMemo(() => {
-    return new Set(members.filter(m => m.country).map(m => m.country!.trim().toLowerCase())).size;
-  }, [members]);
+  const totalCountries = useMemo(() =>
+    new Set(members.filter(m => m.country).map(m => m.country!.trim().toLowerCase())).size,
+  [members]);
 
-  const totalCities = useMemo(() => {
-    return new Set(members.filter(m => m.city).map(m => `${m.city}, ${m.country}`)).size;
-  }, [members]);
+  const totalCities = useMemo(() =>
+    new Set(members.filter(m => m.city).map(m => `${m.city}, ${m.country}`)).size,
+  [members]);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const percentage = ((data.value / members.length) * 100).toFixed(1);
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-xl border-2 border-blue-500">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.name}</p>
-          <p className="text-blue-600 dark:text-blue-400 font-bold">{data.value} members</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{percentage}% of total</p>
+        <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200">
+          <p className="text-[13px] font-semibold text-gray-900">{data.name}</p>
+          <p className="text-[13px] font-bold text-blue-600">{data.value} members</p>
+          <p className="text-[11px] text-gray-500">{percentage}% of total</p>
         </div>
       );
     }
@@ -113,265 +107,160 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
   };
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    if (percent < 0.05) return null;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
     const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-
-    if (percent < 0.05) return null; // Don't show label for very small slices
-
     return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-        className="font-bold text-sm"
-        style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}
-      >
+      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header with Key Metrics */}
-      <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none shadow-xl">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <Globe className="h-8 w-8" />
+    <div className={`space-y-4 ${className}`}>
+
+      {/* ── Summary stat row ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Members',   value: members.length,    icon: Users,  bg: 'bg-blue-100',   ic: 'text-blue-600' },
+          { label: 'Countries',       value: totalCountries,    icon: Globe,  bg: 'bg-green-100',  ic: 'text-green-600' },
+          { label: 'Cities',          value: totalCities,       icon: MapPin, bg: 'bg-amber-100',  ic: 'text-amber-600' },
+          { label: 'Member Types',    value: membershipStats.length, icon: TrendingUp, bg: 'bg-purple-100', ic: 'text-purple-600' },
+        ].map(({ label, value, icon: Icon, bg, ic }) => (
+          <div key={label} className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon className={`w-5 h-5 ${ic}`} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Global Member Statistics</h2>
-              <p className="text-blue-100">Comprehensive analytics and insights</p>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
+              <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <Users className="h-6 w-6 mb-2 opacity-80" />
-              <div className="text-3xl font-bold">{members.length}</div>
-              <div className="text-sm text-blue-100">Total Members</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <Globe className="h-6 w-6 mb-2 opacity-80" />
-              <div className="text-3xl font-bold">{totalCountries}</div>
-              <div className="text-sm text-blue-100">Countries</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <MapPin className="h-6 w-6 mb-2 opacity-80" />
-              <div className="text-3xl font-bold">{totalCities}</div>
-              <div className="text-sm text-blue-100">Cities</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <TrendingUp className="h-6 w-6 mb-2 opacity-80" />
-              <div className="text-3xl font-bold">{membershipStats.length}</div>
-              <div className="text-sm text-blue-100">Member Types</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Membership Type Distribution */}
-        <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Award className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Membership Distribution</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">By membership type</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
+      {/* ── Charts grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Membership Distribution */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+            <Award className="w-4 h-4 text-gray-400" />
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">Membership Distribution</span>
+          </div>
+          <div className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie
-                  data={membershipStats}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomLabel}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                >
-                  {membershipStats.map((entry, index) => (
+                <Pie data={membershipStats} cx="50%" cy="50%" labelLine={false} label={renderCustomLabel} outerRadius={100} dataKey="value" animationDuration={800}>
+                  {membershipStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS.primary[index % COLORS.primary.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  formatter={(value, entry: any) => (
-                    <span className="text-sm font-medium">{value} ({entry.payload.value})</span>
-                  )}
-                />
+                <Legend verticalAlign="bottom" height={36} formatter={(value, entry: any) => (
+                  <span className="text-[12px] font-medium text-gray-700">{value} ({entry.payload.value})</span>
+                )} />
               </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Gender Distribution */}
-        <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Gender Distribution</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Member demographics</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">Gender Distribution</span>
+          </div>
+          <div className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie
-                  data={genderStats}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomLabel}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                >
-                  {genderStats.map((entry, index) => (
+                <Pie data={genderStats} cx="50%" cy="50%" labelLine={false} label={renderCustomLabel} outerRadius={100} dataKey="value" animationDuration={800}>
+                  {genderStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS.gender[index % COLORS.gender.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  formatter={(value, entry: any) => (
-                    <span className="text-sm font-medium">{value} ({entry.payload.value})</span>
-                  )}
-                />
+                <Legend verticalAlign="bottom" height={36} formatter={(value, entry: any) => (
+                  <span className="text-[12px] font-medium text-gray-700">{value} ({entry.payload.value})</span>
+                )} />
               </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Top Countries Bar Chart */}
-        <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Top 10 Countries</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Highest member concentration</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
+        {/* Top Countries */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-gray-400" />
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">Top 10 Countries</span>
+          </div>
+          <div className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={countryStats} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={100} style={{ fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} />
+                <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11, fill: '#6b7280' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" radius={[0, 8, 8, 0]} animationDuration={800}>
-                  {countryStats.map((entry, index) => (
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} animationDuration={800}>
+                  {countryStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS.country[index % COLORS.country.length]} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Occupation/Industry Distribution */}
-        <Card className="border-none shadow-lg">
-          <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-amber-50 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Professional Fields</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Top occupations & industries</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
+        {/* Professional Fields */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-gray-400" />
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">Professional Fields</span>
+          </div>
+          <div className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie
-                  data={occupationStats}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomLabel}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={800}
-                >
-                  {occupationStats.map((entry, index) => (
+                <Pie data={occupationStats} cx="50%" cy="50%" labelLine={false} label={renderCustomLabel} outerRadius={100} dataKey="value" animationDuration={800}>
+                  {occupationStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS.occupation[index % COLORS.occupation.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  formatter={(value, entry: any) => (
-                    <span className="text-sm font-medium text-xs">{value} ({entry.payload.value})</span>
-                  )}
-                />
+                <Legend verticalAlign="bottom" height={36} formatter={(value, entry: any) => (
+                  <span className="text-[12px] font-medium text-gray-700">{value} ({entry.payload.value})</span>
+                )} />
               </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Detailed Statistics Table */}
-      <Card className="border-none shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-gray-900">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Detailed Breakdown
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
+      {/* ── Detailed Breakdown ── */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-gray-400" />
+          <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">Detailed Breakdown</span>
+        </div>
+        <div className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
             {/* Membership Types */}
             <div>
-              <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                Membership Types
-              </h3>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5" /> Membership Types
+              </p>
               <div className="space-y-2">
                 {membershipStats.map((stat, index) => {
-                  const percentage = ((stat.value / members.length) * 100).toFixed(1);
+                  const pct = ((stat.value / members.length) * 100).toFixed(1);
                   return (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                    <div key={index} className="flex items-center justify-between text-[13px]">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS.primary[index % COLORS.primary.length] }}
-                        />
-                        <span className="text-gray-700 dark:text-gray-300">{stat.name}</span>
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS.primary[index % COLORS.primary.length] }} />
+                        <span className="text-gray-700">{stat.name}</span>
                       </div>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {stat.value} ({percentage}%)
-                      </span>
+                      <span className="font-semibold text-gray-900">{stat.value} <span className="text-gray-400 font-normal">({pct}%)</span></span>
                     </div>
                   );
                 })}
@@ -380,60 +269,50 @@ export default function GlobalStatistics({ members, className = '' }: GlobalStat
 
             {/* Top Countries */}
             <div>
-              <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                Top Countries
-              </h3>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5" /> Top Countries
+              </p>
               <div className="space-y-2">
                 {countryStats.slice(0, 5).map((stat, index) => {
-                  const percentage = ((stat.value / members.length) * 100).toFixed(1);
+                  const pct = ((stat.value / members.length) * 100).toFixed(1);
                   return (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                    <div key={index} className="flex items-center justify-between text-[13px]">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS.country[index % COLORS.country.length] }}
-                        />
-                        <span className="text-gray-700 dark:text-gray-300">{stat.name}</span>
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS.country[index % COLORS.country.length] }} />
+                        <span className="text-gray-700">{stat.name}</span>
                       </div>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {stat.value} ({percentage}%)
-                      </span>
+                      <span className="font-semibold text-gray-900">{stat.value} <span className="text-gray-400 font-normal">({pct}%)</span></span>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Gender Stats */}
+            {/* Gender */}
             <div>
-              <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Gender Breakdown
-              </h3>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" /> Gender Breakdown
+              </p>
               <div className="space-y-2">
                 {genderStats.map((stat, index) => {
-                  const percentage = ((stat.value / members.length) * 100).toFixed(1);
+                  const pct = ((stat.value / members.length) * 100).toFixed(1);
                   return (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                    <div key={index} className="flex items-center justify-between text-[13px]">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS.gender[index % COLORS.gender.length] }}
-                        />
-                        <span className="text-gray-700 dark:text-gray-300">{stat.name}</span>
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS.gender[index % COLORS.gender.length] }} />
+                        <span className="text-gray-700">{stat.name}</span>
                       </div>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {stat.value} ({percentage}%)
-                      </span>
+                      <span className="font-semibold text-gray-900">{stat.value} <span className="text-gray-400 font-normal">({pct}%)</span></span>
                     </div>
                   );
                 })}
               </div>
             </div>
+
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
     </div>
   );
 }

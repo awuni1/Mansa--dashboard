@@ -192,29 +192,33 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50">
-      <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 py-2 sm:py-3">
-        {/* Left Section */}
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2.5">
+        {/* Left Section — breadcrumb */}
         <div className="flex-1 min-w-0 pl-10 sm:pl-12 lg:pl-0">
-          <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent truncate">
-              Dashboard
-            </h1>
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-[13px] text-gray-500">
+                <span className="font-semibold text-gray-800">mansafomansa</span>
+                <span className="text-gray-300">/</span>
+                <span>Administrator</span>
+              </div>
+            </div>
             {/* Offline Indicator */}
             {!isOnline && (
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-red-100 border border-red-300 rounded-lg animate-pulse">
-                <WifiOff className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 border border-red-300 rounded-lg animate-pulse">
+                <WifiOff className="h-3 w-3 text-red-600" />
                 <span className="text-xs font-semibold text-red-700 hidden sm:inline">Offline</span>
               </div>
             )}
-            {/* Search Bar - Hidden on mobile */}
-            <div className="hidden md:flex items-center">
+            {/* Search Bar */}
+            <div className="hidden md:flex items-center ml-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search..."
-                  className="pl-10 pr-4 py-2 w-64 lg:w-80 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
+                  placeholder="Compose search..."
+                  className="pl-9 pr-4 py-1.5 w-56 lg:w-72 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                 />
               </div>
             </div>

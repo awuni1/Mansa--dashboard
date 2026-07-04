@@ -45,11 +45,17 @@ export default function AnalyticsPage() {
   } : null;
 
   // Build user analytics
+  const currentMonthStart = new Date();
+  currentMonthStart.setDate(1);
+  currentMonthStart.setHours(0, 0, 0, 0);
+
   const userAnalytics: UserAnalytics | null = membersData ? {
     total_approved_users: membersData.count || 0,
     total_pending_users: 0,
-    new_registrations_this_month: Math.floor((membersData.count || 0) * 0.1),
-    user_growth_rate: 15.5,
+    new_registrations_this_month: membersData.results?.filter(
+      (m: any) => m.created_at && new Date(m.created_at) >= currentMonthStart
+    ).length || 0,
+    user_growth_rate: 0,
     recent_registrations: membersData.results?.slice(0, 5).map((m: any) => ({
       id: m.id,
       email: m.email || `${m.name}@mansa.com`,
@@ -75,7 +81,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-700 border-t-transparent mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto"></div>
           <p className="mt-4 text-gray-600 font-medium">Loading analytics...</p>
         </div>
       </div>
@@ -83,154 +89,127 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="bg-slate-700 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 text-white shadow-sm sm:shadow-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1">Analytics Dashboard</h1>
-            <p className="text-slate-200 text-xs sm:text-sm lg:text-base">Comprehensive insights and metrics</p>
+    <div className="space-y-5 pb-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-md mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            <span className="text-[11px] font-semibold text-green-700 uppercase tracking-wide">System Status: Optimal</span>
           </div>
-          <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white/30" />
+          <h1 className="text-xl font-bold text-gray-900 leading-none">Analytics Dashboard</h1>
         </div>
       </div>
 
       {/* Overview Cards */}
       {overview && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-          <Card hover className="border-l-2 border-l-slate-600">
-            <CardContent className="p-2 sm:p-2.5 lg:p-3">
-              <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-slate-700 rounded-lg shadow-sm flex-shrink-0">
-                  <Users className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-                </div>
-                <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wide">Users</p>
-                <p className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mt-0.5">{overview.total_users || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-green-600 font-medium mt-0.5">
-                  {overview.approved_users || 0} approved
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Users</p>
+              <p className="text-2xl font-bold text-gray-900 leading-none">{overview.total_users || 0}</p>
+              <p className="text-[10px] text-green-600 font-medium mt-0.5">{overview.approved_users || 0} approved</p>
+            </div>
+          </div>
 
-          <Card hover className="border-l-2 border-l-green-700">
-            <CardContent className="p-2 sm:p-2.5 lg:p-3">
-              <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-green-700 rounded-lg shadow-sm flex-shrink-0">
-                  <FolderOpen className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-                </div>
-                <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wide">Projects</p>
-                <p className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mt-0.5">{overview.total_projects || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-green-600 font-medium mt-0.5">
-                  {overview.active_projects || 0} active
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <FolderOpen className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Projects</p>
+              <p className="text-2xl font-bold text-gray-900 leading-none">{overview.total_projects || 0}</p>
+              <p className="text-[10px] text-green-600 font-medium mt-0.5">{overview.active_projects || 0} active</p>
+            </div>
+          </div>
 
-          <Card hover className="border-l-2 border-l-stone-600">
-            <CardContent className="p-2 sm:p-2.5 lg:p-3">
-              <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-stone-700 rounded-lg shadow-sm flex-shrink-0">
-                  <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-                </div>
-                <TrendingUp className="h-3 w-3 text-amber-500 flex-shrink-0" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wide">Apps</p>
-                <p className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mt-0.5">{overview.total_applications || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-amber-600 font-medium mt-0.5">
-                  {overview.pending_applications || 0} pending
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Apps</p>
+              <p className="text-2xl font-bold text-gray-900 leading-none">{overview.total_applications || 0}</p>
+              <p className="text-[10px] text-amber-600 font-medium mt-0.5">{overview.pending_applications || 0} pending</p>
+            </div>
+          </div>
 
-          <Card hover className="border-l-2 border-l-orange-700">
-            <CardContent className="p-2 sm:p-2.5 lg:p-3">
-              <div className="flex items-center justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-blue-700 rounded-lg shadow-sm flex-shrink-0">
-                  <Mail className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-                </div>
-                <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wide">Emails</p>
-                <p className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mt-0.5">{overview.total_emails_sent || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-gray-500 font-medium mt-0.5">
-                  All time
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Emails</p>
+              <p className="text-2xl font-bold text-gray-900 leading-none">{overview.total_emails_sent || 0}</p>
+              <p className="text-[10px] text-gray-500 font-medium mt-0.5">All time</p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* User Analytics */}
       {userAnalytics && (
-        <Card hover>
-          <CardHeader gradient>
-            <CardTitle className="flex items-center text-xl">
-              <Users className="h-6 w-6 mr-3 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-600" />
               User Analytics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center p-6 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="text-3xl font-bold text-slate-700 dark:text-slate-300">
+            </span>
+          </div>
+          <div className="p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="text-center p-5 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="text-3xl font-bold text-gray-700">
                   {userAnalytics.new_registrations_this_month || 0}
                 </div>
-                <div className="text-sm text-gray-700 font-medium mt-2">New Registrations This Month</div>
+                <div className="text-[13px] text-gray-600 font-medium mt-2">New Registrations This Month</div>
               </div>
-              <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                <div className="text-3xl font-bold text-green-700 dark:text-green-400">
+              <div className="text-center p-5 bg-green-50 rounded-xl border border-green-200">
+                <div className="text-3xl font-bold text-green-700">
                   {userAnalytics.total_approved_users || 0}
                 </div>
-                <div className="text-sm text-gray-700 font-medium mt-2">Approved Users</div>
+                <div className="text-[13px] text-gray-600 font-medium mt-2">Approved Users</div>
               </div>
-              <div className="text-center p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
+              <div className="text-center p-5 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="text-3xl font-bold text-amber-700">
                   {userAnalytics.total_pending_users || 0}
                 </div>
-                <div className="text-sm text-gray-700 font-medium mt-2">Pending Approval</div>
+                <div className="text-[13px] text-gray-600 font-medium mt-2">Pending Approval</div>
               </div>
-              <div className="text-center p-6 bg-stone-50 dark:bg-stone-900/20 rounded-xl border border-stone-200 dark:border-stone-800">
-                <div className="text-3xl font-bold text-stone-700 dark:text-stone-400">
+              <div className="text-center p-5 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="text-3xl font-bold text-gray-700">
                   {userAnalytics.user_growth_rate ? userAnalytics.user_growth_rate.toFixed(1) : '0.0'}%
                 </div>
-                <div className="text-sm text-gray-700 font-medium mt-2">Growth Rate</div>
+                <div className="text-[13px] text-gray-600 font-medium mt-2">Growth Rate</div>
               </div>
             </div>
 
             {userAnalytics.recent_registrations && userAnalytics.recent_registrations.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <UserCheck className="h-5 w-5 mr-2 text-blue-600" />
+              <div className="mt-4">
+                <h3 className="text-[13px] font-bold text-gray-800 mb-3 flex items-center gap-2 uppercase tracking-wide">
+                  <UserCheck className="h-4 w-4 text-blue-600" />
                   Recent Registrations
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {userAnalytics.recent_registrations.slice(0, 5).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+                    <div key={user.id} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-slate-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-sm">
                           {user.first_name?.[0] || 'U'}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900">{user.first_name} {user.last_name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="font-bold text-gray-900 text-[13px]">{user.first_name} {user.last_name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                          user.approval_status === 'approved' ? 'bg-green-100 text-green-700 border border-green-300' :
-                          user.approval_status === 'pending' ? 'bg-amber-100 text-amber-700 border border-amber-300' :
-                          'bg-red-100 text-red-700 border border-red-300'
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+                          user.approval_status === 'approved' ? 'bg-green-100 text-green-700' :
+                          user.approval_status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
                         }`}>
                           {user.approval_status || 'pending'}
                         </span>
@@ -243,64 +222,76 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Project Analytics */}
       {projectAnalytics && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FolderOpen className="h-5 w-5 mr-2" />
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+            <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+              <FolderOpen className="h-4 w-4 text-blue-600" />
               Project Analytics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {projectAnalytics.total_projects}
+            </span>
+          </div>
+          <div className="p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+                <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <FolderOpen className="w-5 h-5 text-blue-600" />
                 </div>
-                <div className="text-sm text-gray-600">Total Projects</div>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Total Projects</p>
+                  <p className="text-2xl font-bold text-gray-900 leading-none">{projectAnalytics.total_projects}</p>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600">
-                  {projectAnalytics.pending_projects}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+                <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 text-amber-600" />
                 </div>
-                <div className="text-sm text-gray-600">Pending Approval</div>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Pending</p>
+                  <p className="text-2xl font-bold text-gray-900 leading-none">{projectAnalytics.pending_projects}</p>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {projectAnalytics.approved_projects}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+                <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
                 </div>
-                <div className="text-sm text-gray-600">Approved Projects</div>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Approved</p>
+                  <p className="text-2xl font-bold text-gray-900 leading-none">{projectAnalytics.approved_projects}</p>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {projectAnalytics.application_approval_rate?.toFixed(1)}%
+              <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+                <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
                 </div>
-                <div className="text-sm text-gray-600">Approval Rate</div>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Approval Rate</p>
+                  <p className="text-2xl font-bold text-gray-900 leading-none">{projectAnalytics.application_approval_rate?.toFixed(1)}%</p>
+                </div>
               </div>
             </div>
 
             {projectAnalytics.recent_projects && projectAnalytics.recent_projects.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Projects</h3>
+              <div className="mt-4">
+                <h3 className="text-[13px] font-bold text-gray-800 mb-3 uppercase tracking-wide">Recent Projects</h3>
                 <div className="space-y-2">
                   {projectAnalytics.recent_projects.slice(0, 5).map((project) => (
-                    <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={project.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
                       <div>
-                        <p className="font-medium text-sm">{project.title}</p>
+                        <p className="font-medium text-[13px] text-gray-900">{project.title}</p>
                         <p className="text-xs text-gray-500 truncate max-w-md">
                           {project.description}
                         </p>
                       </div>
                       <div className="text-right">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          project.status === 'active' ? 'bg-green-100 text-green-800' :
-                          project.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                          project.status === 'closed' ? 'bg-blue-100 text-blue-800' :
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+                          project.status === 'active' ? 'bg-green-100 text-green-700' :
+                          project.status === 'draft' ? 'bg-gray-100 text-gray-600' :
+                          project.status === 'closed' ? 'bg-blue-100 text-blue-700' :
                           'bg-gray-100 text-gray-600'
                         }`}>
                           {project.status}
@@ -314,8 +305,8 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

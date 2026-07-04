@@ -1,562 +1,556 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { api, Member, ProjectApplication } from '@/lib/api';
+import { toast } from 'sonner';
+import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryClient';
 import { useDebounceSearch } from '@/hooks/useDebounceSearch';
-import { Search, Eye, Mail, FileText, Filter, Download, TrendingUp, Users, Briefcase, Calendar, Clock, CheckCircle } from 'lucide-react';
+import {
+  Search, Download, Filter, ChevronRight, Mail, Users,
+  Briefcase, AlertTriangle, Clock, FileText, X,
+} from 'lucide-react';
 
 interface FormSubmission {
   id: string;
-  form_type: string;
-  form_data: any;
+  short_id: string;
+  form_type: 'membership' | 'project' | 'contact';
+  form_data: Record<string, any>;
   email?: string;
   name?: string;
   created_at: string;
+  status: 'reviewing' | 'approved' | 'closed' | 'pending';
 }
 
-export default function FormsPage() {
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+type TabKey = 'all' | 'membership' | 'project' | 'urgent';
 
-  // Debounced search
-  const { searchTerm, setSearchTerm, debouncedValue, isSearching } = useDebounceSearch('', {
-    delay: 500,
-    minLength: 0,
-  });
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-  // Fetch members
-  const { data: membersData } = useQuery({
-    queryKey: queryKeys.platformMembers({ page: 1, search: '' }),
-    queryFn: () => api.getPlatformMembers(),
-    select: (response) => response.data,
-  });
+function initials(name?: string) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  return parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : parts[0][0].toUpperCase();
+}
 
-  // Fetch applications
-  const { data: applicationsData, isLoading } = useQuery({
-    queryKey: queryKeys.platformApplications({ page: 1, search: '' }),
-    queryFn: () => api.getPlatformApplications(),
-    select: (response) => response.data,
-  });
+function shortId(id: string, type: string) {
+  const prefix = type === 'membership' ? 'MBR' : type === 'project' ? 'PRJ' : 'CTT';
+  const num = id.replace(/\D/g, '').slice(0, 4).padStart(4, '0');
+  return `${prefix}-${num}`;
+}
 
-  // Transform data into form submissions
-  const submissions = useMemo(() => {
-    const realTimeSubmissions: FormSubmission[] = [];
+function deriveStatus(submission: FormSubmission): FormSubmission['status'] {
+  const raw = submission.form_data?.status || submission.form_data?.approval_status || '';
+  if (raw === 'approved') return 'approved';
+  if (raw === 'denied' || raw === 'rejected' || raw === 'closed') return 'closed';
+  if (raw === 'pending' || raw === '') return 'reviewing';
+  return 'pending';
+}
 
-    // Convert members to form submissions
-    if (membersData?.results) {
-      membersData.results.forEach(member => {
-        realTimeSubmissions.push({
-          id: `member_${member.id}`,
-          form_type: 'membership',
-          form_data: member,
-          email: member.email,
-          name: member.full_name || member.name,
-          created_at: member.created_at,
-        });
-      });
-    }
+function StatusBadge({ status }: { status: FormSubmission['status'] }) {
+  const map = {
+    reviewing: 'bg-amber-100 text-amber-700 border-amber-200',
+    approved:  'bg-green-100 text-green-700 border-green-200',
+    closed:    'bg-gray-100 text-gray-500 border-gray-200',
+    pending:   'bg-blue-100 text-blue-700 border-blue-200',
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${map[status]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${
+        status === 'reviewing' ? 'bg-amber-500' :
+        status === 'approved'  ? 'bg-green-500' :
+        status === 'closed'    ? 'bg-gray-400'  : 'bg-blue-500'
+      }`} />
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
+}
 
-    // Convert project applications to form submissions
-    if (applicationsData?.results) {
-      applicationsData.results.forEach(application => {
-        realTimeSubmissions.push({
-          id: `application_${application.id}`,
-          form_type: 'project',
-          form_data: application,
-          email: application.applicant_email || application.email,
-          name: application.applicant_name || application.full_name,
-          created_at: application.created_at,
-        });
-      });
-    }
+function TypeBadge({ type }: { type: FormSubmission['form_type'] }) {
+  const map = {
+    membership: { cls: 'bg-purple-100 text-purple-700 border-purple-200', icon: <Users className="w-3 h-3" />, label: 'Membership' },
+    project:    { cls: 'bg-blue-100 text-blue-700 border-blue-200',       icon: <Briefcase className="w-3 h-3" />, label: 'Project' },
+    contact:    { cls: 'bg-teal-100 text-teal-700 border-teal-200',       icon: <Mail className="w-3 h-3" />,     label: 'Contact' },
+  };
+  const { cls, icon, label } = map[type] ?? map.contact;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border uppercase tracking-wide ${cls}`}>
+      {icon}{label}
+    </span>
+  );
+}
 
-    // Sort by creation date (most recent first)
-    return realTimeSubmissions.sort((a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [membersData, applicationsData]);
+function AuditLog({ submission }: { submission: FormSubmission | null }) {
+  const [note, setNote] = useState('');
+  const [logs, setLogs] = useState<{ text: string; time: string }[]>([]);
 
-  // Filter submissions based on search and type
-  const filteredSubmissions = useMemo(() => {
-    let filtered = submissions;
-
-    // Apply search filter
-    if (debouncedValue.trim()) {
-      const searchLower = debouncedValue.toLowerCase();
-      filtered = filtered.filter(submission => {
-        return (
-          (submission.name?.toLowerCase() || '').includes(searchLower) ||
-          (submission.email?.toLowerCase() || '').includes(searchLower) ||
-          JSON.stringify(submission.form_data).toLowerCase().includes(searchLower)
-        );
-      });
-    }
-
-    // Apply type filter
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(submission => submission.form_type === typeFilter);
-    }
-
-    return filtered;
-  }, [submissions, debouncedValue, typeFilter]);
-
-  const sendEmail = async (submission: FormSubmission) => {
-    const subject = 'Mansa to Mansa - Form Submission Follow-up';
-    const body = `Dear ${submission.name || 'Applicant'},\n\nThank you for your ${submission.form_type} submission.\n\nWe have received your information and will be in touch soon.\n\nBest regards,\nMansa to Mansa Team`;
-
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipients: [{ email: submission.email, name: submission.name || 'Applicant' }],
-          subject: subject,
-          body: body,
-          fromEmail: 'mansatomansa@gmail.com'
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.useMailto || !result.success) {
-        const encodedSubject = encodeURIComponent(subject);
-        const encodedBody = encodeURIComponent(body);
-        window.open(`mailto:${submission.email}?subject=${encodedSubject}&body=${encodedBody}&from=mansatomansa@gmail.com`);
-      } else {
-        console.log('Email sent successfully from mansatomansa@gmail.com');
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      const encodedSubject = encodeURIComponent(subject);
-      const encodedBody = encodeURIComponent(body);
-      window.open(`mailto:${submission.email}?subject=${encodedSubject}&body=${encodedBody}&from=mansatomansa@gmail.com`);
-    }
+  const addLog = () => {
+    if (!note.trim()) return;
+    setLogs(prev => [{ text: note.trim(), time: 'Just now' }, ...prev]);
+    setNote('');
   };
 
-  const getFormTypeBadge = (type: string) => {
-    switch (type) {
-      case 'contact':
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-800 border-2 border-blue-300">
-            <Mail className="h-3 w-3" />
-            Contact
-          </span>
-        );
-      case 'membership':
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border-2 border-green-300">
-            <Users className="h-3 w-3" />
-            Membership
-          </span>
-        );
-      case 'project':
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-800 border-2 border-blue-300">
-            <Briefcase className="h-3 w-3" />
-            Project
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-bold rounded-full bg-gray-100 text-gray-800 border-2 border-gray-300">
-            <FileText className="h-3 w-3" />
-            {type}
-          </span>
-        );
-    }
-  };
-
-  const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Type', 'Submitted'];
-    const rows = filteredSubmissions.map(s => [
-      s.name || 'Anonymous',
-      s.email || 'N/A',
-      s.form_type,
-      new Date(s.created_at).toLocaleDateString()
-    ]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'form-submissions.csv';
-    a.click();
-  };
-
-  const renderFormData = (data: Record<string, any>) => {
-    return Object.entries(data).map(([key, value]) => {
-      if (key === 'id' || key === 'created_at' || key === 'updated_at') return null;
-
-      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      let displayValue = value;
-
-      if (typeof value === 'string' && value.length > 100) {
-        displayValue = value.substring(0, 100) + '...';
-      }
-
-      return (
-        <div key={key} className="mb-3">
-          <label className="block text-sm font-medium text-gray-700">{displayKey}</label>
-          <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{displayValue || 'N/A'}</p>
-        </div>
-      );
-    }).filter(Boolean);
-  };
-
-  const membershipCount = submissions.filter(s => s.form_type === 'membership').length;
-  const projectCount = submissions.filter(s => s.form_type === 'project').length;
-  const contactCount = submissions.filter(s => s.form_type === 'contact').length;
-
-  if (isLoading) {
+  if (!submission) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-t-4 border-blue-600"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <FileText className="h-8 w-8 text-blue-600 animate-pulse" />
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">
+        <FileText className="w-10 h-10 mb-3 opacity-40" />
+        <p className="text-sm">Select a submission to view the audit log</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fadeIn">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-600 p-4 sm:p-6 lg:p-8 shadow-lg sm:shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10"></div>
-        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
-          <div className="space-y-1 sm:space-y-2">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-2 sm:gap-3">
-              <FileText className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10" />
-              Form Submissions
-            </h1>
-            <p className="text-blue-100 text-sm sm:text-base lg:text-lg">Track and manage all platform submissions</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
-            <div className="bg-white/20 backdrop-blur-sm px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl border border-white/30 flex-1 md:flex-none">
-              <div className="text-white/90 text-xs sm:text-sm font-medium">Total Submissions</div>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white flex items-center gap-1.5 sm:gap-2">
-                {submissions.length}
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-300" />
-              </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+        {logs.map((l, i) => (
+          <div key={i} className="flex gap-3 text-sm">
+            <span className="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+            <div>
+              <p className="text-gray-800">{l.text}</p>
+              <p className="text-gray-400 text-xs mt-0.5">{l.time}</p>
             </div>
-            <Button
-              onClick={exportToCSV}
-              variant="outline"
-              className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 px-3 sm:px-4 py-2 text-sm sm:text-base"
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <input
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addLog()}
+          placeholder="Type a note for this item..."
+          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+        />
+        <button
+          onClick={addLog}
+          className="mt-2 w-full py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Log Interaction
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function FormsPage() {
+  const [tab, setTab] = useState<TabKey>('all');
+  const [selected, setSelected] = useState<FormSubmission | null>(null);
+  const [actionLoading, setActionLoading] = useState<'approve' | 'reject' | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'reviewing' | 'approved' | 'closed'>('all');
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const { searchTerm, setSearchTerm, debouncedValue } = useDebounceSearch('', { delay: 400, minLength: 0 });
+
+  const { data: membersData } = useQuery({
+    queryKey: queryKeys.platformMembers({ page: 1, search: '' }),
+    queryFn: () => api.getPlatformMembers(),
+    select: r => r.data,
+  });
+
+  const { data: applicationsData, isLoading } = useQuery({
+    queryKey: queryKeys.platformApplications({ page: 1, search: '' }),
+    queryFn: () => api.getPlatformApplications(),
+    select: r => r.data,
+  });
+
+  const submissions = useMemo<FormSubmission[]>(() => {
+    const list: FormSubmission[] = [];
+
+    membersData?.results?.forEach((m: any) => {
+      const sub: FormSubmission = {
+        id: `member_${m.id}`,
+        short_id: shortId(`member_${m.id}`, 'membership'),
+        form_type: 'membership',
+        form_data: m,
+        email: m.email,
+        name: m.full_name || m.name,
+        created_at: m.created_at,
+        status: 'reviewing',
+      };
+      sub.status = deriveStatus(sub);
+      list.push(sub);
+    });
+
+    applicationsData?.results?.forEach((a: any) => {
+      const sub: FormSubmission = {
+        id: `app_${a.id}`,
+        short_id: shortId(`app_${a.id}`, 'project'),
+        form_type: 'project',
+        form_data: a,
+        email: a.applicant_email || a.email,
+        name: a.applicant_name || a.full_name,
+        created_at: a.created_at,
+        status: 'reviewing',
+      };
+      sub.status = deriveStatus(sub);
+      list.push(sub);
+    });
+
+    return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [membersData, applicationsData]);
+
+  const filtered = useMemo(() => {
+    let out = submissions;
+    if (tab === 'membership') out = out.filter(s => s.form_type === 'membership');
+    else if (tab === 'project') out = out.filter(s => s.form_type === 'project');
+    else if (tab === 'urgent') out = out.filter(s => s.status === 'reviewing');
+    if (filterStatus !== 'all') out = out.filter(s => s.status === filterStatus);
+    if (debouncedValue.trim()) {
+      const q = debouncedValue.toLowerCase();
+      out = out.filter(s =>
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.email || '').toLowerCase().includes(q)
+      );
+    }
+    return out;
+  }, [submissions, tab, debouncedValue, filterStatus]);
+
+  const pendingCount = submissions.filter(s => s.status === 'reviewing' || s.status === 'pending').length;
+
+  const exportCSV = () => {
+    const rows = [['ID', 'Name', 'Email', 'Type', 'Status', 'Date']];
+    filtered.forEach(s => rows.push([
+      s.short_id, s.name || '', s.email || '',
+      s.form_type, s.status,
+      new Date(s.created_at).toLocaleDateString(),
+    ]));
+    const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'submissions.csv' });
+    a.click();
+  };
+
+  const handleApprove = async () => {
+    if (!selected) return;
+    if (selected.form_type === 'membership') {
+      toast.info('Membership approvals are managed via the Members panel');
+      return;
+    }
+    const appId = selected.id.replace('app_', '');
+    setActionLoading('approve');
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/applications/${appId}/approve/`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('access_token')}` } }
+      );
+      if (res.ok) { toast.success('Application approved!'); setSelected(null); }
+      else { const d = await res.json().catch(() => ({})); toast.error((d as any).detail || 'Failed to approve.'); }
+    } catch { toast.error('Network error.'); } finally { setActionLoading(null); }
+  };
+
+  const handleReject = async () => {
+    if (!selected) return;
+    if (selected.form_type === 'membership') {
+      toast.info('Membership management is handled via the Members panel');
+      return;
+    }
+    const appId = selected.id.replace('app_', '');
+    setActionLoading('reject');
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'}/platform/applications/${appId}/`,
+        { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }, body: JSON.stringify({ status: 'rejected' }) }
+      );
+      if (res.ok) { toast.success('Application rejected.'); setSelected(null); }
+      else { toast.error('Failed to reject.'); }
+    } catch { toast.error('Network error.'); } finally { setActionLoading(null); }
+  };
+
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: 'all',        label: 'All Forms' },
+    { key: 'membership', label: 'Memberships' },
+    { key: 'project',    label: 'Projects' },
+    { key: 'urgent',     label: 'Urgent' },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 min-h-full">
+
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Form Submissions</h1>
+          <p className="mt-1.5 text-sm text-gray-500 max-w-xl">
+            High-fidelity ingestion stream for membership applications, project proposals, and direct outreach.
+            Real-time status monitoring enabled.
+          </p>
+        </div>
+
+        {/* Stat cards */}
+        <div className="flex gap-3 flex-shrink-0">
+          <div className="bg-white border border-gray-200 rounded-xl px-5 py-3 shadow-sm min-w-[110px]">
+            <p className="text-xs font-medium text-gray-500">Pending</p>
+            <div className="flex items-end gap-1.5 mt-1">
+              <span className="text-2xl font-bold text-gray-900">{pendingCount}</span>
+              <span className="text-xs text-amber-500 font-semibold mb-0.5">▲</span>
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl px-5 py-3 shadow-sm min-w-[110px]">
+            <p className="text-xs font-medium text-gray-500">Total Submissions</p>
+            <div className="flex items-end gap-1.5 mt-1">
+              <span className="text-2xl font-bold text-gray-900">{submissions.length}</span>
+              <Clock className="w-3.5 h-3.5 text-blue-500 mb-0.5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabs + actions ──────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-0">
+        <div className="flex gap-0">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none ${
+                tab === t.key
+                  ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
             >
-              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-              <span className="hidden sm:inline">Export CSV</span>
-              <span className="sm:hidden">Export</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-        <div onClick={() => setTypeFilter('membership')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('membership'); }} role="button" tabIndex={0} className="cursor-pointer">
-          <Card className="border border-green-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
-            <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Membership Forms</p>
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 mt-1 sm:mt-2">{membershipCount}</p>
-              </div>
-              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg sm:rounded-xl">
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-
-        <div onClick={() => setTypeFilter('project')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('project'); }} role="button" tabIndex={0} className="cursor-pointer">
-          <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Project Applications</p>
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mt-1 sm:mt-2">{projectCount}</p>
-              </div>
-              <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-blue-100 to-blue-100 rounded-lg sm:rounded-xl">
-                <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-
-        <div onClick={() => setTypeFilter('contact')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTypeFilter('contact'); }} role="button" tabIndex={0} className="cursor-pointer col-span-2 lg:col-span-1">
-          <Card className="border border-blue-200 hover:shadow-lg sm:hover:shadow-xl transition-all">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Contact Forms</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">{contactCount}</p>
-              </div>
-              <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl">
-                <Mail className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-      </div>
-
-      {/* Search & Filters */}
-      <Card className="border-2 border-gray-100 shadow-xl">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <div className="flex-1 w-full lg:w-auto">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                <Input
-                  placeholder="Search by name, email, or content..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-6 text-base border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all"
-                />
-                {isSearching && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap gap-3 items-center">
-              <Button
-                variant={showFilters ? "primary" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-              </Button>
-              
-              {showFilters && (
-                <div className="flex gap-2 animate-slideInFromRight">
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white shadow-sm hover:shadow-md transition-all"
-                    aria-label="Filter by form type"
-                    title="Select form type"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="contact">Contact</option>
-                    <option value="membership">Membership</option>
-                    <option value="project">Project</option>
-                  </select>
-                </div>
+              {t.label}
+              {t.key === 'urgent' && pendingCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
               )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </button>
+          ))}
+        </div>
 
-      {/* Submissions Table */}
-      <Card className="border-2 border-gray-100 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b-2 border-gray-100">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <FileText className="h-6 w-6 text-white" />
-              </div>
-              Submissions ({filteredSubmissions.length})
-            </CardTitle>
+        <div className="flex items-center gap-2 pb-2">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search..."
+              className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-48"
+            />
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {filteredSubmissions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-blue-50 to-blue-50">
-                    <TableHead className="font-bold text-gray-700">Submitter</TableHead>
-                    <TableHead className="font-bold text-gray-700">Contact</TableHead>
-                    <TableHead className="font-bold text-gray-700">Type</TableHead>
-                    <TableHead className="font-bold text-gray-700">Submitted</TableHead>
-                    <TableHead className="font-bold text-gray-700">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubmissions.map((submission, index) => (
-                    <TableRow 
-                      key={submission.id} 
-                      className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 transition-all duration-200 border-b border-gray-100"
-                    >
-                      <TableCell className="py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-bold text-base leading-none select-none">
-                              {(submission.name || 'A')[0].toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="font-semibold text-gray-900">{submission.name || 'Anonymous'}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Mail className="h-3 w-3 text-blue-600" />
-                          {submission.email || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getFormTypeBadge(submission.form_type)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Calendar className="h-4 w-4 text-blue-600" />
-                          <span>{new Date(submission.created_at).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                          })}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedSubmission(submission);
-                              setShowModal(true);
-                            }}
-                            className="hover:scale-105 transition-transform shadow-sm"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {submission.email && (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => sendEmail(submission)}
-                              className="hover:scale-105 transition-transform shadow-sm"
-                            >
-                              <Mail className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-100 mb-4">
-                <FileText className="h-10 w-10 text-blue-600" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowFilterPanel(p => !p)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border rounded-lg transition-colors ${
+                filterStatus !== 'all' || showFilterPanel
+                  ? 'border-blue-500 bg-blue-50 text-blue-600'
+                  : 'text-gray-600 bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <Filter className="w-4 h-4" />Filter{filterStatus !== 'all' && <span className="ml-1 w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />}
+            </button>
+            {showFilterPanel && (
+              <div className="absolute right-0 top-10 bg-white border border-gray-200 rounded-xl shadow-lg z-20 w-40 overflow-hidden">
+                {([
+                  { key: 'all',       label: 'All Statuses' },
+                  { key: 'reviewing', label: 'Reviewing' },
+                  { key: 'approved',  label: 'Approved' },
+                  { key: 'closed',    label: 'Closed' },
+                ] as const).map(opt => (
+                  <button key={opt.key} type="button"
+                    onClick={() => { setFilterStatus(opt.key); setShowFilterPanel(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-sm ${filterStatus === opt.key ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No submissions found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                No form submissions match your current filters. Try adjusting your search criteria.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </div>
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Download className="w-4 h-4" />Export
+          </button>
+        </div>
+      </div>
 
-      {/* Enhanced Submission Details Modal */}
-      {showModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideInFromRight">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 p-6 z-10">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-2xl shadow-lg leading-none">
-                    {(selectedSubmission.name || 'A')[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Submission Details</h2>
-                    <div className="flex items-center gap-2 mt-2">
-                      {getFormTypeBadge(selectedSubmission.form_type)}
-                      <span className="text-blue-100 text-sm flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(selectedSubmission.created_at).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+      {/* ── Table ───────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100 text-xs text-gray-400 font-medium">
+          Showing {Math.min(filtered.length, 10)} of {filtered.length} submissions
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50/60">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">ID</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-5 py-3 w-10" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-16 text-center text-gray-400">
+                    <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-medium">No submissions found</p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(sub => (
+                  <tr
+                    key={sub.id}
+                    onClick={() => setSelected(prev => prev?.id === sub.id ? null : sub)}
+                    className={`cursor-pointer transition-colors hover:bg-blue-50/40 ${
+                      selected?.id === sub.id ? 'bg-blue-50/60' : ''
+                    }`}
+                  >
+                    {/* ID */}
+                    <td className="px-5 py-3.5">
+                      <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        {sub.short_id}
                       </span>
-                    </div>
-                  </div>
-                </div>
+                    </td>
+
+                    {/* Name + email */}
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-bold">{initials(sub.name)}</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 leading-tight">{sub.name || 'Anonymous'}</p>
+                          <p className="text-xs text-gray-400 leading-tight mt-0.5">{sub.email || '—'}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Type */}
+                    <td className="px-5 py-3.5">
+                      <TypeBadge type={sub.form_type} />
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-5 py-3.5">
+                      <p className="text-gray-700 text-sm">
+                        {new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                      <p className="text-gray-400 text-xs mt-0.5">
+                        {new Date(sub.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-5 py-3.5">
+                      <StatusBadge status={sub.status} />
+                    </td>
+
+                    {/* Action */}
+                    <td className="px-3 py-3.5 text-right">
+                      <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${
+                        selected?.id === sub.id ? 'rotate-90 text-blue-500' : ''
+                      }`} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Bottom split panel ───────────────────────────────────────────── */}
+      {selected && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          {/* Submission details */}
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900 text-sm">Submission Details</h3>
+              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Submitter hero row */}
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold">{initials(selected.name)}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm truncate">
+                  {selected.form_type === 'membership' ? 'Membership Application' : 'Project Application'}: {selected.name}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">{selected.email}</p>
+              </div>
+              <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
-                  className="text-white/80 hover:text-white hover:rotate-90 transition-all duration-300"
-                  aria-label="Close modal"
-                  title="Close"
+                  onClick={handleApprove}
+                  disabled={!!actionLoading}
+                  className="px-3 py-1.5 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  {actionLoading === 'approve' ? '…' : 'Approve'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReject}
+                  disabled={!!actionLoading}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  {actionLoading === 'reject' ? '…' : 'Reject'}
                 </button>
               </div>
             </div>
-            
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(selectedSubmission.form_data).map(([key, value]) => {
-                  if (key === 'id' || key === 'created_at' || key === 'updated_at') return null;
 
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue: string = String(value || 'N/A');
-
-                  if (typeof value === 'string' && value.length > 100) {
-                    displayValue = value.substring(0, 100) + '...';
-                  } else if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value, null, 2);
-                  }
-
+            {/* Key fields */}
+            <div className="space-y-3 max-h-56 overflow-y-auto">
+              {Object.entries(selected.form_data)
+                .filter(([k]) => !['id', 'created_at', 'updated_at', 'profile_picture'].includes(k))
+                .slice(0, 8)
+                .map(([key, val]) => {
+                  if (!val) return null;
+                  const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                  const value = typeof val === 'object' ? JSON.stringify(val) : String(val);
                   return (
-                    <div key={key} className="bg-gradient-to-br from-gray-50 to-blue-50 p-5 rounded-xl border-2 border-blue-100 hover:shadow-lg transition-all">
-                      <label className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        {displayKey}
-                      </label>
-                      <p className="text-base text-gray-900 whitespace-pre-wrap break-words">{displayValue}</p>
+                    <div key={key} className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-gray-500 font-medium truncate">{label}</span>
+                      <span className="text-gray-900 truncate">{value.length > 60 ? value.slice(0, 60) + '…' : value}</span>
                     </div>
                   );
-                }).filter(Boolean)}
-              </div>
-
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 pt-6 border-t-2 border-gray-200">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-6 text-base hover:scale-105 transition-transform shadow-md"
-                >
-                  Close
-                </Button>
-                {selectedSubmission.email && (
-                  <Button 
-                    onClick={() => sendEmail(selectedSubmission)}
-                    className="flex-1 py-6 text-base bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 hover:scale-105 transition-transform shadow-lg"
-                  >
-                    <Mail className="h-5 w-5 mr-2" />
-                    Send Email Response
-                  </Button>
-                )}
-              </div>
+                })}
             </div>
+
+            {/* Motivation / notes */}
+            {(selected.form_data.motivation || selected.form_data.notes || selected.form_data.bio) && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Statement</p>
+                <p className="text-sm text-gray-700 leading-relaxed line-clamp-4">
+                  {selected.form_data.motivation || selected.form_data.notes || selected.form_data.bio}
+                </p>
+              </div>
+            )}
+
+            {/* Tags */}
+            {selected.form_data.skills && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {String(selected.form_data.skills).split(',').slice(0, 5).map(s => (
+                  <span key={s} className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-md">
+                    {s.trim()}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Audit log */}
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <h3 className="font-semibold text-gray-900 text-sm mb-4">Internal Audit Log</h3>
+            <AuditLog submission={selected} />
           </div>
         </div>
       )}

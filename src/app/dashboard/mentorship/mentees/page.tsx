@@ -209,244 +209,232 @@ export default function MenteesManagementPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading mentees...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-3 text-[13px] text-gray-500">Loading mentees...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-8 h-8 text-blue-600" />
-            Mentee Management
-          </h1>
-          <p className="text-gray-600 mt-1">View and manage mentee profiles and session history</p>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-md mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            <span className="text-[11px] font-semibold text-green-700 uppercase tracking-wide">System Status: Optimal</span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 leading-none">Mentee Management</h1>
         </div>
         <Link
           href="/dashboard/mentorship"
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
-          ← Back to Dashboard
+          Back to Dashboard
         </Link>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Mentees</p>
-                <p className="text-3xl font-bold text-gray-900">{totalCount}</p>
-              </div>
-              <Users className="w-10 h-10 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Also Mentors</p>
-                <p className="text-3xl font-bold text-gray-900">{mentees.filter(m => m.is_mentor).length}</p>
-              </div>
-              <Award className="w-10 h-10 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Active This Month</p>
-                <p className="text-3xl font-bold text-gray-900">{mentees.filter(m => m.total_bookings > 0).length}</p>
-              </div>
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">With Profile Photo</p>
-                <p className="text-3xl font-bold text-gray-900">{mentees.filter(m => m.profile_picture).length}</p>
-              </div>
-              <ImageIcon className="w-10 h-10 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Total Mentees</p>
+            <p className="text-2xl font-bold text-gray-900 leading-none">{totalCount}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">All registered</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Award className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Also Mentors</p>
+            <p className="text-2xl font-bold text-gray-900 leading-none">{mentees.filter(m => m.is_mentor).length}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">Dual role</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Active This Month</p>
+            <p className="text-2xl font-bold text-gray-900 leading-none">{mentees.filter(m => m.total_bookings > 0).length}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">With bookings</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">With Profile Photo</p>
+            <p className="text-2xl font-bold text-gray-900 leading-none">{mentees.filter(m => m.profile_picture).length}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">Has photo</p>
+          </div>
+        </div>
       </div>
 
       {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={fetchMentees}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Refresh
-            </button>
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full pl-9"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <button
+            type="button"
+            onClick={fetchMentees}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
 
       {/* Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Mentees ({filteredMentees.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-gray-200">
-                <tr className="text-left">
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Mentee</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Email</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Sessions</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Status</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Last Activity</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600">Actions</th>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+          <span className="text-[13px] font-bold text-gray-800 uppercase tracking-wide">All Mentees ({filteredMentees.length})</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Mentee</th>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Email</th>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Sessions</th>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Status</th>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Last Activity</th>
+                <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMentees.map((mentee) => (
+                <tr key={mentee.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar — shows profile picture if available */}
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        {mentee.profile_picture ? (
+                          <Image
+                            src={mentee.profile_picture}
+                            alt={mentee.name}
+                            width={32}
+                            height={32}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-blue-700 font-bold text-[13px]">
+                            {mentee.name[0]?.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{mentee.name}</p>
+                        <p className="text-[11px] text-gray-500">ID: {mentee.id.slice(0, 8)}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      {mentee.email}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    <p className="font-medium text-gray-900">{mentee.total_bookings} total</p>
+                    <p className="text-[11px] text-green-600">{mentee.completed_sessions} completed</p>
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    {mentee.is_mentor ? (
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full">
+                        Also Mentor
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full">
+                        Mentee Only
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    {mentee.last_booking
+                      ? new Date(mentee.last_booking).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                      : 'No recent activity'}
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => openSettings(mentee)}
+                      title="Manage profile"
+                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredMentees.map((mentee) => (
-                  <tr key={mentee.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        {/* Avatar — shows profile picture if available */}
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                          {mentee.profile_picture ? (
-                            <Image
-                              src={mentee.profile_picture}
-                              alt={mentee.name}
-                              width={40}
-                              height={40}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-white font-bold text-base">
-                              {mentee.name[0]?.toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{mentee.name}</p>
-                          <p className="text-xs text-gray-500">ID: {mentee.id.slice(0, 8)}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4" />
-                        {mentee.email}
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <div className="text-sm">
-                        <p className="font-medium text-gray-900">{mentee.total_bookings} total</p>
-                        <p className="text-xs text-green-600">{mentee.completed_sessions} completed</p>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      {mentee.is_mentor ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                          <Award className="w-3 h-3" />
-                          Also Mentor
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                          <Users className="w-3 h-3" />
-                          Mentee Only
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 text-sm text-gray-600">
-                      {mentee.last_booking
-                        ? new Date(mentee.last_booking).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                        : 'No recent activity'}
-                    </td>
-                    <td className="py-4">
-                      <button
-                        type="button"
-                        onClick={() => openSettings(mentee)}
-                        title="Manage profile"
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Settings className="w-5 h-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
-                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} mentees
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
-                <button
-                  type="button"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <p className="text-[12px] text-gray-500">
+              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} mentees
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-[12px] text-gray-500">Page {page} of {totalPages}</span>
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Next page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
 
       {/* Settings Modal */}
       {modal && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           role="presentation"
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+            className="bg-white rounded-xl shadow-xl w-full max-w-md"
             role="presentation"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-600" />
+            <div className="bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between rounded-t-xl">
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Settings className="w-4 h-4 text-blue-600" />
                 Mentee Settings
               </h2>
               <button
@@ -455,14 +443,14 @@ export default function MenteesManagementPage() {
                 className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 aria-label="Close"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-5 space-y-5">
               {/* Alert Message */}
               {modal.message && (
-                <div className={`flex items-start gap-3 p-3 rounded-lg text-sm ${
+                <div className={`flex items-start gap-3 p-3 rounded-lg text-[13px] ${
                   modal.message.type === 'success'
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'bg-red-50 text-red-700 border border-red-200'
@@ -481,43 +469,43 @@ export default function MenteesManagementPage() {
               )}
 
               {/* Mentee Info */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-9 h-9 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center flex-shrink-0">
                   {modal.photoPreview ? (
                     <img src={modal.photoPreview} alt={modal.mentee.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white font-bold">{modal.mentee.name[0]?.toUpperCase()}</span>
+                    <span className="text-blue-700 font-bold text-[13px]">{modal.mentee.name[0]?.toUpperCase()}</span>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{modal.mentee.name}</p>
-                  <p className="text-sm text-gray-500">{modal.mentee.email}</p>
+                  <p className="font-semibold text-gray-900 text-[13px]">{modal.mentee.name}</p>
+                  <p className="text-[11px] text-gray-500">{modal.mentee.email}</p>
                 </div>
               </div>
 
               {/* Profile Photo Section */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" />
+                <h3 className="text-[12px] font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <ImageIcon className="w-3.5 h-3.5" />
                   Profile Photo
                 </h3>
 
                 {/* Photo Preview */}
-                <div className="flex items-center gap-5 mb-4">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-4 border-gray-200 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 flex items-center justify-center flex-shrink-0">
                     {modal.photoPreview ? (
                       <img src={modal.photoPreview} alt="Profile preview" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-10 h-10 text-gray-400" />
+                      <User className="w-8 h-8 text-gray-400" />
                     )}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <p className="text-xs text-gray-500">Max 5MB · JPEG, PNG, WebP, GIF, HEIC</p>
+                    <p className="text-[11px] text-gray-500">Max 5MB · JPEG, PNG, WebP, GIF, HEIC</p>
                     <label
                       htmlFor="mentee-photo-upload"
-                      className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg cursor-pointer transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                     >
-                      <Upload className="w-4 h-4" />
+                      <Upload className="w-3.5 h-3.5" />
                       Choose Photo
                     </label>
                     <input
@@ -538,16 +526,16 @@ export default function MenteesManagementPage() {
                       type="button"
                       onClick={handleUpload}
                       disabled={modal.uploading}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white text-sm rounded-lg transition-colors"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition-colors"
                     >
-                      <Upload className="w-4 h-4" />
-                      {modal.uploading ? 'Uploading…' : 'Upload Photo'}
+                      <Upload className="w-3.5 h-3.5" />
+                      {modal.uploading ? 'Uploading...' : 'Upload Photo'}
                     </button>
                     <button
                       type="button"
                       onClick={cancelPhotoSelection}
                       disabled={modal.uploading}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 text-sm rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </button>
@@ -560,28 +548,39 @@ export default function MenteesManagementPage() {
                     type="button"
                     onClick={handleDeletePhoto}
                     disabled={modal.uploading}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 disabled:bg-gray-50 text-red-600 text-sm rounded-lg transition-colors border border-red-200"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-300 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    {modal.uploading ? 'Deleting…' : 'Remove Photo'}
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {modal.uploading ? 'Deleting...' : 'Remove Photo'}
                   </button>
                 )}
               </div>
 
               {/* Session Stats */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Session Stats</h3>
+                <h3 className="text-[12px] font-semibold text-gray-600 mb-3">Session Stats</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-blue-50 rounded-lg p-3 text-center">
                     <p className="text-2xl font-bold text-blue-700">{modal.mentee.total_bookings}</p>
-                    <p className="text-xs text-blue-600">Total Bookings</p>
+                    <p className="text-[11px] text-blue-600">Total Bookings</p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-3 text-center">
                     <p className="text-2xl font-bold text-green-700">{modal.mentee.completed_sessions}</p>
-                    <p className="text-xs text-green-600">Completed</p>
+                    <p className="text-[11px] text-green-600">Completed</p>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-2 rounded-b-xl">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

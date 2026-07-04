@@ -153,23 +153,7 @@ export default function MentorshipDashboardPage() {
         const data = await response.json();
         setAlerts(data);
       } else {
-        // Mock alerts for demonstration
-        setAlerts([
-          {
-            id: '1',
-            type: 'warning',
-            message: '3 mentors have not set their availability this week',
-            timestamp: new Date().toISOString(),
-            resolved: false,
-          },
-          {
-            id: '2',
-            type: 'info',
-            message: 'Reminder: Monthly mentorship report due in 5 days',
-            timestamp: new Date().toISOString(),
-            resolved: false,
-          },
-        ]);
+        setAlerts([]);
       }
     } catch (err) {
       console.error('Error fetching alerts:', err);
@@ -224,220 +208,173 @@ export default function MentorshipDashboardPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading mentorship dashboard...</p>
+          <p className="mt-4 text-gray-600">Loading mentorship dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 min-h-screen">
-      {/* Header with System Status */}
-      <div className="flex items-start justify-between">
+    <div className="space-y-5 pb-8">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-2">
-            <Shield className="w-10 h-10 text-blue-600" />
-            Mentorship Command Center
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Complete oversight and control of the Mansa Mentorship Platform
-          </p>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-md mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+            <span className="text-[11px] font-semibold text-green-700 uppercase tracking-wide">System Status: Optimal</span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 leading-none">Mentorship</h1>
+          <p className="text-[12px] text-gray-500 mt-1">Complete oversight and control of the Mansa Mentorship Platform</p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <Zap className="w-4 h-4 text-blue-500 animate-pulse" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Live Updates</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                fetchMentorshipStats();
-                fetchSystemAlerts();
-              }}
-              className="px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
-            >
-              Refresh Data
-            </button>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse inline-block" />
+            Live Updates
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${stats.systemHealth.apiStatus === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-              <span>API: {stats.systemHealth.apiStatus}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${stats.systemHealth.databaseStatus === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-              <span>DB: {stats.systemHealth.databaseStatus}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${stats.systemHealth.emailService === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-              <span>Email: {stats.systemHealth.emailService}</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              fetchMentorshipStats();
+              fetchSystemAlerts();
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Refresh Data
+          </button>
         </div>
       </div>
 
       {/* System Alerts */}
       {alerts.filter(a => !a.resolved).length > 0 && (
-        <Card className="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-              <AlertCircle className="w-5 h-5" />
-              System Alerts ({alerts.filter(a => !a.resolved).length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {alerts.filter(a => !a.resolved).map((alert) => (
-                <div key={alert.id} className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                  {getAlertIcon(alert.type)}
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900 dark:text-white">{alert.message}</p>
-                    <p className="text-xs text-gray-500 mt-1">{formatTimestamp(alert.timestamp)}</p>
-                  </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <span className="font-semibold text-amber-800">System Alerts ({alerts.filter(a => !a.resolved).length})</span>
+          </div>
+          <div className="space-y-2">
+            {alerts.filter(a => !a.resolved).map((alert) => (
+              <div key={alert.id} className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                {getAlertIcon(alert.type)}
+                <div className="flex-1">
+                  <p className="text-sm text-gray-900">{alert.message}</p>
+                  <p className="text-xs text-gray-500 mt-1">{formatTimestamp(alert.timestamp)}</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Overview Stats with Enhanced Design */}
+      {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Mentors Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-emerald-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Total Mentors
-            </CardTitle>
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Users className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Total Mentors</p>
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <Users className="w-4 h-4 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {stats.totalMentors}
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 text-blue-600 font-medium">
-                <CheckCircle className="w-3 h-3" />
-                {stats.approvedMentors} Active
+          </div>
+          <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalMentors}</p>
+          <div className="flex items-center justify-between text-xs mb-3">
+            <span className="flex items-center gap-1 text-blue-600 font-medium">
+              <CheckCircle className="w-3 h-3" />
+              {stats.approvedMentors} Active
+            </span>
+            {stats.pendingMentors > 0 && (
+              <span className="flex items-center gap-1 text-yellow-600 font-medium">
+                <Clock className="w-3 h-3" />
+                {stats.pendingMentors} Pending
               </span>
-              {stats.pendingMentors > 0 && (
-                <span className="flex items-center gap-1 text-yellow-600 font-medium">
-                  <Clock className="w-3 h-3" />
-                  {stats.pendingMentors} Pending
-                </span>
-              )}
-            </div>
-            <Link
-              href="/dashboard/mentorship/mentors"
-              className="mt-3 text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 group"
-            >
-              Manage Mentors
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+          <Link
+            href="/dashboard/mentorship/mentors"
+            className="text-[12px] font-semibold text-blue-600 hover:underline"
+          >
+            Manage Mentors →
+          </Link>
+        </div>
 
         {/* Mentees Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Active Mentees
-            </CardTitle>
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <UserCheck className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Active Mentees</p>
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <UserCheck className="w-4 h-4 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {stats.totalMentees}
-            </div>
-            <p className="text-xs text-gray-500 mb-2">
-              Registered users seeking mentorship
-            </p>
-            <Link
-              href="/dashboard/mentorship/mentees"
-              className="mt-1 text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 group"
-            >
-              View All Mentees
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalMentees}</p>
+          <p className="text-xs text-gray-500 mb-3">
+            Registered users seeking mentorship
+          </p>
+          <Link
+            href="/dashboard/mentorship/mentees"
+            className="text-[12px] font-semibold text-blue-600 hover:underline"
+          >
+            View All Mentees →
+          </Link>
+        </div>
 
         {/* Sessions Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-purple-500 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Total Sessions
-            </CardTitle>
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Calendar className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Total Sessions</p>
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {stats.totalBookings}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
-              <span className="flex items-center gap-1 text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
-                <Clock className="w-3 h-3" />
-                {stats.upcomingBookings} upcoming
-              </span>
-              <span className="flex items-center gap-1 text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                <CheckCircle className="w-3 h-3" />
-                {stats.completedBookings} done
-              </span>
-            </div>
-            <Link
-              href="/dashboard/mentorship/sessions"
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 group"
-            >
-              View All Sessions
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalBookings}</p>
+          <div className="flex flex-wrap items-center gap-2 text-xs mb-3">
+            <span className="flex items-center gap-1 text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
+              <Clock className="w-3 h-3" />
+              {stats.upcomingBookings} upcoming
+            </span>
+            <span className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded">
+              <CheckCircle className="w-3 h-3" />
+              {stats.completedBookings} done
+            </span>
+          </div>
+          <Link
+            href="/dashboard/mentorship/sessions"
+            className="text-[12px] font-semibold text-blue-600 hover:underline"
+          >
+            View All Sessions →
+          </Link>
+        </div>
 
         {/* Rating Card */}
-        <Card className="hover:shadow-2xl transition-all duration-300 border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Platform Performance
-            </CardTitle>
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">Platform Performance</p>
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <Star className="w-4 h-4 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {stats.averageRating.toFixed(1)}
-              <span className="text-lg text-gray-500">/5.0</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="flex items-center gap-1 text-green-600 font-medium">
-                <TrendingUp className="w-3 h-3" />
-                {stats.completionRate.toFixed(1)}% completion
-              </span>
-            </div>
-            <Link
-              href="/dashboard/mentorship/analytics"
-              className="mt-3 text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 group"
-            >
-              View Analytics
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </CardContent>
-        </Card>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 mb-2">
+            {stats.averageRating.toFixed(1)}
+            <span className="text-lg text-gray-500">/5.0</span>
+          </p>
+          <div className="flex items-center gap-2 text-xs mb-3">
+            <span className="flex items-center gap-1 text-green-600 font-medium">
+              <TrendingUp className="w-3 h-3" />
+              {stats.completionRate.toFixed(1)}% completion
+            </span>
+          </div>
+          <Link
+            href="/dashboard/mentorship/analytics"
+            className="text-[12px] font-semibold text-blue-600 hover:underline"
+          >
+            View Analytics →
+          </Link>
+        </div>
       </div>
 
       {/* Charts and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Popular Expertise Areas */}
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b border-gray-100 pb-3 mb-4">
             <CardTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-blue-600" />
               Popular Expertise Areas
@@ -448,12 +385,12 @@ export default function MentorshipDashboardPage() {
               {stats.popularExpertise.map((expertise, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-gray-700">
                       {expertise.name}
                     </span>
                     <span className="text-gray-500">{expertise.count} sessions</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       ref={(el) => { if (el) el.style.width = `${(expertise.count / stats.popularExpertise[0].count) * 100}%`; }}
                       className="bg-gradient-to-r from-blue-500 to-teal-500 h-2 rounded-full transition-all"
@@ -467,7 +404,7 @@ export default function MentorshipDashboardPage() {
 
         {/* Recent Activity */}
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b border-gray-100 pb-3 mb-4">
             <CardTitle className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-600" />
               Recent Activity
@@ -481,13 +418,13 @@ export default function MentorshipDashboardPage() {
                 stats.recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="p-2 bg-white dark:bg-gray-900 rounded-lg">
+                    <div className="p-2 bg-white rounded-lg">
                       {getActivityIcon(activity.type)}
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900 dark:text-white">{activity.message}</p>
+                      <p className="text-sm text-gray-900">{activity.message}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatTimestamp(activity.timestamp)}
                       </p>
@@ -501,32 +438,32 @@ export default function MentorshipDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="border-2 border-gray-200 dark:border-gray-700">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20">
+      <Card className="border border-gray-200">
+        <CardHeader className="border-b border-gray-100 pb-3 mb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Settings className="w-5 h-5 text-blue-600" />
             Admin Control Panel
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Manage Mentors */}
             <Link
               href="/dashboard/mentorship/mentors"
-              className="group p-5 border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
+              className="group p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-white transition-all"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 text-white" />
+                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 text-blue-600" />
                 </div>
                 {stats.pendingMentors > 0 && (
-                  <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-bold rounded-full">
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full">
                     {stats.pendingMentors}
                   </span>
                 )}
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">Manage Mentors</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-[13px] font-bold text-gray-800 mb-1">Manage Mentors</h3>
+              <p className="text-[11px] text-gray-500">
                 Approve, review, edit mentor profiles and permissions
               </p>
             </Link>
@@ -534,20 +471,20 @@ export default function MentorshipDashboardPage() {
             {/* View Sessions */}
             <Link
               href="/dashboard/mentorship/sessions"
-              className="group p-5 border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
+              className="group p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-white transition-all"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
-                  <Calendar className="w-6 h-6 text-white" />
+                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-blue-600" />
                 </div>
                 {stats.pendingApprovalBookings > 0 && (
-                  <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-bold rounded-full">
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full">
                     {stats.pendingApprovalBookings}
                   </span>
                 )}
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">All Sessions</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-[13px] font-bold text-gray-800 mb-1">All Sessions</h3>
+              <p className="text-[11px] text-gray-500">
                 Monitor all bookings, sessions, and meeting links
               </p>
             </Link>
@@ -555,15 +492,15 @@ export default function MentorshipDashboardPage() {
             {/* Manage Mentees */}
             <Link
               href="/dashboard/mentorship/mentees"
-              className="group p-5 border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
+              className="group p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-white transition-all"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-blue-600 rounded-xl group-hover:scale-110 transition-transform">
-                  <UserPlus className="w-6 h-6 text-white" />
+              <div className="mb-3">
+                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-blue-600" />
                 </div>
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">Manage Mentees</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-[13px] font-bold text-gray-800 mb-1">Manage Mentees</h3>
+              <p className="text-[11px] text-gray-500">
                 View mentees, promote to mentor, manage accounts
               </p>
             </Link>
@@ -571,15 +508,15 @@ export default function MentorshipDashboardPage() {
             {/* Analytics */}
             <Link
               href="/dashboard/mentorship/analytics"
-              className="group p-5 border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/10 dark:to-gray-800 rounded-xl hover:border-amber-500 hover:shadow-lg transition-all"
+              className="group p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-white transition-all"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="p-3 bg-amber-600 rounded-xl group-hover:scale-110 transition-transform">
-                  <BarChart3 className="w-6 h-6 text-white" />
+              <div className="mb-3">
+                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
                 </div>
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">Analytics & Reports</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-[13px] font-bold text-gray-800 mb-1">Analytics & Reports</h3>
+              <p className="text-[11px] text-gray-500">
                 Detailed metrics, performance insights, and exports
               </p>
             </Link>
