@@ -21,6 +21,7 @@ import {
   Newspaper,
   Zap,
   ListOrdered,
+  Mic2,
 } from 'lucide-react';
 
 const navigation = [
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Mentorship', href: '/dashboard/mentorship', icon: GraduationCap, badge: true },
   { name: 'Projects', href: '/dashboard/projects', icon: Briefcase },
   { name: 'Events', href: '/dashboard/events', icon: Calendar },
+  { name: 'Speakers', href: '/dashboard/speakers', icon: Mic2 },
   { name: 'Members', href: '/dashboard/members', icon: Users },
   { name: 'Form Submissions', href: '/dashboard/forms', icon: FileText },
   { name: 'Email Center', href: '/dashboard/emails', icon: Mail },

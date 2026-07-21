@@ -1,81 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { api, AnalyticsOverview, UserAnalytics, ProjectAnalytics } from '@/lib/api';
+import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryClient';
-import { BarChart3, TrendingUp, Users, Calendar, Mail, FolderOpen, UserCheck, Clock } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Mail, FolderOpen, UserCheck, Clock } from 'lucide-react';
 
 export default function AnalyticsPage() {
-  // Use React Query for data fetching
-  const { data: membersData, isLoading: membersLoading } = useQuery({
-    queryKey: queryKeys.platformMembers({ page: 1 }),
-    queryFn: () => api.getPlatformMembers({ page: 1 }),
-    select: (response) => response.data,
+  // Server-side aggregates — counts cover the full dataset, not just page 1.
+  const { data: overview, isLoading: overviewLoading } = useQuery({
+    queryKey: queryKeys.analyticsOverview(),
+    queryFn: () => api.getAnalyticsOverview(),
+    select: (response) => response.data ?? null,
   });
 
-  const { data: projectsData, isLoading: projectsLoading } = useQuery({
-    queryKey: queryKeys.platformProjects({ page: 1 }),
-    queryFn: () => api.getPlatformProjects({ page: 1 }),
-    select: (response) => response.data,
+  const { data: userAnalytics, isLoading: usersLoading } = useQuery({
+    queryKey: queryKeys.userAnalytics(),
+    queryFn: () => api.getUserAnalytics(),
+    select: (response) => response.data ?? null,
   });
 
-  const { data: applicationsData, isLoading: appsLoading } = useQuery({
-    queryKey: queryKeys.platformApplications({ page: 1 }),
-    queryFn: () => api.getPlatformApplications({ page: 1 }),
-    select: (response) => response.data,
+  const { data: projectAnalytics, isLoading: projectsLoading } = useQuery({
+    queryKey: queryKeys.projectAnalytics(),
+    queryFn: () => api.getProjectAnalytics(),
+    select: (response) => response.data ?? null,
   });
 
-  const loading = membersLoading && projectsLoading && appsLoading;
-
-  // Build analytics overview from platform data
-  const overview: AnalyticsOverview | null = membersData || projectsData || applicationsData ? {
-    total_users: membersData?.count || 0,
-    approved_users: membersData?.count || 0,
-    pending_users: 0,
-    total_projects: projectsData?.count || 0,
-    active_projects: projectsData?.results?.filter((p: any) => {
-      const status = (p.status || '').toLowerCase();
-      return status === 'active';
-    }).length || 0,
-    total_applications: applicationsData?.count || 0,
-    pending_applications: applicationsData?.results?.filter((a: any) => a.status === 'pending').length || 0,
-    total_emails_sent: 0,
-  } : null;
-
-  // Build user analytics
-  const currentMonthStart = new Date();
-  currentMonthStart.setDate(1);
-  currentMonthStart.setHours(0, 0, 0, 0);
-
-  const userAnalytics: UserAnalytics | null = membersData ? {
-    total_approved_users: membersData.count || 0,
-    total_pending_users: 0,
-    new_registrations_this_month: membersData.results?.filter(
-      (m: any) => m.created_at && new Date(m.created_at) >= currentMonthStart
-    ).length || 0,
-    user_growth_rate: 0,
-    recent_registrations: membersData.results?.slice(0, 5).map((m: any) => ({
-      id: m.id,
-      email: m.email || `${m.name}@mansa.com`,
-      first_name: m.first_name || m.name?.split(' ')[0] || 'User',
-      last_name: m.last_name || m.name?.split(' ')[1] || '',
-      role: 'user' as const,
-      approval_status: 'approved',
-      date_joined: m.created_at,
-    })) || [],
-  } : null;
-
-  // Build project analytics
-  const projectAnalytics: ProjectAnalytics | null = projectsData && applicationsData ? {
-    total_projects: projectsData.count || 0,
-    pending_projects: projectsData.results?.filter((p: any) => p.approval_status === 'pending').length || 0,
-    approved_projects: projectsData.results?.filter((p: any) => p.approval_status === 'approved').length || 0,
-    total_applications: applicationsData.count || 0,
-    application_approval_rate: applicationsData.count ? ((applicationsData.results?.filter((a: any) => a.status === 'approved').length || 0) / applicationsData.count * 100) : 0,
-    recent_projects: projectsData.results?.slice(0, 5) || [],
-  } : null;
+  const loading = overviewLoading && usersLoading && projectsLoading;
 
   if (loading) {
     return (

@@ -9,6 +9,9 @@ import { ListOrdered, Plus, Trash2, ChevronDown, ChevronRight, Users } from 'luc
 const TRIGGERS = [
   { value: 'user_registered', label: 'User Registered' },
   { value: 'user_approved', label: 'User Approved' },
+  { value: 'member_joined', label: 'Member Joined' },
+  { value: 'project_applied', label: 'Project Application Submitted' },
+  { value: 'application_approved', label: 'Project Application Approved' },
   { value: 'booking_confirmed', label: 'Booking Confirmed' },
   { value: 'booking_cancelled', label: 'Booking Cancelled' },
 ];

@@ -734,6 +734,44 @@ class ApiClient {
   async createCadenceStep(data: Record<string, any>): Promise<ApiResponse<any>> {
     return this.request<any>('/cadences/cadence-steps/', { method: 'POST', body: JSON.stringify(data) });
   }
+
+  // Speaker CRM methods
+  async getSpeakers(params?: Record<string, string>): Promise<ApiResponse<any>> {
+    const qs = params ? `?${new URLSearchParams(params)}` : '';
+    return this.request<any>(`/speakers/speakers/${qs}`);
+  }
+
+  async getSpeaker(id: number): Promise<ApiResponse<any>> {
+    return this.request<any>(`/speakers/speakers/${id}/`);
+  }
+
+  async createSpeaker(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/speakers/speakers/', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateSpeaker(id: number, data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>(`/speakers/speakers/${id}/`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteSpeaker(id: number): Promise<ApiResponse<void>> {
+    return this.request<void>(`/speakers/speakers/${id}/`, { method: 'DELETE' });
+  }
+
+  async getSpeakerFunnel(): Promise<ApiResponse<{ status: string; label: string; count: number }[]>> {
+    return this.request<any>('/speakers/speakers/funnel/');
+  }
+
+  async getSpeakerFollowUps(): Promise<ApiResponse<any[]>> {
+    return this.request<any>('/speakers/speakers/follow_ups/');
+  }
+
+  async createSpeakerInteraction(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/speakers/interactions/', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async createEventSpeaker(data: Record<string, any>): Promise<ApiResponse<any>> {
+    return this.request<any>('/speakers/event-speakers/', { method: 'POST', body: JSON.stringify(data) });
+  }
 }
 
 // Type definitions
