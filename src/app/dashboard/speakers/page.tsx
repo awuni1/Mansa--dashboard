@@ -95,6 +95,23 @@ function renderMarkdownLite(text: string) {
   return blocks;
 }
 
+/** AI-extracted URLs (linkedin_url, twitter_url, website, other_links) come
+ * from web search results, not a trusted source — reject anything that
+ * isn't http(s)/mailto before it ever reaches an href (blocks javascript:
+ * and similar XSS vectors). Returns undefined for anything unsafe, so
+ * callers should skip rendering the link entirely in that case. */
+function safeUrl(u?: string): string | undefined {
+  if (!u) return undefined;
+  try {
+    // No base — these are always meant to be absolute URLs; a relative-
+    // looking value (or anything unparseable on its own) isn't one we trust.
+    const parsed = new URL(u);
+    return ['http:', 'https:', 'mailto:'].includes(parsed.protocol) ? u : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function initialsOf(name?: string) {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/);
@@ -438,26 +455,26 @@ export default function SpeakersPage() {
                           <Mail className="w-3.5 h-3.5" />
                         </a>
                       )}
-                      {c.linkedin_url && (
-                        <a href={c.linkedin_url} target="_blank" rel="noreferrer" title="LinkedIn"
+                      {safeUrl(c.linkedin_url) && (
+                        <a href={safeUrl(c.linkedin_url)} target="_blank" rel="noreferrer" title="LinkedIn"
                           className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                           <Linkedin className="w-3.5 h-3.5" />
                         </a>
                       )}
-                      {c.twitter_url && (
-                        <a href={c.twitter_url} target="_blank" rel="noreferrer" title="Twitter/X"
+                      {safeUrl(c.twitter_url) && (
+                        <a href={safeUrl(c.twitter_url)} target="_blank" rel="noreferrer" title="Twitter/X"
                           className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                           <Twitter className="w-3.5 h-3.5" />
                         </a>
                       )}
-                      {c.website && (
-                        <a href={c.website} target="_blank" rel="noreferrer" title="Website"
+                      {safeUrl(c.website) && (
+                        <a href={safeUrl(c.website)} target="_blank" rel="noreferrer" title="Website"
                           className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                           <Globe className="w-3.5 h-3.5" />
                         </a>
                       )}
-                      {(c.other_links || []).map((l, i) => (
-                        <a key={i} href={l.url} target="_blank" rel="noreferrer" title={l.label || l.url}
+                      {(c.other_links || []).filter(l => safeUrl(l.url)).map((l, i) => (
+                        <a key={i} href={safeUrl(l.url)} target="_blank" rel="noreferrer" title={l.label || l.url}
                           className="h-8 px-2 flex items-center gap-1 border border-gray-200 rounded-lg text-gray-500 text-[11px] hover:border-blue-400 hover:text-blue-600 transition-colors">
                           <Link2 className="w-3.5 h-3.5" /> {l.label || 'Link'}
                         </a>
@@ -608,26 +625,26 @@ export default function SpeakersPage() {
                   <Mail className="w-3.5 h-3.5" />
                 </a>
               )}
-              {selected.linkedin_url && (
-                <a href={selected.linkedin_url} target="_blank" rel="noreferrer" title="LinkedIn"
+              {safeUrl(selected.linkedin_url) && (
+                <a href={safeUrl(selected.linkedin_url)} target="_blank" rel="noreferrer" title="LinkedIn"
                   className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                   <Linkedin className="w-3.5 h-3.5" />
                 </a>
               )}
-              {selected.twitter_url && (
-                <a href={selected.twitter_url} target="_blank" rel="noreferrer" title="Twitter/X"
+              {safeUrl(selected.twitter_url) && (
+                <a href={safeUrl(selected.twitter_url)} target="_blank" rel="noreferrer" title="Twitter/X"
                   className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                   <Twitter className="w-3.5 h-3.5" />
                 </a>
               )}
-              {selected.website && (
-                <a href={selected.website} target="_blank" rel="noreferrer" title="Website"
+              {safeUrl(selected.website) && (
+                <a href={safeUrl(selected.website)} target="_blank" rel="noreferrer" title="Website"
                   className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
                   <Globe className="w-3.5 h-3.5" />
                 </a>
               )}
-              {(selected.other_links || []).map((l: { label: string; url: string }, i: number) => (
-                <a key={i} href={l.url} target="_blank" rel="noreferrer" title={l.label || l.url}
+              {(selected.other_links || []).filter((l: { label: string; url: string }) => safeUrl(l.url)).map((l: { label: string; url: string }, i: number) => (
+                <a key={i} href={safeUrl(l.url)} target="_blank" rel="noreferrer" title={l.label || l.url}
                   className="h-8 px-2 flex items-center gap-1 border border-gray-200 rounded-lg text-gray-500 text-[11px] hover:border-blue-400 hover:text-blue-600 transition-colors">
                   <Link2 className="w-3.5 h-3.5" /> {l.label || 'Link'}
                 </a>
