@@ -772,6 +772,10 @@ class ApiClient {
     });
   }
 
+  async getDiscoveryStatus(): Promise<ApiResponse<{ state: 'idle' | 'running' | 'done' | 'failed'; message: string; created: number; updated_at: string | null }>> {
+    return this.request<any>('/speakers/speakers/discovery_status/');
+  }
+
   async approveSpeaker(id: number): Promise<ApiResponse<any>> {
     return this.request<any>(`/speakers/speakers/${id}/approve/`, { method: 'POST' });
   }

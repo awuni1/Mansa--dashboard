@@ -293,29 +293,56 @@ export default function SpeakersPage() {
     setEmailSending(false);
   };
 
+  // Discovery runs in the background on the server (the full pipeline takes
+  // minutes — too long for one HTTP request), so after starting it we poll
+  // the run's real status: candidates appear as they're created, and a
+  // failure shows its actual reason instead of silently finding nothing.
+  const pollDiscovery = () => {
+    setDiscovering(true);
+    let checks = 0;
+    const tick = async () => {
+      checks += 1;
+      const { data } = await api.getDiscoveryStatus();
+      load();
+      if (!data || data.state === 'running') {
+        if (checks < 60) { setTimeout(tick, 10000); return; } // give up after ~10 min
+        setDiscoverNotice('Still running — refresh the page later to see results.');
+      } else if (data.state === 'failed') {
+        setDiscoverNotice('');
+        setDiscoverError(data.message || 'Discovery failed.');
+      } else if (data.state === 'done') {
+        setDiscoverNotice(data.message || 'Discovery finished.');
+      }
+      setDiscovering(false);
+    };
+    setTimeout(tick, 5000);
+  };
+
+  // If a run is already going (page refreshed mid-run, or the weekly job is
+  // running), pick it back up instead of letting the button start a second one.
+  useEffect(() => {
+    api.getDiscoveryStatus().then(({ data }) => {
+      if (data?.state === 'running') {
+        setDiscoverNotice(data.message);
+        pollDiscovery();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const runDiscovery = async () => {
     setDiscovering(true);
     setDiscoverError('');
     setDiscoverNotice('');
     const resp = await api.discoverSpeakers(topicFocus);
-    setDiscovering(false);
     if (resp.error) {
+      setDiscovering(false);
       setDiscoverError(resp.error);
       return;
     }
-    // Discovery now runs fire-and-forget in the background (the full
-    // pipeline takes minutes — too long for one HTTP request/response), so
-    // this call only confirms it started. Poll for the next few minutes so
-    // new candidates appear without the admin having to manually refresh.
-    setDiscoverNotice((resp.data as any)?.detail || 'Discovery started — checking for new candidates…');
+    setDiscoverNotice((resp.data as any)?.detail || 'Discovery started…');
     setExpandedCandidateId(null);
-    let checks = 0;
-    const poll = setInterval(() => {
-      checks += 1;
-      load();
-      if (checks >= 10) clearInterval(poll); // ~5 minutes at 30s intervals
-    }, 30000);
-    load();
+    pollDiscovery();
   };
 
   const approveCandidate = async (id: number) => {
