@@ -153,6 +153,7 @@ export default function SpeakersPage() {
   const [topicFocus, setTopicFocus] = useState('');
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState('');
+  const [discoverNotice, setDiscoverNotice] = useState('');
   const [candidateActionId, setCandidateActionId] = useState<number | null>(null);
   const [expandedCandidateId, setExpandedCandidateId] = useState<number | null>(null);
 
@@ -295,13 +296,25 @@ export default function SpeakersPage() {
   const runDiscovery = async () => {
     setDiscovering(true);
     setDiscoverError('');
+    setDiscoverNotice('');
     const resp = await api.discoverSpeakers(topicFocus);
+    setDiscovering(false);
     if (resp.error) {
       setDiscoverError(resp.error);
-    } else {
-      setExpandedCandidateId(null);
+      return;
     }
-    setDiscovering(false);
+    // Discovery now runs fire-and-forget in the background (the full
+    // pipeline takes minutes — too long for one HTTP request/response), so
+    // this call only confirms it started. Poll for the next few minutes so
+    // new candidates appear without the admin having to manually refresh.
+    setDiscoverNotice((resp.data as any)?.detail || 'Discovery started — checking for new candidates…');
+    setExpandedCandidateId(null);
+    let checks = 0;
+    const poll = setInterval(() => {
+      checks += 1;
+      load();
+      if (checks >= 10) clearInterval(poll); // ~5 minutes at 30s intervals
+    }, 30000);
     load();
   };
 
@@ -373,6 +386,7 @@ export default function SpeakersPage() {
           </div>
         </div>
         {discoverError && <p className="text-xs text-red-600 mt-3">{discoverError}</p>}
+        {discoverNotice && <p className="text-xs text-blue-600 mt-3">{discoverNotice}</p>}
       </div>
 
       {/* Candidate review queue — AI-discovered, pending human approval */}
