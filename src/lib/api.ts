@@ -69,7 +69,7 @@ class ApiClient {
           
           if (!retryResponse.ok) {
             const errorData = await retryResponse.json().catch(() => ({}));
-            return { error: errorData.detail || errorData.message || 'Request failed' };
+            return { error: errorData.detail || errorData.message || errorData.error || 'Request failed' };
           }
           
           // Handle empty response (e.g., 204 No Content for DELETE requests)
@@ -96,7 +96,7 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        return { error: errorData.detail || errorData.message || 'Request failed' };
+        return { error: errorData.detail || errorData.message || errorData.error || 'Request failed' };
       }
 
       // Handle empty response (e.g., 204 No Content for DELETE requests)
@@ -199,10 +199,11 @@ class ApiClient {
   }
 
   // Platform data methods (Supabase data via Django)
-  async getPlatformMembers(params?: { page?: number; search?: string }): Promise<ApiResponse<PaginatedResponse<Member>>> {
+  async getPlatformMembers(params?: { page?: number; search?: string; page_size?: number }): Promise<ApiResponse<PaginatedResponse<Member>>> {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set('page', params.page.toString());
     if (params?.search) searchParams.set('search', params.search);
+    if (params?.page_size) searchParams.set('page_size', params.page_size.toString());
 
     const query = searchParams.toString();
     return this.request<PaginatedResponse<Member>>(`/platform/members/${query ? `?${query}` : ''}`);
@@ -369,7 +370,7 @@ class ApiClient {
           
           if (!retryResponse.ok) {
             const errorData = await retryResponse.json().catch(() => ({}));
-            return { error: errorData.detail || errorData.message || 'Request failed' };
+            return { error: errorData.detail || errorData.message || errorData.error || 'Request failed' };
           }
           
           const data = await retryResponse.json();
@@ -393,7 +394,7 @@ class ApiClient {
         // Log full error details for debugging
         console.error('Backend validation error:', data);
         // Try to extract detailed error messages
-        const errorMessage = data.detail || data.message || JSON.stringify(data) || 'Request failed';
+        const errorMessage = data.detail || data.message || data.error || JSON.stringify(data) || 'Request failed';
         return { error: errorMessage };
       }
 
@@ -433,7 +434,7 @@ class ApiClient {
           
           if (!retryResponse.ok) {
             const errorData = await retryResponse.json().catch(() => ({}));
-            return { error: errorData.detail || errorData.message || 'Request failed' };
+            return { error: errorData.detail || errorData.message || errorData.error || 'Request failed' };
           }
           
           const data = await retryResponse.json();
@@ -457,7 +458,7 @@ class ApiClient {
         // Log full error details for debugging
         console.error('Backend validation error:', data);
         // Try to extract detailed error messages
-        const errorMessage = data.detail || data.message || JSON.stringify(data) || 'Request failed';
+        const errorMessage = data.detail || data.message || data.error || JSON.stringify(data) || 'Request failed';
         return { error: errorMessage };
       }
 
@@ -759,6 +760,20 @@ class ApiClient {
 
   async getSpeakerFunnel(): Promise<ApiResponse<{ status: string; label: string; count: number }[]>> {
     return this.request<any>('/speakers/speakers/funnel/');
+  }
+
+  // AI discovers 3 new candidate speakers (status='candidate', kept out of the
+  // live pipeline). Can take a couple of minutes — several sequential AI calls
+  // per candidate — so this deliberately has no client-side timeout.
+  async discoverSpeakers(topicFocus?: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/speakers/speakers/discover/', {
+      method: 'POST',
+      body: JSON.stringify({ topic_focus: topicFocus || '' }),
+    });
+  }
+
+  async approveSpeaker(id: number): Promise<ApiResponse<any>> {
+    return this.request<any>(`/speakers/speakers/${id}/approve/`, { method: 'POST' });
   }
 
   async getSpeakerFollowUps(): Promise<ApiResponse<any[]>> {

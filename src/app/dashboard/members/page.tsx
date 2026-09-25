@@ -114,22 +114,62 @@ export default function MembersPage() {
 
   const csvSafe = (v: string) => (/^[=+\-@\t\r]/.test(v) ? `'${v}` : v);
 
-  const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Profession', 'Location', 'Joined'];
-    const rows = members.map(m => [
-      csvSafe(m.name || m.full_name || ''),
-      csvSafe(m.email || ''),
-      csvSafe(m.profession || m.occupation || m.jobtitle || ''),
-      csvSafe(m.location || m.city || ''),
-      new Date(m.created_at).toLocaleDateString()
-    ]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'members.csv';
-    a.click();
+  const [isExporting, setIsExporting] = useState(false);
+
+  // The members list on screen is only the current page (20 rows). Export
+  // needs every member matching the active search/filter, so we page
+  // through the API ourselves (the backend caps page_size at 100) rather
+  // than reusing the paginated `members` state.
+  const exportToCSV = async () => {
+    setIsExporting(true);
+    try {
+      const EXPORT_PAGE_SIZE = 100;
+      let allMembers: Member[] = [];
+      let page = 1;
+      let expectedTotal = Infinity;
+
+      while (allMembers.length < expectedTotal) {
+        const response = await api.getPlatformMembers({
+          page,
+          page_size: EXPORT_PAGE_SIZE,
+          search: debouncedValue || undefined,
+        });
+        if (response.error || !response.data) {
+          toast.error(response.error || 'Failed to fetch members for export.');
+          return;
+        }
+        expectedTotal = response.data.count;
+        allMembers = allMembers.concat(response.data.results);
+        if (response.data.results.length === 0) break; // safety net against an infinite loop
+        page += 1;
+      }
+
+      const exportRows = allMembers.filter(m =>
+        filterType === 'all' || m.membershiptype?.toLowerCase() === filterType.toLowerCase()
+      );
+
+      const headers = ['Name', 'Email', 'Profession', 'Location', 'Joined'];
+      const rows = exportRows.map(m => [
+        csvSafe(m.name || m.full_name || ''),
+        csvSafe(m.email || ''),
+        csvSafe(m.profession || m.occupation || m.jobtitle || ''),
+        csvSafe(m.location || m.city || ''),
+        new Date(m.created_at).toLocaleDateString()
+      ]);
+      const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'members.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${exportRows.length} member${exportRows.length === 1 ? '' : 's'}.`);
+    } catch {
+      toast.error('Something went wrong while exporting members.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleDeleteMember = async (member: Member) => {
@@ -204,10 +244,15 @@ export default function MembersPage() {
           <button
             type="button"
             onClick={exportToCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white"
+            disabled={isExporting}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="h-3.5 w-3.5" />
-            Export CSV
+            {isExporting ? (
+              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-gray-500" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {isExporting ? 'Exporting…' : 'Export CSV'}
           </button>
         </div>
       </div>
