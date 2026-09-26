@@ -32,6 +32,18 @@ interface EventGroup {
   count: number
 }
 
+const slugify = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'event'
+
+// Quote a CSV cell, escaping embedded quotes. Registrant fields come from the
+// public form, so neutralise spreadsheet formulas (=, @, or +/- not followed
+// by a phone-number-like value) with a leading apostrophe.
+const csvCell = (value: unknown) => {
+  let s = value == null ? '' : String(value)
+  if (/^[=@\t\r]/.test(s) || /^[+-](?![\d\s()-]+$)/.test(s)) s = `'${s}`
+  return `"${s.replace(/"/g, '""')}"`
+}
+
 const STATUS_STYLES: Record<string, string> = {
   confirmed: 'bg-green-100 text-green-700',
   attended:  'bg-blue-100 text-blue-700',
@@ -69,12 +81,22 @@ export default function EventRegistrationsPage() {
     try {
       setLoading(true)
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api'
-      const response = await fetch(`${apiUrl}/registrations/`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-      })
-      if (response.ok) {
+      const headers = { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      // The API paginates (20 per page by default), so follow `next` until
+      // every registration is loaded — otherwise stats, per-event counts and
+      // exports would only ever reflect the first page.
+      const rows: EventRegistration[] = []
+      let url: string | null = `${apiUrl}/registrations/?page_size=100`
+      let failed = false
+      while (url) {
+        const response: Response = await fetch(url, { headers })
+        if (!response.ok) { failed = true; break }
         const data = await response.json()
-        const rows: EventRegistration[] = Array.isArray(data) ? data : (data.results || [])
+        if (Array.isArray(data)) { rows.push(...data); break }
+        rows.push(...(data.results || []))
+        url = data.next || null
+      }
+      if (!failed || rows.length > 0) {
         setRegistrations(rows)
 
         // build event groups
@@ -125,28 +147,43 @@ export default function EventRegistrationsPage() {
   const students  = registrations.filter((r) => r.is_student).length
   const members   = registrations.filter((r) => r.is_member).length
 
-  const handleExportCSV = () => {
-    const headers = ['Event', 'Date', 'Full Name', 'Email', 'Phone', 'Student', 'Institution', 'Member', 'Status', 'Registered']
-    const rows = filtered.map((r) => [
+  const selectedEventTitle =
+    filterEvent === 'all'
+      ? null
+      : eventGroups.find((g) => g.event_id === filterEvent)?.event_title || urlEventTitle
+
+  const exportCSV = (rowsToExport: EventRegistration[], eventTitle: string | null) => {
+    if (rowsToExport.length === 0) return
+    const headers = ['Event', 'Event Date', 'Full Name', 'Email', 'Phone', 'Student', 'Institution', 'Member', 'Status', 'Registered']
+    const rows = rowsToExport.map((r) => [
       r.event_title,
-      new Date(r.event_date).toLocaleDateString(),
+      r.event_date, // already YYYY-MM-DD; new Date() would shift it a day in US timezones
       r.full_name,
       r.email,
       r.phone_number,
       r.is_student ? 'Yes' : 'No',
-      r.institution_name || 'N/A',
+      r.institution_name || '',
       r.is_member ? 'Yes' : 'No',
       r.status,
-      new Date(r.registered_at).toLocaleDateString(),
+      new Date(r.registered_at).toLocaleString(),
     ])
-    const csv = [headers, ...rows].map((row) => row.map((c) => `"${c}"`).join(',')).join('\n')
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    const csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n')
+    // BOM so Excel opens names with accents correctly
+    const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
     const a   = document.createElement('a')
+    const stamp = new Date().toISOString().split('T')[0]
     a.href = url
-    a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = eventTitle ? `${slugify(eventTitle)}-registrations-${stamp}.csv` : `registrations-${stamp}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  // Header button: exactly what's on screen (all active filters applied)
+  const handleExportCSV = () => exportCSV(filtered, selectedEventTitle)
+
+  // Per-event button: everyone registered for that event, ignoring other filters
+  const handleExportEvent = (eventId: string, eventTitle: string) =>
+    exportCSV(registrations.filter((r) => String(r.event_id) === eventId), eventTitle)
 
   return (
     <div className="space-y-5 pb-8">
@@ -171,9 +208,12 @@ export default function EventRegistrationsPage() {
         <button
           type="button"
           onClick={handleExportCSV}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold tracking-wider rounded-lg transition-colors whitespace-nowrap"
+          disabled={loading || filtered.length === 0}
+          title={selectedEventTitle ? `Export registrants for ${selectedEventTitle}` : 'Export the registrations currently shown'}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold tracking-wider rounded-lg transition-colors whitespace-nowrap"
         >
-          <Download className="w-4 h-4" /> EXPORT CSV
+          <Download className="w-4 h-4" />
+          {selectedEventTitle ? `EXPORT EVENT (${filtered.length})` : `EXPORT CSV (${filtered.length})`}
         </button>
       </div>
 
@@ -209,21 +249,34 @@ export default function EventRegistrationsPage() {
             {eventGroups.map((eg) => {
               const pct = total > 0 ? Math.round((eg.count / total) * 100) : 0
               return (
-                <button
+                <div
                   key={eg.event_id}
-                  type="button"
-                  onClick={() => { setFilterEvent(eg.event_id); setPage(1) }}
-                  className={`w-full flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors text-left ${filterEvent === eg.event_id ? 'bg-blue-50' : ''}`}
+                  className={`flex items-center gap-2 pr-3 hover:bg-gray-50 transition-colors ${filterEvent === eg.event_id ? 'bg-blue-50' : ''}`}
                 >
-                  <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span className="flex-1 text-sm font-medium text-gray-900 truncate">{eg.event_title}</span>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[11px] text-gray-400">{pct}%</span>
-                    <span className="text-[12px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                      {eg.count}
-                    </span>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => { setFilterEvent(eg.event_id); setPage(1) }}
+                    className="flex-1 min-w-0 flex items-center gap-4 pl-5 py-3 text-left"
+                  >
+                    <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="flex-1 text-sm font-medium text-gray-900 truncate">{eg.event_title}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-[11px] text-gray-400">{pct}%</span>
+                      <span className="text-[12px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        {eg.count}
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExportEvent(eg.event_id, eg.event_title)}
+                    title={`Export all ${eg.count} registrants for ${eg.event_title}`}
+                    aria-label={`Export registrants for ${eg.event_title}`}
+                    className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-gray-200 bg-white text-[11px] font-semibold text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Export
+                  </button>
+                </div>
               )
             })}
           </div>
