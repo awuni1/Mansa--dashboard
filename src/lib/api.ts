@@ -780,6 +780,19 @@ class ApiClient {
     return this.request<any>(`/speakers/speakers/${id}/approve/`, { method: 'POST' });
   }
 
+  // ── Incubator applications ──
+  async getIncubatorApplications(params?: Record<string, string>): Promise<ApiResponse<any>> {
+    const qs = params ? `?${new URLSearchParams(params)}` : '';
+    return this.request<any>(`/incubator/applications/${qs}`);
+  }
+
+  async updateIncubatorApplication(
+    id: string,
+    data: { status?: string; scores?: Record<string, number | null>; reviewer_notes?: string },
+  ): Promise<ApiResponse<any>> {
+    return this.request<any>(`/incubator/applications/${id}/`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
   async getSpeakerFollowUps(): Promise<ApiResponse<any[]>> {
     return this.request<any>('/speakers/speakers/follow_ups/');
   }
