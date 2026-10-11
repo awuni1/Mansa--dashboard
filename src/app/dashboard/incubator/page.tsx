@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
-  Rocket, Search, Download, X, Video, Mic, ExternalLink, Mail, Users, CheckCircle2,
+  Rocket, Search, Download, X, Video, ExternalLink, Mail, Users, CheckCircle2,
   Star, Clock, XCircle, Inbox, Linkedin, Loader2, RefreshCw,
 } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -14,8 +14,12 @@ type Application = {
   id: string
   cohort: string
   status: 'submitted' | 'shortlisted' | 'selected' | 'declined'
-  video_mode: 'video' | 'audio'
-  video_link: string
+  video_file: string
+  video_duration: number | null
+  video_mime: string
+  video_link: string // legacy: early applications pasted a link
+  video_url?: string | null // short-lived signed link, only on the single-application endpoint
+  video_download_url?: string | null
   team_size: number
   members: Member[]
   lead_name: string
@@ -69,8 +73,8 @@ const HEARD_FROM: Record<string, string> = {
 // Same five criteria (and keys) the backend validates and applicants see.
 const CRITERIA = [
   { key: 'clarity', label: 'Clarity of the problem', hint: 'Section 2 and the video' },
-  { key: 'founder_fit', label: 'Founder-problem fit', hint: '"Why you" in the video, and the team' },
-  { key: 'willingness', label: 'Willingness to be wrong', hint: 'The "changed your mind" answer' },
+  { key: 'founder_fit', label: 'Founder-problem fit', hint: '"Why you" in the video, and the "right team" answer' },
+  { key: 'willingness', label: 'Willingness to be wrong', hint: 'The "what surprised you" answer' },
   { key: 'ship', label: 'Ability to ship', hint: "Section 4 and the team's skills" },
   { key: 'commitment', label: 'Commitment', hint: 'The checkboxes and time zone' },
 ]
@@ -85,6 +89,20 @@ const safeUrl = (u?: string) => {
   } catch {
     return null
   }
+}
+
+/** Chrome's MediaRecorder WebM files carry no duration, so players show 0:00
+ *  and can't seek until fully played. Seeking far past the end makes the
+ *  browser work the length out; then jump back to the start. */
+const fixUnknownDuration = (e: React.SyntheticEvent<HTMLMediaElement>) => {
+  const el = e.currentTarget
+  if (Number.isFinite(el.duration)) return
+  const back = () => {
+    el.removeEventListener('timeupdate', back)
+    el.currentTime = 0
+  }
+  el.addEventListener('timeupdate', back)
+  el.currentTime = 1e101
 }
 
 const fmtDate = (iso: string) =>
@@ -161,9 +179,9 @@ export default function IncubatorApplicationsPage() {
     if (filtered.length === 0) return
     const headers = [
       'Applied', 'Status', 'Total score', 'Lead name', 'Lead email', 'Team size', 'Team members',
-      'Idea', 'Who has the problem', 'What they do today', 'People spoken to', 'Surprise', 'Changed mind on',
+      'Idea', 'Who has the problem', 'What they do today', 'People spoken to', 'Surprise', 'Why the right team',
       'Stage', 'Can build', 'Built before', 'Non-technical plan', 'Member', 'Heard from',
-      'Video type', 'Video link', ...CRITERIA.map((c) => c.label), 'Reviewer notes',
+      'Video length (s)', 'Video', ...CRITERIA.map((c) => c.label), 'Reviewer notes',
     ]
     const rows = filtered.map((a) => [
       new Date(a.created_at).toLocaleString(), statusMeta(a.status).label, a.total_score ?? '',
@@ -172,7 +190,8 @@ export default function IncubatorApplicationsPage() {
       a.idea_sentence, a.who_has_problem, a.current_alternatives, a.people_spoken, a.surprise, a.changed_mind,
       STAGES[a.stage] || a.stage, a.can_build ? 'Yes' : 'No', a.built_link, a.nontech_plan,
       a.is_member ? 'Yes' : 'No', HEARD_FROM[a.heard_from] || a.heard_from,
-      a.video_mode === 'audio' ? 'Audio' : 'Video', a.video_link,
+      a.video_duration ?? '',
+      a.video_file ? `Stored clip (watch in the dashboard): ${a.video_file}` : a.video_link,
       ...CRITERIA.map((c) => a.scores?.[c.key] ?? ''), a.reviewer_notes,
     ])
     const csv = [headers, ...rows].map((r) => r.map(csvCell).join(',')).join('\r\n')
@@ -373,6 +392,21 @@ function ApplicationPanel({
   const [scores, setScores] = useState<Record<string, number | null>>(app.scores || {})
   const [notes, setNotes] = useState(app.reviewer_notes || '')
   const [saving, setSaving] = useState(false)
+  const [media, setMedia] = useState<{ url: string | null; download: string | null; loading: boolean }>({
+    url: null, download: null, loading: !!app.video_file,
+  })
+
+  // Private clips need a fresh signed link, fetched when the panel opens.
+  useEffect(() => {
+    let cancelled = false
+    if (!app.video_file) { setMedia({ url: null, download: null, loading: false }); return }
+    setMedia({ url: null, download: null, loading: true })
+    api.getIncubatorApplication(app.id).then((res) => {
+      if (cancelled) return
+      setMedia({ url: res.data?.video_url ?? null, download: res.data?.video_download_url ?? null, loading: false })
+    })
+    return () => { cancelled = true }
+  }, [app.id, app.video_file])
 
   // Reset the form when switching to another application.
   useEffect(() => {
@@ -407,7 +441,7 @@ function ApplicationPanel({
     toast.success('Review saved')
   }
 
-  const video = safeUrl(app.video_link)
+  const legacyLink = safeUrl(app.video_link)
   const built = safeUrl(app.built_link)
   const sentTo = new Set(app.confirmation_sent_to || [])
 
@@ -432,20 +466,45 @@ function ApplicationPanel({
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">The idea</p>
             <p className="mt-2 text-[17px] font-semibold text-gray-900 leading-snug">{app.idea_sentence}</p>
+            {app.video_file && (
+              <div className="mt-4">
+                {media.loading ? (
+                  <div className="h-48 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                ) : media.url ? (
+                  // applicants' own recordings have no caption files
+                  // eslint-disable-next-line jsx-a11y/media-has-caption
+                  <video src={media.url} controls playsInline preload="metadata" onLoadedMetadata={fixUnknownDuration} className="w-full max-h-[420px] rounded-lg bg-black" />
+                ) : (
+                  <p className="text-[13px] text-red-600">Could not load the clip. Try closing and reopening this application.</p>
+                )}
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              {video ? (
+              {app.video_file ? (
+                media.download && (
+                  <a
+                    href={media.download}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-200 hover:border-blue-500 hover:text-blue-600 text-gray-700 text-[12px] font-semibold rounded-lg"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Download video
+                    {app.video_duration ? ` (${Math.round(app.video_duration)}s)` : ''}
+                  </a>
+                )
+              ) : legacyLink ? (
                 <a
-                  href={video}
+                  href={legacyLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white hover:text-white text-[13px] font-semibold rounded-lg"
                 >
-                  {app.video_mode === 'audio' ? <Mic className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-                  {app.video_mode === 'audio' ? 'Listen to the audio' : 'Watch the video'}
+                  <Video className="w-4 h-4" />
+                  Watch the video
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               ) : (
-                <span className="text-[13px] text-red-600">Video link is not a valid web address: {app.video_link}</span>
+                <span className="text-[13px] text-red-600">No clip attached to this application.</span>
               )}
               <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">{STAGES[app.stage] || app.stage}</span>
               <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">
@@ -584,7 +643,7 @@ function ApplicationPanel({
           <Section title="Evidence, and willingness to be wrong">
             <Answer q="People with this problem they have spoken to" a={String(app.people_spoken)} />
             <Answer q="One thing they said that surprised them" a={app.surprise} />
-            <Answer q="Something they have already changed their mind on" a={app.changed_mind} />
+            <Answer q="What makes their team the right fit for this problem?" a={app.changed_mind} />
           </Section>
 
           <Section title="Ability to ship">

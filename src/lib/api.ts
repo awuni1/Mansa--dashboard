@@ -786,6 +786,10 @@ class ApiClient {
     return this.request<any>(`/incubator/applications/${qs}`);
   }
 
+  async getIncubatorApplication(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/incubator/applications/${id}/`);
+  }
+
   async updateIncubatorApplication(
     id: string,
     data: { status?: string; scores?: Record<string, number | null>; reviewer_notes?: string },
